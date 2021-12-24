@@ -1,9 +1,4 @@
-import {
-  eachMonthOfInterval,
-  endOfYear,
-  isSameDay,
-  startOfYear,
-} from "date-fns"
+import { eachMonthOfInterval, intervalToDuration, isSameDay } from "date-fns"
 import { MdTimer, MdUpdate, MdCalendarToday } from "react-icons/md"
 import { IoMdTime } from "react-icons/io"
 import { observer } from "mobx-react"
@@ -14,8 +9,10 @@ import classNames from "classnames"
 import MonthCalendar from "./components/MonthCalendar"
 import { useStore } from "./Store"
 
-const CalendarDay = ({ date: d, isHighlighted, isSameMonth }) => {
+const CalendarDay = ({ date: d, highlight, isSameMonth }) => {
   const isToday = isSameDay(d, new Date())
+  const highlightClass = highlight(d)
+
   return (
     <div
       className={classNames(
@@ -24,8 +21,9 @@ const CalendarDay = ({ date: d, isHighlighted, isSameMonth }) => {
           "font-bold": isToday,
           "font-light": !isToday,
           "opacity-25": !isSameMonth,
-          "text-white bg-red-500 font-bold": isHighlighted,
+          "text-white font-bold": highlightClass,
         },
+        highlightClass,
       )}
     >
       <span className={classNames({})}>{d.getDate()}</span>
@@ -54,46 +52,60 @@ function formatDuration(duration) {
   return segments.join(" ")
 }
 
-const TaskTimeSummary = ({ task, className }) => (
+function formatDate(date) {
+  const duration = intervalToDuration({ start: new Date(), end: date })
+  delete duration.seconds
+  return Object.keys(duration)
+    .reduce(
+      (acc, key) => [
+        ...acc,
+        ...(duration[key] > 0 ? [`${duration[key]}${key[0]}`] : []),
+      ],
+      [],
+    )
+    .join(" ")
+}
+
+const DateLabel = ({ date }) => (
+  <span className="flex items-center space-x-2">
+    <MdCalendarToday />
+    {formatDate(date)}
+    <IoMdTime />
+    {useStore().formatTime(date)}
+  </span>
+)
+
+const TimeLabel = ({ time }) => (
+  <span className="flex items-center">
+    <MdTimer />
+    {formatDuration(time)}
+  </span>
+)
+
+const TaskTimeSummary = ({ task, className, children }) => (
   <div className={classNames("flex items-center space-x-4", className)}>
-    {task.duration && (
-      <span className="flex items-center">
-        <MdTimer />
-        {formatDuration(task.duration)}
-      </span>
-    )}
+    {task.duration && <TimeLabel time={task.duration} />}
+    {task.nextAt && <DateLabel date={task.nextAt} />}
 
-    {task.start && (
-      <span className="flex items-center space-x-2">
-        <MdCalendarToday />
-        {task.start.toLocaleDateString("default", {
-          date: "short",
-        })}
-        <IoMdTime />
-        {task.start
-          .toTimeString()
-          .split(" ")[0]
-          .split(":")
-          .slice(0, 2)
-          .join(":")}
-      </span>
+    {task.freq && (
+      <>
+        <span className="flex items-center">
+          <MdUpdate />
+          {task.freq}
+        </span>
+      </>
     )}
-
-    {task.repeat && (
-      <span className="flex items-center">
-        <MdUpdate />
-      </span>
-    )}
+    {children}
   </div>
 )
 
 const Task = ({ task }) => {
   return (
-    <label className="flex items-center space-x-2 odd:bg-gray-50">
+    <div className="flex items-center space-x-2 odd:bg-gray-50">
       <input type="checkbox" className="inline-block" />
       <span className="flex-auto">{task.subject}</span>
       <TaskTimeSummary task={task} />
-    </label>
+    </div>
   )
 }
 
@@ -101,7 +113,8 @@ function App() {
   const store = useStore()
 
   const onChange = (e) => {
-    store.input.task.update({ [e.target.name]: e.target.value })
+    const props = { [e.target.name]: e.target.value }
+    store.input.task.update(props)
   }
 
   useEffect(() => {
@@ -110,16 +123,10 @@ function App() {
 
       if (!task.repeat && task.output.start) {
         const expression = [
-          task.output.start.toLocaleDateString("default", {
-            date: "short",
-          }),
+          task.subject,
+          store.formatDate(task.output.start),
           "at",
-          task.output.start
-            .toTimeString()
-            .split(" ")[0]
-            .split(":")
-            .slice(0, 2)
-            .join(":"),
+          store.formatTime(task.output.start),
         ].join(" ")
 
         task.update({
@@ -129,7 +136,7 @@ function App() {
 
       store.addTask(getSnapshot(task))
 
-      store.input.task.update({ subject: "", expression: "" })
+      store.input.task.update({ expression: "" })
     }
 
     const listener = (event) => {
@@ -144,17 +151,33 @@ function App() {
     }
   })
 
+  const doHighlight = (date) => {
+    if (isSameDay(date, store.input.task.nextAt)) return "bg-red-500"
+
+    if (store.input.occurrences.some((o) => isSameDay(o, date)))
+      return "bg-green-500"
+
+    return null
+  }
+
   return (
     <div className="container mx-auto py-8 font-sans-serif">
+      <div className="mb-8">
+        <input
+          value={store.locale}
+          onChange={(e) => store.setLocale(e.target.value)}
+        />
+      </div>
+
       <div className="grid grid-cols-2">
         <div className="max-w-fit">
           <h5 className="mb-4 font-bold text-center text-lg">
-            {store.calendarStart.toLocaleString("default", { year: "numeric" })}
+            {store.formatYear(store.input.calendarStart)}
           </h5>
           <div className="grid flex-none grid-cols-3">
             {eachMonthOfInterval({
-              start: startOfYear(store.calendarStart),
-              end: endOfYear(store.calendarStart),
+              start: store.input.calendarStart,
+              end: store.input.calendarEnd,
             }).map((monthDate) => (
               <div key={monthDate.toISOString()} className="flex flex-col m-2">
                 {monthDate.toLocaleString("default", { month: "long" })}
@@ -165,10 +188,7 @@ function App() {
                     <CalendarDay
                       {...props}
                       key={props.date.toISOString()}
-                      isHighlighted={isSameDay(
-                        props.date,
-                        store.input.task.date,
-                      )}
+                      highlight={doHighlight}
                     />
                   )}
                 />
@@ -177,38 +197,25 @@ function App() {
           </div>
         </div>
         <div className="space-y-4">
-          <div className="flex items-start mb-4 space-x-2">
+          <div>
             <input
-              name="subject"
-              className="rounded border"
+              autoComplete="off"
+              name="expression"
+              className="w-full rounded border"
               type="text"
-              value={store.input.task.subject}
+              value={store.input.task.expression}
               onChange={onChange}
             />
-            <div>
-              <input
-                name="expression"
-                className="rounded border"
-                type="text"
-                value={store.input.task.expression}
-                onChange={onChange}
-              />
-              {store.input.task.error && (
-                <div className="mt-2 text-xs">{store.input.task.error}</div>
-              )}
-              {store.input.task.start && (
-                <TaskTimeSummary
-                  task={store.input.task}
-                  className="mt-2 text-xs"
-                />
-              )}
-            </div>
+            {store.input.task.error && (
+              <div className="mt-2 text-xs">{store.input.task.error}</div>
+            )}
+            <TaskTimeSummary task={store.input.task} className="mt-2 text-xs">
+              <span className="flex-auto">{store.input.task.subject}</span>
+            </TaskTimeSummary>
           </div>
 
-          {/* <ObjectInspector data={store.input.task.output} expandLevel={10} /> */}
-
           <div className="divide-y">
-            {store.tasks.map((t) => (
+            {store.sortedTasks.map((t) => (
               <Task key={[t.subject, t.expression].join()} task={t} />
             ))}
           </div>

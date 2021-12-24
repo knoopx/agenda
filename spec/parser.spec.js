@@ -4,101 +4,179 @@ const { inspect } = require("util")
 const {
   startOfDay,
   setHours,
-  addDays,
   addHours,
   startOfWeek,
+  addWeeks,
 } = require("date-fns")
 const peggy = require("peggy")
+const RRule = require("rrule").default
 
-const { parse } = peggy.generate(fs.readFileSync("./src/grammar.pegjs", "utf8"))
+const { parse } = peggy.generate(
+  fs.readFileSync("./src/parser/grammar.pegjs", "utf8"),
+  { allowedStartRules: ["Root", "TimeConstructExpr", "DateExpr", "DateFull"] },
+)
 
 const now = new Date(2020, 0, 1, 0, 0, 0, 0)
 
-const TEST_CASES = {
-  "": {},
-  "every 5 weeks on Monday, Friday until January 31, 2013": {},
-  "every year on the 1st friday": {},
-  "every 2 days": {
-    at: { day: "*/2" },
-  },
-  "end of month": {},
-  "end of march": {},
-  // "every 2 thursday at 11h": {},
-  "every 29/12": { at: { day: 29, month: 12 } },
-  "every 29 december": { at: { day: 29, month: 12 } },
-  "every august": { at: { month: 8 } },
-  "every day starting next month": {
-    at: { day: "*" },
-    start: new Date(2020, 1, 1, 0, 0, 0, 0),
-  },
-  "every day after lunch": { at: { day: "*", hour: 15, minute: 0 } },
-  "every day after wake up": { at: { day: "*", hour: 9, minute: 0 } },
-  "every day at 2h for 1h": {
-    at: { day: "*", hour: 2, minute: 0 },
-    duration: 60,
-  },
-  "every day for 15min": {
-    at: { day: "*" }, // todo: hour: 0, minute: 0 ?
-    duration: 15,
-  },
-  "every end of month": {
-    at: { day: "L" },
-  },
-  "every monday after work": {
-    at: { hour: 18, minute: 0, weekDay: 1 },
-  },
-  "every wednesday at 11h": {
-    at: {
-      hour: 11,
-      minute: 0,
-      weekDay: 3,
-    },
-  },
-  "every 2 days at 10h": {
-    at: {
-      hour: 10,
-      minute: 0,
-      day: "*/2",
-    },
-  },
-  // "every 2 thursdays at 10h": {},
-  "every week for 4h": {
-    at: { weekDay: 1 },
-    duration: 240,
-  },
-  // "every day except mondays": {},
-  // "every weekday from 9h to 14h and 15h to 18h": {},
-  "every weekend for 1h": {
-    at: { weekDay: 6 },
-    duration: 60,
-  },
-  "in 2 months": {
-    start: new Date(2020, 2, 1, 0, 0, 0, 0),
-  },
-  "tomorrow at 8h": {
-    start: setHours(addHours(startOfDay(now), 24), 8),
-  },
-  "today afternoon for 1h": {
-    start: setHours(startOfDay(now), 15),
-    duration: 60,
-  },
-  "next week at 5": {
-    start: setHours(startOfWeek(addDays(startOfDay(now), 7)), 5),
-  },
-  "next monday at 5": {
-    start: new Date(2020, 0, 6, 5, 0, 0, 0),
-  },
-  "at 5": {
-    start: new Date(2020, 0, 6, 5, 0, 0, 0),
-  },
-  "once a day": {
-    at: { day: "*" },
-  },
-}
-
-for (const [input, expected] of Object.entries(TEST_CASES)) {
-  test(`parses ${inspect(input)}`, () => {
-    const result = parse(input, { now })
+function testParse(startRule, input, expected) {
+  test(`${startRule} parses ${inspect(input)}`, () => {
+    const result = parse(input, { now, startRule })
     expect(result).toEqual(expected)
   })
 }
+
+// edge cases
+// testParse("TimeConstructExpr", "", {})
+// testParse("TimeConstructExpr", " ", {})
+
+// simple
+testParse("TimeConstructExpr", "at 5", {
+  start: new Date(2020, 0, 1, 5, 0, 0, 0),
+})
+testParse("TimeConstructExpr", "in 2 months", {
+  start: new Date(2020, 2, 1, 0, 0, 0, 0),
+})
+testParse("TimeConstructExpr", "tomorrow at 8h", {
+  start: setHours(addHours(startOfDay(now), 24), 8),
+})
+testParse("TimeConstructExpr", "today afternoon for 1h", {
+  start: setHours(startOfDay(now), 15),
+  duration: 60,
+})
+testParse("TimeConstructExpr", "next week at 5", {
+  start: setHours(startOfWeek(addWeeks(now, 1), { weekStartsOn: 1 }), 5),
+})
+testParse("TimeConstructExpr", "next monday at 5", {
+  start: new Date(2020, 0, 6, 5, 0, 0, 0),
+})
+
+// recurring
+
+// test_parses("every 5 weeks on monday and friday until end of month", {},)
+
+testParse("TimeConstructExpr", "every 2 mondays", {
+  freq: RRule.WEEKLY,
+  byweekday: 1,
+  interval: 2,
+})
+
+// test_parses("every year on the 1st friday", {},)
+
+testParse("TimeConstructExpr", "every 2 days", {
+  freq: RRule.DAILY,
+  interval: 2,
+})
+
+// test_parses("every 2 thursday at 11h", {},)
+
+testParse("TimeConstructExpr", "every 29/12", {
+  freq: RRule.YEARLY,
+  byday: 29,
+  bymonth: 12,
+})
+
+testParse("TimeConstructExpr", "every 29 december", {
+  freq: RRule.YEARLY,
+  byday: 29,
+  bymonth: 12,
+})
+
+testParse("TimeConstructExpr", "every august", {
+  freq: RRule.MONTHLY,
+  bymonth: 8,
+})
+
+testParse("TimeConstructExpr", "every day starting next month", {
+  freq: RRule.DAILY,
+  dtstart: new Date(2020, 1, 1, 0, 0, 0, 0),
+})
+
+testParse("TimeConstructExpr", "every day after lunch", {
+  freq: RRule.DAILY,
+  byhour: 15,
+  byminute: 0,
+})
+
+testParse("TimeConstructExpr", "every day after wake up", {
+  freq: RRule.DAILY,
+  byhour: 9,
+  byminute: 0,
+})
+
+testParse("TimeConstructExpr", "every day at 2h for 1h", {
+  freq: RRule.DAILY,
+  byhour: 2,
+  byminute: 0,
+  duration: 60,
+})
+
+testParse("TimeConstructExpr", "every day for 15m", {
+  freq: RRule.DAILY,
+  duration: 15,
+})
+
+testParse("TimeConstructExpr", "every monday after work", {
+  freq: RRule.WEEKLY,
+  byweekday: 1,
+  byhour: 18,
+  byminute: 0,
+})
+
+testParse("TimeConstructExpr", "every wednesday at 11h", {
+  freq: RRule.WEEKLY,
+  byhour: 11,
+  byminute: 0,
+  byweekday: 3,
+})
+
+testParse("TimeConstructExpr", "every 2 days at 10h", {
+  freq: RRule.DAILY,
+  interval: 2,
+  byhour: 10,
+  byminute: 0,
+})
+
+// test_parses("every 2 thursdays at 10h", {},)
+
+testParse("TimeConstructExpr", "every week for 4h", {
+  freq: RRule.WEEKLY,
+  duration: 240,
+})
+
+// test_parses("every day except mondays", {})
+// test_parses("every weekday from 9h to 14h and 15h to 18h", {})
+
+testParse("TimeConstructExpr", "every weekend for 1h", {
+  duration: 60,
+  freq: RRule.WEEKLY,
+  byweekday: 6,
+})
+
+testParse("TimeConstructExpr", "once a day", {
+  freq: RRule.DAILY,
+  interval: 1,
+})
+
+testParse("TimeConstructExpr", "23/12/2022 at 20:50", {
+  start: new Date(2022, 11, 23, 20, 50, 0, 0),
+})
+
+testParse("DateFull", "1/1/2022", new Date(2022, 0, 1, 0, 0, 0, 0))
+
+testParse("Root", "word every 2 thursdays at 11h", {
+  freq: RRule.WEEKLY,
+  interval: 2,
+  byweekday: 4,
+  byhour: 11,
+  byminute: 0,
+  subject: "word",
+})
+
+testParse("Root", "two words every day", {
+  freq: RRule.DAILY,
+  subject: "two words",
+})
+
+testParse("Root", "very long sentence", {
+  subject: "very long sentence",
+})

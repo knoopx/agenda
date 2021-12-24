@@ -1,25 +1,19 @@
-import { autorun } from "mobx"
+import { endOfYear, isSameDay, startOfYear } from "date-fns"
+import _ from "lodash"
 import { types as t } from "mobx-state-tree"
 import { createContext, useContext } from "react"
+import RRule from "rrule"
 
 import parser from "./parser"
 
-const Repeat = t.model("Repeat", {
-  // seconds: t.maybeNull(t.string),
-  minute: t.maybeNull(t.union(t.string, t.number)),
-  hour: t.maybeNull(t.union(t.string, t.number)),
-  day: t.maybeNull(t.union(t.string, t.number)),
-  weekDay: t.maybeNull(t.union(t.string, t.number)),
-  month: t.maybeNull(t.union(t.string, t.number)),
-  year: t.maybeNull(t.union(t.string, t.number)),
-})
-
 const Task = t
   .model("Task", {
-    subject: t.string,
     expression: t.string,
-    error: t.optional(t.string, ""),
+    lastCompletedAt: t.maybeNull(t.Date),
   })
+  .volatile((self) => ({
+    error: "",
+  }))
   .actions((self) => ({
     update(props) {
       Object.assign(self, props)
@@ -29,14 +23,30 @@ const Task = t
     },
   }))
   .views((self) => ({
+    get subject() {
+      return self.output?.subject
+    },
+    get isValid() {
+      return self.error === "" && self.subject
+    },
+    get isRecurring() {
+      return !!self.output.freq
+    },
+    get isActionable() {
+      // TODO
+      if (self.isRecurring) {
+        return self.lastCompletedAt && self.lastCompletedAt < new Date()
+      }
+      return true
+    },
     get start() {
-      return self.output.start
+      return self.output?.start
     },
     get duration() {
-      return self.output.duration
+      return self.output?.duration
     },
-    get repeat() {
-      return self.output.repeat
+    get freq() {
+      return self.rrule?.toText()
     },
     get output() {
       try {
@@ -48,33 +58,85 @@ const Task = t
         return {}
       }
     },
-    get date() {
-      const date = self.output.start
-      if (date && date instanceof Date && !isNaN(date)) {
-        return date
+    get rrule() {
+      if (self.isRecurring) {
+        const { start, subject, duration, ...rest } = self.output
+        return new RRule(rest)
       }
       return null
     },
+
+    get nextAt() {
+      return self.start ?? self.rrule?.after(new Date())
+    },
   }))
 
-const Input = t.model("Input", {
-  task: t.optional(Task, { subject: "", expression: "" }),
-})
+const Input = t
+  .model("Input", {
+    task: t.optional(Task, { subject: "", expression: "" }),
+    calendarStart: t.optional(t.Date, () => startOfYear(new Date())),
+    calendarEnd: t.optional(t.Date, () => endOfYear(new Date())),
+  })
+  .views((self) => ({
+    get occurrences() {
+      return self.task.freq
+        ? self.task.rrule.between(self.calendarStart, self.calendarEnd)
+        : []
+    },
+  }))
 
 export default t
   .model("Store", {
     tasks: t.array(Task),
     input: t.optional(Input, { subject: "", expression: "" }),
+    locale: t.optional(t.string, "es-ES"),
   })
   .actions((self) => ({
     addTask(task) {
       self.tasks.push(task)
     },
+    setLocale(locale) {
+      self.locale = locale
+    },
   }))
   .views((self) => ({
+    dateTimeFormat(opts) {
+      try {
+        return new Intl.DateTimeFormat(self.locale, opts)
+      } catch {
+        return new Intl.DateTimeFormat("default", opts)
+      }
+    },
+    formatTime(date) {
+      return self.dateTimeFormat({ timeStyle: "short" }).format(date)
+    },
+    formatDate(date) {
+      return self.dateTimeFormat({ date: "short" }).format(date)
+    },
+    formatYear(date) {
+      return self.dateTimeFormat({ year: "numeric" }).format(date)
+    },
+    get recurringTasks() {
+      return self.tasks.filter((task) => task.isRecurring)
+    },
+    get nonRecurringTasks() {
+      return self.tasks.filter((task) => !task.isRecurring)
+    },
+    get sortedTasks() {
+      return _.orderBy(
+        self.tasks,
+        [({ nextAt }) => !!nextAt, "nextAt"],
+        ["asc", "asc"],
+      )
+    },
+    get dailyTasks() {
+      return self.sortedTasks.filter((task) =>
+        isSameDay(task.nextAt, new Date()),
+      )
+    },
     get calendarStart() {
-      if (self.input.dateValid) {
-        return self.input.date
+      if (self.input.task.nextAt) {
+        return self.input.task.nextAt
       }
       return new Date()
     },

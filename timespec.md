@@ -8,7 +8,7 @@ sleep for 8h every day
 lunch at 2h for 1h every day
 dinner at 21h every day
 weekly meeting every wednesday at 11h
-bi-weekly meeting on thursday every 2 weeks at 11h
+bi-weekly meeting every 2 thursdays at 11h
 release on monday every 2 weeks
 study for 4h every week
 exercise for 15 min every day
