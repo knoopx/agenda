@@ -61,7 +61,7 @@ Root
 				words.push(x)
 				return { ...acc, subject: [head, ...words].join(" ") }
 			}
-		}, {})
+		}, { subject: head })
 	}
 
 _ "space"

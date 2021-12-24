@@ -1,10 +1,16 @@
-import { eachMonthOfInterval, intervalToDuration, isSameDay } from "date-fns"
-import { MdTimer, MdUpdate, MdCalendarToday } from "react-icons/md"
-import { IoMdTime } from "react-icons/io"
+import {
+  addDays,
+  eachMonthOfInterval,
+  formatDistance,
+  isSameDay,
+} from "date-fns"
+import { MdTimer, MdUpdate } from "react-icons/md"
+import { IoMdTime, IoMdTrash } from "react-icons/io"
 import { observer } from "mobx-react"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { getSnapshot } from "mobx-state-tree"
 import classNames from "classnames"
+import { groupBy } from "lodash"
 
 import MonthCalendar from "./components/MonthCalendar"
 import { useStore } from "./Store"
@@ -19,9 +25,8 @@ const CalendarDay = ({ date: d, highlight, isSameMonth }) => {
         "table-cell text-right text-xs p-1 leading-none border",
         {
           "font-bold": isToday,
-          "font-light": !isToday,
+          "font-light": !highlightClass && !isToday,
           "opacity-25": !isSameMonth,
-          "text-white font-bold": highlightClass,
         },
         highlightClass,
       )}
@@ -52,24 +57,15 @@ function formatDuration(duration) {
   return segments.join(" ")
 }
 
-function formatDate(date) {
-  const duration = intervalToDuration({ start: new Date(), end: date })
-  delete duration.seconds
-  return Object.keys(duration)
-    .reduce(
-      (acc, key) => [
-        ...acc,
-        ...(duration[key] > 0 ? [`${duration[key]}${key[0]}`] : []),
-      ],
-      [],
-    )
-    .join(" ")
-}
-
 const DateLabel = ({ date }) => (
   <span className="flex items-center space-x-2">
-    <MdCalendarToday />
-    {formatDate(date)}
+    <span
+      className={classNames({
+        "text-red-500": date.getTime() - new Date().getTime() < 0,
+      })}
+    >
+      {formatDistance(date, new Date(), { addSuffix: true })}
+    </span>
     <IoMdTime />
     {useStore().formatTime(date)}
   </span>
@@ -83,34 +79,56 @@ const TimeLabel = ({ time }) => (
 )
 
 const TaskTimeSummary = ({ task, className, children }) => (
-  <div className={classNames("flex items-center space-x-4", className)}>
+  <div className={classNames("flex items-center space-x-4 text-sm", className)}>
+    {children}
     {task.duration && <TimeLabel time={task.duration} />}
     {task.nextAt && <DateLabel date={task.nextAt} />}
 
     {task.freq && (
       <>
-        <span className="flex items-center">
+        <button
+          type="button"
+          className="flex items-center"
+          onClick={() => {
+            task.reset()
+          }}
+        >
           <MdUpdate />
           {task.freq}
-        </span>
+        </button>
       </>
     )}
-    {children}
   </div>
 )
 
 const Task = ({ task }) => {
   return (
-    <div className="flex items-center space-x-2 odd:bg-gray-50">
-      <input type="checkbox" className="inline-block" />
+    <div className="flex items-center px-4 py-2 space-x-2 odd:bg-gray-50">
+      <input
+        type="checkbox"
+        className="inline-block"
+        checked={false}
+        onChange={() => task.complete()}
+      />
       <span className="flex-auto">{task.subject}</span>
+      {/* <span className="flex-auto">
+        {formatDistance(task.lastCompletedAt, new Date(), { addSuffix: true })}
+      </span> */}
       <TaskTimeSummary task={task} />
+      <button
+        type="button"
+        className="inline-block"
+        onClick={() => task.remove()}
+      >
+        <IoMdTrash />
+      </button>
     </div>
   )
 }
 
 function App() {
   const store = useStore()
+  const inputRef = useRef()
 
   const onChange = (e) => {
     const props = { [e.target.name]: e.target.value }
@@ -121,22 +139,24 @@ function App() {
     const onSubmit = () => {
       const { task } = store.input
 
-      if (!task.repeat && task.output.start) {
-        const expression = [
-          task.subject,
-          store.formatDate(task.output.start),
-          "at",
-          store.formatTime(task.output.start),
-        ].join(" ")
+      if (task.isValid) {
+        if (!task.isRecurring && task.start) {
+          const expression = [
+            task.subject,
+            store.formatDate(task.output.start),
+            "at",
+            store.formatTime(task.output.start),
+          ].join(" ")
 
-        task.update({
-          expression,
-        })
+          task.update({
+            expression,
+          })
+        }
+
+        store.addTask(getSnapshot(task))
+
+        store.input.task.update({ expression: "" })
       }
-
-      store.addTask(getSnapshot(task))
-
-      store.input.task.update({ expression: "" })
     }
 
     const listener = (event) => {
@@ -145,19 +165,47 @@ function App() {
         onSubmit(event)
       }
     }
-    document.addEventListener("keydown", listener)
+    inputRef.current.addEventListener("keydown", listener)
     return () => {
-      document.removeEventListener("keydown", listener)
+      inputRef.current.removeEventListener("keydown", listener)
     }
   })
 
   const doHighlight = (date) => {
-    if (isSameDay(date, store.input.task.nextAt)) return "bg-red-500"
+    if (isSameDay(date, store.input.task.nextAt))
+      return "bg-red-500 text-white font-bold"
 
     if (store.input.occurrences.some((o) => isSameDay(o, date)))
-      return "bg-green-500"
+      return "bg-red-500 text-white font-bold"
+
+    if (
+      store.tasks.some((t) =>
+        t
+          .occurrences(store.input.calendarStart, store.input.calendarEnd)
+          .some((o) => isSameDay(o, date)),
+      )
+    )
+      return "bg-yellow-200"
 
     return null
+  }
+
+  const renderTasks = () => {
+    const groups = groupBy(store.sortedTasks, (task) => {
+      if (!task.nextAt) return "Anytime"
+      if (isSameDay(task.nextAt, new Date())) return "Today"
+      if (isSameDay(task.nextAt, addDays(new Date(), 1))) return "Tomorrow"
+      return "Later"
+    })
+
+    return Object.keys(groups).map((group) => (
+      <div key={group}>
+        <h1 className="py-2 font-medium">{group}</h1>
+        {groups[group].map((t) => (
+          <Task key={[t.subject, t.expression].join()} task={t} />
+        ))}
+      </div>
+    ))
   }
 
   return (
@@ -199,26 +247,29 @@ function App() {
         <div className="space-y-4">
           <div>
             <input
+              ref={inputRef}
               autoComplete="off"
               name="expression"
-              className="w-full rounded border"
+              className={classNames("w-full border py-2 rounded b px-2", {
+                "outline-red-500": !store.input.task.isValid,
+              })}
               type="text"
               value={store.input.task.expression}
               onChange={onChange}
             />
-            {store.input.task.error && (
-              <div className="mt-2 text-xs">{store.input.task.error}</div>
+            {!store.input.task.isValid && (
+              <div className="mt-2 text-red-500 text-xs">
+                {store.input.task.error}
+              </div>
             )}
             <TaskTimeSummary task={store.input.task} className="mt-2 text-xs">
-              <span className="flex-auto">{store.input.task.subject}</span>
+              <span className="flex-auto font-medium">
+                {store.input.task.subject}
+              </span>
             </TaskTimeSummary>
           </div>
 
-          <div className="divide-y">
-            {store.sortedTasks.map((t) => (
-              <Task key={[t.subject, t.expression].join()} task={t} />
-            ))}
-          </div>
+          <div className="divide-y">{renderTasks()}</div>
         </div>
       </div>
     </div>

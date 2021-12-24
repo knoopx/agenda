@@ -1,6 +1,6 @@
 import { endOfYear, isSameDay, startOfYear } from "date-fns"
 import _ from "lodash"
-import { types as t } from "mobx-state-tree"
+import { getParent, types as t } from "mobx-state-tree"
 import { createContext, useContext } from "react"
 import RRule from "rrule"
 
@@ -11,10 +11,23 @@ const Task = t
     expression: t.string,
     lastCompletedAt: t.maybeNull(t.Date),
   })
-  .volatile((self) => ({
+  .volatile(() => ({
     error: "",
   }))
   .actions((self) => ({
+    complete() {
+      if (self.isRecurring) {
+        self.lastCompletedAt = self.nextAt
+      } else {
+        self.remove()
+      }
+    },
+    reset() {
+      self.lastCompletedAt = null
+    },
+    remove() {
+      getParent(self, 2).removeTask(self)
+    },
     update(props) {
       Object.assign(self, props)
     },
@@ -27,6 +40,7 @@ const Task = t
       return self.output?.subject
     },
     get isValid() {
+      if (self.expression.length === 0) return true
       return self.error === "" && self.subject
     },
     get isRecurring() {
@@ -67,7 +81,15 @@ const Task = t
     },
 
     get nextAt() {
-      return self.start ?? self.rrule?.after(new Date())
+      return self.start ?? self.nextAfter(self.lastCompletedAt ?? new Date())
+    },
+
+    nextAfter(start) {
+      return self.rrule?.after(start)
+    },
+
+    occurrences(start, end) {
+      return self.freq ? self.rrule.between(start, end) : []
     },
   }))
 
@@ -79,9 +101,7 @@ const Input = t
   })
   .views((self) => ({
     get occurrences() {
-      return self.task.freq
-        ? self.task.rrule.between(self.calendarStart, self.calendarEnd)
-        : []
+      return self.task.occurrences(self.calendarStart, self.calendarEnd)
     },
   }))
 
@@ -94,6 +114,9 @@ export default t
   .actions((self) => ({
     addTask(task) {
       self.tasks.push(task)
+    },
+    removeTask(task) {
+      self.tasks.remove(task)
     },
     setLocale(locale) {
       self.locale = locale

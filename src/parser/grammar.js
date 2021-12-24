@@ -379,7 +379,7 @@ function peg$parse(input, options) {
   				words.push(x)
   				return { ...acc, subject: [head, ...words].join(" ") }
   			}
-  		}, {})
+  		}, { subject: head })
   	};
   var peg$f1 = function() { };
   var peg$f2 = function() { return parseInt(text(), 10) };
