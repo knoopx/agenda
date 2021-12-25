@@ -3,9 +3,9 @@
 		startOfDay, startOfWeek, startOfMonth, startOfYear,
 		endOfDay, endOfWeek, endOfMonth, endOfYear,
 		addHours, addMinutes, addDays, addWeeks, addMonths, addYears,
-		setHours, setMinutes,
+		setDay, setMonth, setHours, setMinutes,
 		getHours, getMinutes,
-		isSameMonth, isSameWeek,
+		isSameMonth, isSameWeek, isWeekend,
 		nextDay
 	} = require('date-fns')
 
@@ -41,18 +41,14 @@
 		throw new Error(`invalid time unit: ${name}`)
 	}
 
-	function now(){
-		if (options.now) {
-			return options.now
-		}
-		return new Date()
-	}
+	const NOW = options.now ?? new Date()
 
 	options.weekStartsOn = options.weekStartsOn || 1
 }
 
 Root
-	= head:Word tail:(_ (TimeConstructExpr / Word))* {
+	= TimeConstructExpr
+	/ head:Word tail:(_ (TimeConstructExpr / Word))* {
 		let words = []
 		return tail.reduce((acc, [,x]) => {
 			if (typeof x == "object") {
@@ -153,20 +149,20 @@ TimeConstructExpr
 		}
 	}
 	// tomorrow at 1h, 23/12/2022 at 20:50
-    / date:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
+    / start:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
 		const forExp = _for && _for[1]
-		if (at) return { start: setTime(startOfDay(date), at[1]), ...forExp }
-		return { start: date, ...forExp }
+		if (at) return { start: setTime(startOfDay(start), at[1]), ...forExp }
+		return { start, ...forExp }
 	}
 
 	// after work, morning
 	/ at:TimeOfTheDayExpr {
-		return { start: setTime(now(), at) }
+		return { start: setTime(NOW, at) }
 	}
 
 	// at 5h
     / at:AtTimeExpr _for:(_ ForExpr)? {
-		return { start: setTime(now(), at) }
+		return { start: setTime(NOW, at) }
 	}
 
 	// in 5min
@@ -190,35 +186,60 @@ EveryExpr
 
 EverySubExpr
 	// every 29 december
-	= expr:DateShort { return { freq: RRule.YEARLY, byday: expr.day, bymonth: expr.month } }
+	= expr:DateShort {
+		return {
+			freq: RRule.YEARLY,
+			bymonthday: expr.getDate(),
+			bymonth: expr.getMonth() + 1,
+			byhour: 0,
+  			byminute: 0,
+		}
+	}
     // every weekend
-	/ "weekend"i { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName("saturday") } }
+	/ "weekend"i { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName("saturday") - 1 } }
 	// every 2 tuesdays
-	/ interval:NumberExpr _ expr:DayName "s" { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr), interval } }
+	/ interval:NumberExpr _ expr:DayName "s" { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr) - 1, interval } }
 	// every monday
-	/ expr:DayName { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr)} }
+	/ expr:DayName { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr) - 1 } }
 	// every january, february, march, april, may, june, july, august, september, october, november, december
-	/ expr:MonthName { return { freq: RRule.MONTHLY, bymonth: getMonthByName(expr) } }
+	/ expr:MonthName {
+		return {
+			freq: RRule.MONTHLY,
+			bymonth: getMonthByName(expr),
+			bymonthday: 1,
+			byhour: 0,
+  			byminute: 0,
+		}
+	}
 	// every end of january, february, march, april, may, june, july, august, september, october, november, december
-	/ "end" _ "of" _ expr:MonthName { return { freq: RRule.MONTHLY, bymonth: getMonthByName(expr), byday: -1 } }
+	/ "end" _ "of" _ expr:MonthName { return { freq: RRule.MONTHLY, bymonth: getMonthByName(expr), bymonthday: -1 } }
 	// every morning
 	/ expr:TimeOfTheDayExpr
 	// every 5 minutes
 	/ expr:DurationAsInterval
-	// every hour, day, week, month, year
-	/ expr:UnitTime { return { freq: getFreqByUnit(expr) } }
+	// every (n) hour, (n) day, (n) week, (n) month, (n) year
+	/ expr:UnitTime {
+		switch (expr) {
+			case "minute": return { freq: getFreqByUnit(expr), bysecond: 0 }
+			case "hour": return { freq: getFreqByUnit(expr), byminute: 0 }
+			case "day": return { freq: getFreqByUnit(expr), byhour: 0, byminute: 0 }
+			case "week": return { freq: getFreqByUnit(expr), byweekday: options.weekStartsOn - 1, byhour: 0, byminute: 0 }
+			case "month": return { freq: getFreqByUnit(expr), bymonthday: 1, byhour: 0, byminute: 0 }
+			case "year": return { freq: getFreqByUnit(expr), bymonth: 1, bymonthday: 1, byhour: 0, byminute: 0 }
+		}
+	}
 
 // in 5 minutes, in 1w
 InExpr
 	//"in ..."
 	= "in"i _ expr:Duration {
 		switch (expr.unit) {
-			case "minute": return { start: addMinutes(now(), expr.duration) }
-			case "hour": return { start: addHours(now(), expr.duration) }
-			case "day": return { start: addDays(now(), expr.duration) }
-			case "week": return { start: addWeeks(now(), expr.duration) }
-			case "month": return { start: addMonths(now(), expr.duration) }
-			case "year": return { start: addYears(now(), expr.duration) }
+			case "minute": return { start: addMinutes(NOW, expr.duration) }
+			case "hour": return { start: addHours(NOW, expr.duration) }
+			case "day": return { start: addDays(NOW, expr.duration) }
+			case "week": return { start: addWeeks(NOW, expr.duration) }
+			case "month": return { start: addMonths(NOW, expr.duration) }
+			case "year": return { start: addYears(NOW, expr.duration) }
 			default: throw new Error(`unknown duration ${expr.duration}`)
 		}
 	}
@@ -237,7 +258,7 @@ AtTimeExpr
 
 AtTimeSubExpr
 	= TimeExpr
-	/ expr:TimeOfTheDayExpr { return setTime(startOfDay(now()), expr)  }
+	/ expr:TimeOfTheDayExpr { return setTime(startOfDay(NOW), expr)  }
 
 RecurringAtTimeExpr
 	= time:AtTimeExpr {
@@ -253,22 +274,15 @@ OnExpr
 ForExpr
 	= "for"i _ expr:DurationAsMinutes { return { duration: expr } }
 
-DateShort
-	// 25/12
-	= day:DayNumber "/" month:MonthNumber { return { day, month } }
-	// 25 december
-	/ day:DayNumber _ monthName:MonthName { return { day, month: getMonthByName(monthName) } }
-
 DateRelative "relative date"
-	= "today"i { return now() }
-    / "tomorrow"i { return addHours(now(), 24) }
+	= "today"i { return startOfDay(NOW) }
+    / "tomorrow"i { return startOfDay(addHours(NOW, 24)) }
     / "weekend"i {
-		let current = now()
-		const weekDay = getWeekDayByName(dayName)
+		let current = NOW
 		while (!isWeekend(current)) {
 			current = addHours(current, 24)
 		}
-		return current
+		return startOfDay(current)
 	}
 	/ NextDateExpr
 
@@ -277,20 +291,26 @@ NextDateExpr
 	= ("next"i / "on"i) _ expr:NextDateSubExpr { return expr }
 
 NextDateSubExpr
-    = "week" { return startOfWeek(addWeeks(now(), 1), { weekStartsOn: options.weekStartsOn }) }
-    / "month" { return startOfMonth(addMonths(now(), 1)) }
-    / "quarter" { return startOfMonth(addMonths(now(), 4)) }
-    / "year" { return startOfYear(addYears(now(), 1)) }
+    = "week" { return startOfWeek(addWeeks(NOW, 1), { weekStartsOn: options.weekStartsOn }) }
+    / "month" { return startOfMonth(addMonths(NOW, 1)) }
+    / "quarter" { return startOfMonth(addMonths(NOW, 4)) }
+    / "year" { return startOfYear(addYears(NOW, 1)) }
 
 	// next monday
 	/ dayName:DayName {
-		let current = now()
+		let current = NOW
 		const weekDay = getWeekDayByName(dayName)
 		while (current.getDay() !== weekDay) {
 			current = addHours(current, 24)
 		}
 		return current
 	 }
+
+DateShort
+	// 25/12
+	= day:DayNumber "/" month:MonthNumber { return new Date(NOW.getFullYear(), month - 1, day) }
+	// 25 december
+	/ day:DayNumber _ monthName:MonthName { return new Date(NOW.getFullYear(), getMonthByName(monthName) - 1, day) }
 
 DateFull
 	= day:DayNumber "/" month:MonthExpr "/" year:YearFull  { return new Date(year, month - 1, day)  }
@@ -326,10 +346,10 @@ TimeMinute "00..59"
 	= ([1-5][0-9] / "0"[0-9] ) { return parseInt(text(), 10) }
 
 TimeOfTheDayExpr
-	= ("morning" / "after wake up" / "this" _ "morning") { return { hour: 9, minute: 0 } }
-	/ ("afternoon" / "after lunch" / "this" _ "afternoon") { return { hour: 15, minute: 0 } }
-	/ ("evening" / "after work" / "this" _ "evening") { return { hour: 18, minute: 0 } }
-	/ ("night" / "after diner" / "tonight") { return { hour: 22, minute: 0 } }
+	= ("morning"i / "after" _ "wake" _ "up" / "this" _ "morning") { return { hour: 9, minute: 0 } }
+	/ ("afternoon"i / "after"i _ "lunch"i / "this"i _ "afternoon"i) { return { hour: 15, minute: 0 } }
+	/ ("evening"i / "after"i _ "work"i / "this"i _ "evening"i) { return { hour: 18, minute: 0 } }
+	/ ("night"i / "after" _ "diner"i / "tonight"i) { return { hour: 22, minute: 0 } }
 
 TimeShort "%m/h/d/w/y"
 	// 0h
