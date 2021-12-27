@@ -31,26 +31,47 @@ function testParse(startRule, input, expected) {
 
 // simple
 testParse("TimeConstructExpr", "at 5", {
-  start: new Date(2021, 0, 1, 5, 0, 0, 0),
+  dtstart: new Date(2021, 0, 1, 5, 0, 0, 0),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "in 2 months", {
-  start: new Date(2021, 2, 1, 0, 0, 0, 0),
+  dtstart: new Date(2021, 2, 1, 0, 0, 0, 0),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "tomorrow", {
-  start: setHours(addHours(startOfDay(now), 24), 0),
+  dtstart: setHours(addHours(startOfDay(now), 24), 0),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "tomorrow at 8h", {
-  start: setHours(addHours(startOfDay(now), 24), 8),
+  dtstart: setHours(addHours(startOfDay(now), 24), 8),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "today afternoon for 1h", {
-  start: setHours(startOfDay(now), 15),
+  dtstart: setHours(startOfDay(now), 15),
   duration: 60,
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "next week at 5", {
-  start: setHours(startOfWeek(addWeeks(now, 1), { weekStartsOn: 1 }), 5),
+  dtstart: setHours(startOfWeek(addWeeks(now, 1), { weekStartsOn: 1 }), 5),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 testParse("TimeConstructExpr", "next monday at 5", {
-  start: new Date(2021, 0, 4, 5, 0, 0, 0),
+  dtstart: new Date(2021, 0, 4, 5, 0, 0, 0),
+  byhour: 0,
+  byminute: 0,
+  count: 1,
 })
 
 // recurring
@@ -181,14 +202,14 @@ testParse("TimeConstructExpr", "once a day", {
 })
 
 testParse("TimeConstructExpr", "23/12/2022 at 20:50", {
-  start: new Date(2022, 11, 23, 20, 50, 0, 0),
+  dtstart: new Date(2022, 11, 23, 20, 50, 0, 0),
 })
 
 testParse("TimeConstructExpr", "after work", {
-  start: new Date(2021, 0, 1, 18, 0, 0, 0),
+  dtstart: new Date(2021, 0, 1, 18, 0, 0, 0),
 })
 testParse("TimeConstructExpr", "26/12/2021 after work", {
-  start: new Date(2021, 11, 26, 18, 0, 0, 0),
+  dtstart: new Date(2021, 11, 26, 18, 0, 0, 0),
 })
 
 testParse("DateFull", "1/1/2022", new Date(2022, 0, 1, 0, 0, 0, 0))
@@ -215,8 +236,11 @@ testParse("Root", "very long sentence", {
 
 testParse("Root", "event 11 september", {
   subject: "event",
-  start: new Date(2021, 8, 11, 0, 0, 0, 0),
+  dtstart: new Date(2021, 8, 11, 0, 0, 0, 0),
 })
+
+// HANGS
+// buy coffee once a m
 
 testParse("Root", "birthday every 11 september", {
   freq: RRule.YEARLY,

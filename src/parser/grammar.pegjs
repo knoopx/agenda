@@ -41,6 +41,28 @@
 		throw new Error(`invalid time unit: ${name}`)
 	}
 
+		// switch (freq) {
+		// 	case "minute": return { freq: getFreqByUnit(freq), interval,  }
+		// 	case "hour": return { freq: getFreqByUnit(freq), interval, byhour: 0,  }
+		// 	case "day": return { freq: getFreqByUnit(freq), interval, bymonthday: 1, byhour: 0,  }
+		// 	case "week": return { freq: getFreqByUnit(freq), interval, byweekday: getWeekDayByName("monday") - 1, byhour: 0,  }
+		// 	case "month": return { freq: getFreqByUnit(freq), interval, bymonthday: 1, byhour: 0,  }
+		// 	case "year": return { freq: getFreqByUnit(freq), interval, bymonth: 1, bymonthday: 1, byhour: 0,  }
+		// }
+
+	function getRecurrencyFromUnit(expr, other = {}) {
+		const freq = getFreqByUnit(expr)
+		switch (expr) {
+			case "minute": return { freq, ...other }
+			case "hour": return { freq, ...other }
+			case "day": return { freq, byhour: 0, ...other }
+			case "week": return { freq, byweekday: options.weekStartsOn - 1, byhour: 0, ...other }
+			case "month": return { freq, bymonthday: 1, byhour: 0, ...other }
+			case "year": return { freq, bymonth: 1, bymonthday: 1, byhour: 0, ...other }
+		}
+		throw new Error(`invalid time unit: ${expr}`)
+	}
+
 	const NOW = options.now ?? new Date()
 
 	options.weekStartsOn = options.weekStartsOn || 1
@@ -106,9 +128,11 @@ CountExpr
 // 2 times a week, once a day
 RecurrencyExpr
 	// an hour
-	= expr:CountExpr _ "an hour" { return { freq: RRule.HOURLY, interval: expr} }
+	= expr:CountExpr _ "an"i _ "hour"i { return { freq: RRule.HOURLY, interval: 1, } }
 	// a day, week, month, year
-	/ expr:CountExpr _ "a" _ freq:UnitTimeExpr { return { freq: getFreqByUnit(freq), interval: expr } }
+	/ interval:CountExpr _ "a"i _ unit:UnitTimeExpr {
+		return getRecurrencyFromUnit(unit, { interval })
+	}
 
 Char "char"
 	= !(_) . { return text() }
@@ -141,32 +165,61 @@ UnitTimeExpr = UnitTimePlural / UnitTime / UnitTimeShort
 
 TimeConstructExpr
 	// every wednesday at 1 for 1h starting tomorrow
-	= expr:RecurringExpr _for:(_ ForExpr)? start:(_ StartingExpr)? {
+	= expr:RecurringExpr _for:(_ ForExpr)? dtstart:(_ StartingExpr)? {
 		return {
 			...expr,
-			...(start && { dtstart: start[1] }),
+			...(dtstart && {
+					dtstart: dtstart[1]
+				}),
 			...(_for && _for[1] )
 		}
 	}
 	// tomorrow at 1h, 23/12/2022 at 20:50
-    / start:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
+    / dtstart:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
 		const forExp = _for && _for[1]
-		if (at) return { start: setTime(startOfDay(start), at[1]), ...forExp }
-		return { start, ...forExp }
+		if (at) return {
+			...forExp,
+			dtstart: setTime(startOfDay(dtstart), at[1]),
+			freq: RRule.DAILY,
+			byhour: 0,
+			count: 1
+		}
+		return {
+			...forExp,
+			dtstart,
+			count: 1
+		}
 	}
 
 	// after work, morning
 	/ at:TimeOfTheDayExpr {
-		return { start: setTime(NOW, at) }
+		return {
+			dtstart: setTime(NOW, at),
+			byhour: 0,
+			count: 1
+		}
 	}
 
 	// at 5h
     / at:AtTimeExpr _for:(_ ForExpr)? {
-		return { start: setTime(NOW, at) }
+		return {
+			dtstart: setTime(NOW, at),
+			byhour: 0,
+			count: 1
+		}
 	}
 
 	// in 5min
-	/ expr:InExpr _for:(_ ForExpr)? { return { ...expr, ...(_for && { start: _for[1] }) }}
+	/ expr:InExpr _for:(_ ForExpr)? {
+		return {
+			...expr,
+			...(_for && {
+				dtstart: _for[1],
+				byhour: 0,
+				count: 1
+			})
+		}
+	}
 
 RecurringExpr
 	// every wednesday at 1
@@ -192,15 +245,26 @@ EverySubExpr
 			bymonthday: expr.getDate(),
 			bymonth: expr.getMonth() + 1,
 			byhour: 0,
-  			byminute: 0,
 		}
 	}
     // every weekend
 	/ "weekend"i { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName("saturday") - 1 } }
 	// every 2 tuesdays
-	/ interval:NumberExpr _ expr:DayName "s" { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr) - 1, interval } }
+	/ interval:NumberExpr _ expr:DayName "s" {
+		return {
+			freq: RRule.WEEKLY,
+			byweekday: getWeekDayByName(expr) - 1,
+			byhour: 0,
+			interval
+	} }
 	// every monday
-	/ expr:DayName { return { freq: RRule.WEEKLY, byweekday: getWeekDayByName(expr) - 1 } }
+	/ expr:DayName {
+		return {
+			freq: RRule.WEEKLY,
+			byweekday: getWeekDayByName(expr) - 1,
+			byhour: 0,
+		}
+	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
 	/ expr:MonthName {
 		return {
@@ -208,38 +272,35 @@ EverySubExpr
 			bymonth: getMonthByName(expr),
 			bymonthday: 1,
 			byhour: 0,
-  			byminute: 0,
 		}
 	}
 	// every end of january, february, march, april, may, june, july, august, september, october, november, december
-	/ "end" _ "of" _ expr:MonthName { return { freq: RRule.MONTHLY, bymonth: getMonthByName(expr), bymonthday: -1 } }
+	/ "end" _ "of" _ expr:MonthName {
+		return {
+			freq: RRule.MONTHLY,
+			bymonth: getMonthByName(expr),
+			bymonthday: -1,
+			byhour: 0,
+		}
+	}
 	// every morning
 	/ expr:TimeOfTheDayExpr
 	// every 5 minutes
-	/ expr:DurationAsInterval
+	/ expr:Distance
 	// every (n) hour, (n) day, (n) week, (n) month, (n) year
-	/ expr:UnitTime {
-		switch (expr) {
-			case "minute": return { freq: getFreqByUnit(expr), bysecond: 0 }
-			case "hour": return { freq: getFreqByUnit(expr), byminute: 0 }
-			case "day": return { freq: getFreqByUnit(expr), byhour: 0, byminute: 0 }
-			case "week": return { freq: getFreqByUnit(expr), byweekday: options.weekStartsOn - 1, byhour: 0, byminute: 0 }
-			case "month": return { freq: getFreqByUnit(expr), bymonthday: 1, byhour: 0, byminute: 0 }
-			case "year": return { freq: getFreqByUnit(expr), bymonth: 1, bymonthday: 1, byhour: 0, byminute: 0 }
-		}
-	}
+	/ expr:UnitTime { return getRecurrencyFromUnit(expr) }
 
 // in 5 minutes, in 1w
 InExpr
 	//"in ..."
 	= "in"i _ expr:Duration {
 		switch (expr.unit) {
-			case "minute": return { start: addMinutes(NOW, expr.duration) }
-			case "hour": return { start: addHours(NOW, expr.duration) }
-			case "day": return { start: addDays(NOW, expr.duration) }
-			case "week": return { start: addWeeks(NOW, expr.duration) }
-			case "month": return { start: addMonths(NOW, expr.duration) }
-			case "year": return { start: addYears(NOW, expr.duration) }
+			case "minute": return getRecurrencyFromUnit(expr.unit, { dtstart: addMinutes(NOW, expr.duration) })
+			case "hour": return getRecurrencyFromUnit(expr.unit, { dtstart: addHours(NOW, expr.duration) })
+			case "day": return getRecurrencyFromUnit(expr.unit, { dtstart: addDays(NOW, expr.duration) })
+			case "week": return getRecurrencyFromUnit(expr.unit, { dtstart: addWeeks(NOW, expr.duration) })
+			case "month": return getRecurrencyFromUnit(expr.unit, { dtstart: addMonths(NOW, expr.duration) })
+			case "year": return getRecurrencyFromUnit(expr.unit, { dtstart: addYears(NOW, expr.duration) })
 			default: throw new Error(`unknown duration ${expr.duration}`)
 		}
 	}
@@ -370,7 +431,7 @@ Duration "% minute..year(s)"
 	// 30m
 	/ duration:NumberExpr unit:UnitTimeShort  { return { duration, unit } }
 
-DurationAsInterval
+Distance
 	= duration:Duration { return { freq: getFreqByUnit(duration.unit), interval: duration.duration } }
 
 DurationAsMinutes "(n)mhdwy"
