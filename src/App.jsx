@@ -3,14 +3,13 @@ import { observer } from "mobx-react"
 import { useRef } from "react"
 import { getSnapshot } from "mobx-state-tree"
 import classNames from "classnames"
-import { DateTime, Interval } from "luxon"
+import { DateTime } from "luxon"
 
-import MonthCalendar from "./MonthCalendar"
 import { useStore } from "./store"
 import { useEnterKey } from "./hooks"
 import { Agenda } from "./Agenda"
-import { MonthCalendarDay } from "./MonthCalendarDay"
 import { TimeLabel, DurationLabel, DateLabel } from "./Label"
+import Calendar from "./Calendar"
 
 const App = observer(() => {
   const store = useStore()
@@ -38,25 +37,6 @@ const App = observer(() => {
       store.input.setExpression("")
     }
   })
-
-  const getHighlightClass = (date) => {
-    if (store.input.occurrences.some((o) => date.hasSame(o, "day")))
-      return "outline-auto"
-
-    return null
-  }
-
-  const getTasks = (date) => {
-    const entries = Array.from(store.occurrences.entries())
-      .filter(([d]) => {
-        return date.hasSame(d, "day")
-      })
-      .map(([, [task]]) => task)
-
-    return entries
-  }
-
-  let prevYear
 
   return (
     <div className="container mx-auto py-8 font-sans-serif">
@@ -130,40 +110,8 @@ const App = observer(() => {
 
       <div className="grid grid-cols-2 gap-16">
         <div>
-          <div className="grid flex-none grid-cols-3">
-            {Interval.fromDateTimes(store.calendarStart, store.calendarEnd)
-              .splitBy({ months: 1 })
-              .map(({ start: monthDate }) => {
-                const component = (
-                  <div key={monthDate} className="flex flex-col m-2">
-                    <div className="flex items-center justify-between space-x-2">
-                      <span>{monthDate.monthLong}</span>
-                      {monthDate.year !== prevYear && (
-                        <span className="text-gray-500 text-xs">
-                          {monthDate.year}
-                        </span>
-                      )}
-                    </div>
-                    <MonthCalendar
-                      className="flex-auto"
-                      date={monthDate}
-                      renderDay={(props) => (
-                        <MonthCalendarDay
-                          {...props}
-                          key={monthDate}
-                          highlight={getHighlightClass}
-                          tasks={getTasks(props.date)}
-                        />
-                      )}
-                    />
-                  </div>
-                )
-                prevYear = monthDate.year
-                return component
-              })}
-          </div>
+          <Calendar />
         </div>
-
         <div>
           <Agenda />
         </div>

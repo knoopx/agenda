@@ -1,7 +1,7 @@
 import { observer } from "mobx-react"
 import classNames from "classnames"
 
-export const MonthCalendarDayTask = observer(({ task }) => {
+const DayTask = observer(({ task }) => {
   return (
     <div
       title={task.subject}
@@ -12,3 +12,5 @@ export const MonthCalendarDayTask = observer(({ task }) => {
     />
   )
 })
+
+export default DayTask

@@ -1,8 +1,8 @@
 import { observer } from "mobx-react"
 
-import { Task } from "./Task"
+import TaskWrapper from "./Task"
 
-export const GroupTaskList = observer(({ name, tasks }) => (
+const GroupTaskList = observer(({ name, tasks }) => (
   <div>
     <h1 className="py-2 space-x-2 font-medium">
       <span className="font-normal text-gray-500 text-xs">{tasks.length}</span>
@@ -10,8 +10,10 @@ export const GroupTaskList = observer(({ name, tasks }) => (
     </h1>
     <div>
       {tasks.map((t) => (
-        <Task key={t.id} task={t} />
+        <TaskWrapper key={t.id} task={t} />
       ))}
     </div>
   </div>
 ))
+
+export default GroupTaskList

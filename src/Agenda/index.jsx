@@ -2,8 +2,9 @@ import { observer } from "mobx-react"
 import { groupBy } from "lodash"
 import { DateTime } from "luxon"
 
-import { useStore } from "./store"
-import { GroupTaskList } from "./GroupTaskList"
+import { useStore } from "../store"
+
+import Group from "./Group"
 
 export const Agenda = observer(() => {
   const store = useStore()
@@ -18,6 +19,6 @@ export const Agenda = observer(() => {
   })
 
   return Object.keys(groups).map((group) => (
-    <GroupTaskList key={group} name={group} tasks={groups[group]} />
+    <Group key={group} name={group} tasks={groups[group]} />
   ))
 })
