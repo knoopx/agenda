@@ -6,7 +6,7 @@ import { nanoid } from "nanoid"
 import { DateTime, Settings } from "luxon"
 import { autorun } from "mobx"
 
-import grammar from "./grammar.pegjs"
+import grammar from "../grammar.pegjs"
 
 export const COLORS = [
   // "amber",

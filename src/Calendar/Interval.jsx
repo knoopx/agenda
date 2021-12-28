@@ -1,12 +1,10 @@
 import { Interval } from "luxon"
-import { observer } from "mobx-react"
 
-const IntervalBlock = observer(
-  ({ start, end, splitBy, children, ...props }) => (
-    <div {...props} key={[start, end]}>
+const IntervalBlock = ({ start, end, splitBy, children, ...props }) => {
+  return (
+    <div {...props}>
       {Interval.fromDateTimes(start, end).splitBy(splitBy).map(children)}
     </div>
-  ),
-)
-
+  )
+}
 export default IntervalBlock

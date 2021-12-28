@@ -4,7 +4,7 @@ import { observer } from "mobx-react"
 import classNames from "classnames"
 import { DateTime } from "luxon"
 
-import { useStore } from "./store"
+import { useStore } from "./Store"
 import { formatDistance, formatDuration } from "./helpers"
 
 const { now } = DateTime

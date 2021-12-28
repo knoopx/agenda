@@ -1,5 +1,5 @@
-import { observer } from "mobx-react"
 import classNames from "classnames"
+import { observer } from "mobx-react"
 
 const DayTask = observer(({ task }) => {
   return (

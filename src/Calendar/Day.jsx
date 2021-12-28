@@ -1,18 +1,18 @@
+import classNames from "classnames"
 import { observer } from "mobx-react"
 import { useMemo } from "react"
-import classNames from "classnames"
 import { DateTime } from "luxon"
 
-import { useStore } from "../store"
+import { useStore } from "../Store"
 
 import DayTask from "./DayTask"
 
 const Day = observer(({ start, isSameMonth }) => {
   const store = useStore()
 
-  const tasks = Array.from(store.occurrences.entries())
-    .filter(([d]) => start.hasSame(d, "day"))
-    .map(([, [task]]) => task)
+  // const tasks = Array.from(store.occurrences.entries())
+  //   .filter(([d]) => start.hasSame(d, "day"))
+  //   .map(([, [task]]) => task)
 
   const isToday = DateTime.now().hasSame(start, "day")
 
@@ -37,13 +37,13 @@ const Day = observer(({ start, isSameMonth }) => {
     >
       <div className="flex flex-col items-between space-y-1">
         <h6>{start.day}</h6>
-        {isSameMonth && (
+        {/* {isSameMonth && (
           <div className="flex justify-self-end space-x-1">
             {tasks.map((task) => (
               <DayTask key={task.id} task={task} />
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   )
