@@ -1,8 +1,10 @@
+import { observer } from "mobx-react-lite"
+
 import Day from "./Day"
 import EachDay from "./EachDay"
 import EachWeek from "./EachWeek"
 
-export default function Month({ start: monthStart, displayYear }) {
+const Month = observer(({ start: monthStart, displayYear }) => {
   return (
     <div className="flex flex-col m-2">
       <div className="flex items-center justify-between space-x-2">
@@ -27,4 +29,6 @@ export default function Month({ start: monthStart, displayYear }) {
       </EachWeek>
     </div>
   )
-}
+})
+
+export default Month

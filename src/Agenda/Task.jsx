@@ -6,7 +6,8 @@ import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
 
 import { useFocus, useEnterKey, useOnBlur, useEscapeKey } from "../hooks"
-import { TimeLabel, DurationLabel, DistanceLabel } from "../Label"
+
+import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
 
 const CheckBox = ({ isFocused, task }) => {
   return (

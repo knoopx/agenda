@@ -1,9 +1,11 @@
+import { observer } from "mobx-react"
+
 import { useStore } from "../Store"
 
 import EachMonth from "./EachMonth"
 import Month from "./Month"
 
-const Calendar = () => {
+const Calendar = observer(() => {
   const store = useStore()
 
   let prevYear
@@ -23,6 +25,6 @@ const Calendar = () => {
       }}
     </EachMonth>
   )
-}
+})
 
 export default Calendar

@@ -7,9 +7,9 @@ import { observer } from "mobx-react-lite"
 
 import { useStore } from "../Store"
 import { useEnterKey } from "../hooks"
-import { TimeLabel, DurationLabel, DateLabel } from "../Label"
+import { TimeLabel, DurationLabel, DateLabel } from "../Agenda/Label"
 
-const SettingsColumn = observer(() => {
+const Input = observer(() => {
   const store = useStore()
 
   const onChange = (e) => {
@@ -81,12 +81,12 @@ const SettingsColumn = observer(() => {
     </div>
   )
 })
-const InputColumn = observer(() => {
+const Settings = observer(() => {
   const store = useStore()
 
   return (
     <div className="flex flex-col justify-between">
-      <div className="space-x-4">
+      <div className="space-x-4 text-right">
         <select
           value={store.locale}
           onChange={(e) => store.setLocale(e.target.value)}
@@ -115,8 +115,8 @@ const InputColumn = observer(() => {
 const TopBar = observer(() => {
   return (
     <div className="grid grid-cols-2 gap-16 mb-8">
-      <SettingsColumn />
-      <InputColumn />
+      <Input />
+      <Settings />
     </div>
   )
 })

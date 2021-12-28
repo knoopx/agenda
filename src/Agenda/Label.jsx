@@ -4,12 +4,12 @@ import { observer } from "mobx-react"
 import classNames from "classnames"
 import { DateTime } from "luxon"
 
-import { useStore } from "./Store"
-import { formatDistance, formatDuration } from "./helpers"
+import { useStore } from "../Store"
+import { formatDistance, formatDuration } from "../helpers"
 
 const { now } = DateTime
 
-export default function Label({ className, icon: Icon, children }) {
+const Label = ({ className, icon: Icon, children }) => {
   return (
     <span className={classNames("flex items-center space-x-2", className)}>
       {Icon && <Icon />}
@@ -53,3 +53,5 @@ export const DateLabel = observer(({ date, className }) => {
 export const DurationLabel = observer(({ time }) => {
   return <Label icon={MdTimer}>{formatDuration(time)}</Label>
 })
+
+export default Label
