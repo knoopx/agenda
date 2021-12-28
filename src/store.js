@@ -227,7 +227,7 @@ export default t
       return DateTime.now()
     },
     get calendarEnd() {
-      return DateTime.now().plus({ months: 2 }).endOf("month")
+      return DateTime.now().plus({ months: 11 }).endOf("month")
     },
     get occurrences() {
       const result = new Map()
