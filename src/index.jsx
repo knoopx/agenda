@@ -5,7 +5,7 @@ import "./index.css"
 
 import { onSnapshot } from "mobx-state-tree"
 
-import App from "./app"
+import App from "./App"
 import Store, { Context } from "./store"
 
 const store = Store.create(JSON.parse(localStorage.data ?? "{}"))

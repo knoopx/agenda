@@ -1,9 +1,9 @@
-import { eachMonthOfInterval, isSameDay } from "date-fns"
 import { MdUpdate } from "react-icons/md"
 import { observer } from "mobx-react"
 import { useRef } from "react"
 import { getSnapshot } from "mobx-state-tree"
 import classNames from "classnames"
+import { DateTime, Interval } from "luxon"
 
 import MonthCalendar from "./MonthCalendar"
 import { useStore } from "./store"
@@ -40,17 +40,17 @@ const App = observer(() => {
     }
   })
 
-  const doHighlight = (date) => {
-    if (store.input.occurrences.some((o) => isSameDay(o, date)))
+  const getHighlightClass = (date) => {
+    if (store.input.occurrences.some((o) => date.hasSame(o, "day")))
       return "outline-auto"
 
     return null
   }
 
-  const doTasks = (date) => {
+  const getTasks = (date) => {
     const entries = Array.from(store.occurrences.entries())
       .filter(([d]) => {
-        return isSameDay(d, date)
+        return date.hasSame(d, "day")
       })
       .map(([, [task]]) => task)
 
@@ -62,7 +62,7 @@ const App = observer(() => {
   return (
     <div className="container mx-auto py-8 font-sans-serif">
       <div className="grid grid-cols-2 gap-16 mb-8">
-        <div>
+        <div className="space-x-4">
           <select
             value={store.locale}
             onChange={(e) => store.setLocale(e.target.value)}
@@ -70,6 +70,15 @@ const App = observer(() => {
           >
             <option value="en-US">en-US</option>
             <option value="es-ES">es-ES</option>
+          </select>
+
+          <select
+            value={store.timeZone}
+            onChange={(e) => store.setTimeZone(e.target.value)}
+            className="font-medium bg-transparent"
+          >
+            <option value="UTC">UTC</option>
+            <option value="Europe/Madrid">Europe/Madrid</option>
           </select>
         </div>
         <div className="space-y-2">
@@ -118,52 +127,42 @@ const App = observer(() => {
       <div className="grid grid-cols-2 gap-16">
         <div>
           <div className="grid flex-none grid-cols-3">
-            {eachMonthOfInterval({
-              start: store.calendarStart,
-              end: store.calendarEnd,
-            }).map((monthDate) => {
-              const year = formatYear(monthDate)
-              const component = (
-                <div
-                  key={monthDate.toISOString()}
-                  className="flex flex-col m-2"
-                >
-                  <div className="flex items-center justify-between space-x-2">
-                    <span>
-                      {formatMonth(monthDate, store.locale, store.timeZone)}
-                    </span>
-                    {year !== prevYear && (
-                      <span className="text-gray-500 text-xs">{year}</span>
-                    )}
+            {Interval.fromDateTimes(store.calendarStart, store.calendarEnd)
+              .splitBy({ months: 1 })
+              .map(({ start: monthDate }) => {
+                const component = (
+                  <div key={monthDate} className="flex flex-col m-2">
+                    <div className="flex items-center justify-between space-x-2">
+                      <span>{monthDate.monthLong}</span>
+                      {monthDate.year !== prevYear && (
+                        <span className="text-gray-500 text-xs">
+                          {monthDate.year}
+                        </span>
+                      )}
+                    </div>
+                    <MonthCalendar
+                      className="flex-auto"
+                      date={monthDate}
+                      renderDay={(props) => (
+                        <MonthCalendarDay
+                          {...props}
+                          key={monthDate}
+                          highlight={getHighlightClass}
+                          tasks={getTasks(props.date)}
+                        />
+                      )}
+                    />
                   </div>
-                  <MonthCalendar
-                    className="flex-auto"
-                    date={monthDate}
-                    renderDay={(props) => (
-                      <MonthCalendarDay
-                        {...props}
-                        key={props.date.toISOString()}
-                        highlight={doHighlight}
-                        tasks={doTasks(props.date)}
-                      />
-                    )}
-                  />
-                </div>
-              )
-              prevYear = year
-              return component
-            })}
+                )
+                prevYear = monthDate.year
+                return component
+              })}
           </div>
         </div>
 
         <div>
           <h1 className="mb-8 font-bold text-xl">
-            {new Date().toLocaleDateString("en", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            {DateTime.now().toLocaleString(DateTime.DATE_FULL)}
           </h1>
 
           <Agenda />

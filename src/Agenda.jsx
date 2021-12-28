@@ -1,6 +1,6 @@
-import { addDays, isSameDay } from "date-fns"
 import { observer } from "mobx-react"
 import { groupBy } from "lodash"
+import { DateTime } from "luxon"
 
 import { useStore } from "./store"
 import { GroupTaskList } from "./GroupTaskList"
@@ -9,9 +9,10 @@ export const Agenda = observer(() => {
   const store = useStore()
 
   const groups = groupBy(store.sortedTasks, (task) => {
+    const now = DateTime.now()
     if (!task.nextAt) return "Anytime"
-    if (isSameDay(task.nextAt, new Date())) return "Today"
-    if (isSameDay(task.nextAt, addDays(new Date(), 1))) return "Tomorrow"
+    if (task.nextAt.hasSame(now, "day")) return "Today"
+    if (task.nextAt.hasSame(now.plus({ days: 1 }), "day")) return "Tomorrow"
     return "Later"
   })
 

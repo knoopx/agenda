@@ -2,6 +2,7 @@ import { MdTimer } from "react-icons/md"
 import { IoMdCalendar, IoMdTime } from "react-icons/io"
 import { observer } from "mobx-react"
 import classNames from "classnames"
+import { DateTime } from "luxon"
 
 import { useStore } from "./store"
 import {
@@ -10,6 +11,8 @@ import {
   formatDate,
   formatDuration,
 } from "./helpers"
+
+const { now } = DateTime
 
 export default function Label({ className, icon: Icon, children }) {
   return (
@@ -25,10 +28,10 @@ export const DistanceLabel = observer(({ date }) => {
   return (
     <Label
       className={classNames({
-        "text-red-500": date.getTime() - new Date().getTime() < 0,
+        "text-red-500": date - now() < 0,
       })}
     >
-      {formatDistance(date, new Date(), timeZone)}
+      {formatDistance(date, now(), timeZone)}
     </Label>
   )
 })

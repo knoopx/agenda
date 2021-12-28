@@ -1,11 +1,12 @@
-import { addMinutes, addMonths, endOfMonth, isSameDay } from "date-fns"
 import _ from "lodash"
 import { getParent, types as t } from "mobx-state-tree"
 import { createContext, useContext } from "react"
 import RRule from "rrule"
 import { nanoid } from "nanoid"
+import { DateTime, Settings } from "luxon"
+import { autorun } from "mobx"
 
-import parser from "./parser"
+import grammar from "./grammar.pegjs"
 
 const COLORS = [
   // "amber",
@@ -53,7 +54,7 @@ const Expression = t
       if (self.expression.trim() === "") return {}
 
       try {
-        const out = parser.parse(self.expression)
+        const out = grammar.parse(self.expression)
         self.setError("")
         return out
       } catch (e) {
@@ -99,15 +100,15 @@ const Expression = t
     },
 
     get nextAt() {
-      return self.nextAfter(self.lastCompletedAt ?? new Date())
+      return self.nextAfter(self.lastCompletedAt ?? DateTime.now())
     },
 
     nextAfter(start) {
-      return self.rrule?.after(start)
+      return self.rrule?.after(start.toJSDate())
     },
 
     occurrences(start, end) {
-      return self.rrule?.between(start, end) ?? []
+      return self.rrule?.between(start.toJSDate(), end.toJSDate()) ?? []
     },
   }))
 
@@ -166,6 +167,14 @@ export default t
     timeZone: t.optional(t.string, "Europe/Madrid"),
   })
   .actions((self) => ({
+    afterCreate() {
+      autorun(() => {
+        Settings.locale = self.locale
+      })
+      autorun(() => {
+        Settings.defaultZone = self.timeZone
+      })
+    },
     addTask(task) {
       self.tasks.push(task)
     },
@@ -175,15 +184,11 @@ export default t
     setLocale(locale) {
       self.locale = locale
     },
+    setTimeZone(timeZone) {
+      self.timeZone = timeZone
+    },
   }))
   .views((self) => ({
-    dateTimeFormat(opts) {
-      try {
-        return new Intl.DateTimeFormat(self.locale, opts)
-      } catch {
-        return new Intl.DateTimeFormat("default", opts)
-      }
-    },
     get recurringTasks() {
       return self.tasks.filter((task) => task.isRecurring)
     },
@@ -199,14 +204,14 @@ export default t
     },
     get dailyTasks() {
       return self.sortedTasks.filter((task) =>
-        isSameDay(task.nextAt, new Date()),
+        DateTime.now().hasSame(task.nextAt, "day"),
       )
     },
     get calendarStart() {
-      return new Date()
+      return DateTime.now()
     },
     get calendarEnd() {
-      return addMonths(endOfMonth(new Date()), 2)
+      return DateTime.now().plus({ months: 2 }).endOf("month")
     },
     get occurrences() {
       const result = new Map()

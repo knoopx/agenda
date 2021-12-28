@@ -30,3 +30,5 @@ https://github.com/jakubroztocil/rrule
 https://bunkat.github.io/later/
 
 http://bunkat.github.io/schedule/
+
+https://gitlab.com/john.carroll.p/rschedule

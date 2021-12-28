@@ -1,13 +1,13 @@
-import { isSameDay } from "date-fns"
 import { observer } from "mobx-react"
 import { useMemo } from "react"
 import classNames from "classnames"
+import { DateTime } from "luxon"
 
 import { MonthCalendarDayTask } from "./MonthCalendarDayTask"
 
 export const MonthCalendarDay = observer(
   ({ date: d, highlight, tasks, isSameMonth }) => {
-    const isToday = isSameDay(d, new Date())
+    const isToday = DateTime.now().hasSame(d, "day")
     const highlightClass = useMemo(() => highlight(d), [highlight, d])
 
     return (
@@ -23,7 +23,7 @@ export const MonthCalendarDay = observer(
         )}
       >
         <div className="flex flex-col items-between space-y-1">
-          <h6>{d.getDate()}</h6>
+          <h6>{d.day}</h6>
           {isSameMonth && (
             <div className="flex justify-self-end space-x-1">
               {tasks.map((task) => (
