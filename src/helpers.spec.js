@@ -14,15 +14,20 @@ function testFormatDistance(offset, expected) {
 }
 
 describe("formatDistance", () => {
-  testFormatDistance({ minutes: 1 }, "in 1m")
-  testFormatDistance({ minutes: -1 }, "1m ago")
+  testFormatDistance({ minutes: 1 }, "in 1 min.")
+  testFormatDistance({ minutes: -1 }, "1 min. ago")
 
-  testFormatDistance({ hours: 1 }, "in 1h")
-  testFormatDistance({ hours: -1 }, "1h ago")
+  testFormatDistance({ hours: 1 }, "in 1 hr.")
+  testFormatDistance({ hours: -1 }, "1 hr. ago")
 
   testFormatDistance({ days: 1 }, "tomorrow")
+  testFormatDistance({ days: 2 }, "Sun")
 
-  testFormatDistance({ years: 1, months: 1 }, "next february")
-  testFormatDistance({ years: 1, months: 1, days: 5 }, "next february")
-  testFormatDistance({ years: 3 }, "in 3y")
+  testFormatDistance({ months: 1 }, "next month")
+  testFormatDistance({ months: 1, days: 5 }, "Feb 6")
+
+  testFormatDistance({ years: 1 }, "next Jan")
+  testFormatDistance({ years: 1, days: 5 }, "next Jan 6")
+
+  testFormatDistance({ years: 3 }, "in 3 yr.")
 })

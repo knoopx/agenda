@@ -1,12 +1,4 @@
-import { DateTime, Interval } from "luxon"
-
-export function nextWeekday(start, weekday) {
-  let current = start
-  while (current.weekday !== weekday) {
-    current = current.plus({ days: 1 })
-  }
-  return current
-}
+import { Interval } from "luxon"
 
 export function formatDuration(duration) {
   const segments = []
@@ -28,35 +20,10 @@ export function formatDuration(duration) {
   return segments.join(" ")
 }
 
-export function formatWeekDay(date, locale, timeZone) {
-  return date.toLocaleString(locale, { weekday: "short", timeZone })
-}
-
-export function formatMonth(date, locale, timeZone) {
-  return date.toLocaleString(locale, { month: "long", timeZone })
-}
-
-export function formatMonthShort(date, locale, timeZone) {
-  return date.toLocaleString(locale, { month: "short", timeZone })
-}
-
-export function formatTime(date, locale, timeZone) {
-  return date.toLocaleString(locale, { timeStyle: "short", timeZone })
-}
-
-export function formatDate(date, locale, timeZone) {
-  return date.toLocaleDateString(locale, { date: "short", timeZone })
-}
-
-export function formatYear(date, locale, timeZone) {
-  return date.toLocaleString(locale, { year: "numeric", timeZone })
-}
-
 export function formatDistance(start, end, timeZone) {
   const isFuture = end > start
-  if (!isFuture) {
-    ;[end, start] = [start, end]
-  }
+  const relative = end.toRelative({ base: start, style: "short" })
+  if (!isFuture) [end, start] = [start, end]
 
   const interval = Interval.fromDateTimes(start, end)
   const duration = interval.toDuration([
@@ -67,68 +34,61 @@ export function formatDistance(start, end, timeZone) {
     "minutes",
   ])
 
-  if (duration.invalid) {
-    throw duration.invalid.reason
-  }
+  const concat = (...args) => args.filter(Boolean).join(" ")
+  const nextOrPast = (text) => concat(isFuture ? `next` : `past`, text)
+  const tomorrowOrYesterday = (text) =>
+    concat(isFuture ? `tomorrow` : `yesterday`, text)
 
-  const prefixRelative = (text) => (isFuture ? `in ${text}` : `${text} ago`)
-
-  const prefixRelativeConcrete = (text) =>
-    isFuture ? `next ${text}` : `past ${text}`
-
-  const prefixDuration = (value, unit) =>
-    prefixRelative(`${Math.abs(value)}${unit}`)
-
-  const time = () => {
-    const segments = []
-    if (duration.hours !== 0) {
-      segments.push(prefixDuration(duration.hours, "h"))
-    }
-    if (duration.minutes !== 0) {
-      segments.push(prefixDuration(duration.minutes, "m"))
-    }
-    return segments.join(" ")
-  }
+  const monthAndDay = concat(end.monthShort, end.day)
 
   if (duration.years > 0) {
-    if (!end.hasSame(start, "year")) {
-      // next year?
-      if (end.hasSame(start.plus({ years: 1 }), "year")) {
-        // next [month]
-        return formatMonthShort(start, "en", timeZone)
-      }
-      // in [n] years
-      return prefixDuration(duration.years, "y")
+    // next year
+    if (end.hasSame(start.plus({ years: 1 }), "year")) {
+      // next [month], next [month] [day]
+      return nextOrPast(end.day > 1 ? monthAndDay : end.monthShort)
     }
   }
 
-  // today
-  if (end.hasSame(start, "day")) {
-    return time()
+  // next month
+  if (duration.months > 0) {
+    if (end.hasSame(start.plus({ months: 1 }), "month")) {
+      if (
+        duration.days === 0 &&
+        duration.hours === 0 &&
+        duration.minutes === 0
+      ) {
+        return nextOrPast("month")
+      }
+
+      if (duration.days > 0) {
+        return monthAndDay
+      }
+    }
+  }
+
+  // next week
+  if (end.plus({ weeks: 1 }).hasSame(start, "week")) {
+    return nextOrPast(formatWeekDay(end, "en", timeZone))
   }
 
   // tomorrow/yesterday
   if (end.hasSame(start.plus({ days: 1 }), "day")) {
-    if (
-      duration.hours > 12 ||
-      (duration.hours === 0 && duration.minutes === 0)
-    ) {
-      return isFuture ? "tomorrow" : "yesterday"
+    if (duration.hours === 0 && duration.minutes === 0) {
+      return tomorrowOrYesterday()
     }
-    return time()
   }
 
-  if (end.plus({ weeks: 1 }).hasSame(start, "week")) {
-    return prefixRelativeConcrete(formatWeekDay(end, "en", timeZone))
+  if (duration.days > 0) {
+    // this week
+    if (end.hasSame(start, "week")) {
+      return end.weekdayShort
+    }
+
+    // next week
+    if (end.hasSame(start.plus({ weeks: 1 }), "week")) {
+      return nextOrPast(end.weekdayShort)
+    }
   }
 
-  if (end.hasSame(start, "month")) {
-    return prefixDuration(duration.days, "d")
-  }
-
-  if (duration.months === 0) {
-    return prefixDuration(duration.weeks, "w")
-  }
-
-  return "error"
+  return relative
 }

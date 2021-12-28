@@ -5,12 +5,7 @@ import classNames from "classnames"
 import { DateTime } from "luxon"
 
 import { useStore } from "./store"
-import {
-  formatDistance,
-  formatTime,
-  formatDate,
-  formatDuration,
-} from "./helpers"
+import { formatDistance, formatDuration } from "./helpers"
 
 const { now } = DateTime
 
@@ -37,20 +32,20 @@ export const DistanceLabel = observer(({ date }) => {
 })
 
 export const TimeLabel = observer(({ date, className }) => {
-  const { locale, timeZone } = useStore()
-
   return (
     <Label icon={IoMdTime} className={className}>
-      {formatTime(date, locale, timeZone)}
+      {date.toLocaleString({ timeStyle: "short" })}
     </Label>
   )
 })
 export const DateLabel = observer(({ date, className }) => {
-  const { locale, timeZone } = useStore()
-
   return (
     <Label icon={IoMdCalendar} className={className}>
-      {formatDate(date, locale, timeZone)}
+      {date.toLocaleString({
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      })}
     </Label>
   )
 })

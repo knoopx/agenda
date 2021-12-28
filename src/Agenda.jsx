@@ -10,6 +10,7 @@ export const Agenda = observer(() => {
 
   const groups = groupBy(store.sortedTasks, (task) => {
     const now = DateTime.now()
+
     if (!task.nextAt) return "Anytime"
     if (task.nextAt.hasSame(now, "day")) return "Today"
     if (task.nextAt.hasSame(now.plus({ days: 1 }), "day")) return "Tomorrow"

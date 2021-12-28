@@ -8,7 +8,7 @@ import { autorun } from "mobx"
 
 import grammar from "./grammar.pegjs"
 
-const COLORS = [
+export const COLORS = [
   // "amber",
   "yellow",
   "green",
@@ -28,7 +28,7 @@ const COLORS = [
   "rose",
 ]
 
-const Expression = t
+export const Expression = t
   .model("Expression", {
     expression: t.string,
   })
@@ -73,7 +73,7 @@ const Expression = t
 
     endAt() {
       if (self.duration) {
-        return addMinutes(self.nextAt, self.duration)
+        return self.nextAt.plus(self.duration)
       }
       return null
     },
@@ -87,20 +87,31 @@ const Expression = t
     },
 
     get rrule() {
-      if (self.output) {
-        const { subject, duration, ...rest } = self.output
-        if (Object.keys(rest).length === 0) return null
-        try {
-          return new RRule(rest)
-        } catch {
-          return null
-        }
+      if (!self.output) return null
+
+      const { subject, duration, ...rule } = self.output
+
+      if (Object.keys(rule).length === 0) return null
+
+      const { dtstart, freq, ...rest } = rule
+
+      const props = {
+        ...(dtstart && { dtstart: dtstart.toJSDate() }),
+        ...rest,
       }
-      return null
+
+      try {
+        return new RRule(props)
+      } catch (err) {
+        self.setError(err.message)
+        return null
+      }
     },
 
     get nextAt() {
-      return self.nextAfter(self.lastCompletedAt ?? DateTime.now())
+      return DateTime.fromJSDate(
+        self.nextAfter(DateTime.fromJSDate(self.lastCompletedAt ?? new Date())),
+      )
     },
 
     nextAfter(start) {
@@ -112,7 +123,7 @@ const Expression = t
     },
   }))
 
-const Task = Expression.named("Task")
+export const Task = Expression.named("Task")
   .props({
     id: t.optional(t.identifier, () => nanoid()),
     lastCompletedAt: t.maybeNull(t.Date),
@@ -149,12 +160,17 @@ const Task = Expression.named("Task")
     },
   }))
 
-const Input = Expression.named("Input").views((self) => {
+export const Input = Expression.named("Input").views((self) => {
   const expressionOccurrences = self.occurrences
   return {
+    get root() {
+      return getParent(self)
+    },
     get occurrences() {
-      const root = getParent(self)
-      return expressionOccurrences(root.calendarStart, root.calendarEnd)
+      return expressionOccurrences(
+        self.root.calendarStart,
+        self.root.calendarEnd,
+      )
     },
   }
 })

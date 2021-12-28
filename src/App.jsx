@@ -7,7 +7,6 @@ import { DateTime, Interval } from "luxon"
 
 import MonthCalendar from "./MonthCalendar"
 import { useStore } from "./store"
-import { formatTime, formatDate, formatYear, formatMonth } from "./helpers"
 import { useEnterKey } from "./hooks"
 import { Agenda } from "./Agenda"
 import { MonthCalendarDay } from "./MonthCalendarDay"
@@ -28,9 +27,9 @@ const App = observer(() => {
       if (!store.input.isRecurring && store.input.dtstart) {
         expression = [
           expression.subject,
-          formatDate(expression.dtstart),
+          expression.dtstart.toLocaleString(),
           "at",
-          formatTime(expression.dtstart),
+          expression.dtstart.toLocaleString(DateTime.TIME_SIMPLE),
         ].join(" ")
       }
 
