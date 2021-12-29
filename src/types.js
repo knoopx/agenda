@@ -48,22 +48,37 @@ export class Recurrency {
   }
 
   static hourly(rest) {
-    return this.make(Frequency.HOURLY, rest)
+    return this.make(Frequency.HOURLY, { byhour: 0, byminute: 0, ...rest })
   }
 
   static daily(rest) {
-    return this.make(Frequency.DAILY, rest)
+    return this.make(Frequency.DAILY, { byhour: 0, byminute: 0, ...rest })
   }
 
   static weekly(rest) {
-    return this.make(Frequency.WEEKLY, { byweekday: 1, ...rest })
+    return this.make(Frequency.WEEKLY, {
+      byweekday: 1,
+      byhour: 0,
+      byminute: 0,
+      ...rest,
+    })
   }
 
   static monthly(rest) {
-    return this.make(Frequency.MONTHLY, { bymonthday: 1, ...rest })
+    return this.make(Frequency.MONTHLY, {
+      bymonthday: 1,
+      byhour: 0,
+      byminute: 0,
+      ...rest,
+    })
   }
 
   static yearly(rest) {
-    return this.make(Frequency.YEARLY, { bymonth: 1, ...rest })
+    return this.make(Frequency.YEARLY, {
+      bymonth: 1,
+      byhour: 0,
+      byminute: 0,
+      ...rest,
+    })
   }
 }

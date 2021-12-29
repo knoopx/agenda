@@ -9,21 +9,30 @@ import DayTask from "./DayTask"
 const Day = observer(({ start, isSameMonth }) => {
   const store = useStore()
 
-  const tasks = store.getTasksAtDay(start)
+  const tasks = store.getTasksAtDay(start).filter((t) => !t.isRecurring)
 
   const isToday = now(5000).hasSame(start, "day")
-  const shouldHighlight =
-    store.input.occurrencesAtDay(start) > 0 || tasks.includes(store.hoveredTask)
+
+  const shouldHighlight = store.input.occurrencesAtDay(start) > 0
+
+  // const [shouldHighlight] = usePromise(
+  //   (async () => {
+  //     return (
+  //       store.input.occurrencesAtDay(start) > 0 ||
+  //       tasks.includes(store.hoveredTask)
+  //     )
+  //   })(),
+  // )
 
   return (
     <div
       className={classNames(
-        "table-cell text-right text-xs p-1 leading-none border w-[calc(100%/7)] h-[calc(100%/5)]",
+        "table-cell text-right text-xs p-1 leading-none bg-white rounded w-[calc(100%/7)] h-[calc(100%/5)]",
         {
           "font-bold": isToday,
           "font-light": !shouldHighlight && !isToday,
-          "opacity-25": !isSameMonth,
-          "bg-gray-100": isSameMonth && shouldHighlight,
+          "opacity-60": !isSameMonth,
+          "border border-black": isSameMonth && shouldHighlight,
         },
       )}
     >

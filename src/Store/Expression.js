@@ -3,21 +3,36 @@ import RRule from "rrule"
 import { DateTime } from "luxon"
 
 import grammar from "../grammar.pegjs"
+import { Frequency } from "../types"
 
-const freqToRRule = (freq) => {
+function freqToRRule(freq) {
   switch (freq) {
-    case "hourly":
+    case Frequency.MINUTELY:
+      return RRule.MINUTELY
+    case Frequency.HOURLY:
       return RRule.HOURLY
-    case "daily":
+    case Frequency.DAILY:
       return RRule.DAILY
-    case "weekly":
+    case Frequency.WEEKLY:
       return RRule.WEEKLY
-    case "monthly":
+    case Frequency.MONTHLY:
       return RRule.MONTHLY
-    case "yearly":
+    case Frequency.YEARLY:
       return RRule.YEARLY
     default:
       throw new Error(`Unknown freq: ${freq}`)
+  }
+}
+
+function asRRule(rule) {
+  const { dtstart, freq, byweekday, bymonth, ...rest } = rule
+
+  return {
+    ...(freq && { freq: freqToRRule(freq) }),
+    ...(byweekday && { byweekday: [6, 1, 2, 3, 4, 5, 0][byweekday] }),
+    ...(bymonth && { bymonth: bymonth - 1 }),
+    ...(dtstart && { dtstart: dtstart.toJSDate() }),
+    ...rest,
   }
 }
 
@@ -40,7 +55,7 @@ const Expression = t
   .views((self) => ({
     get isValid() {
       if (self.expression.length === 0) return true
-      return self.error === ""
+      return !self.error
     },
 
     get output() {
@@ -86,18 +101,10 @@ const Expression = t
 
       if (Object.keys(rule).length === 0) return null
 
-      const { dtstart, freq, byweekday, bymonth, ...rest } = rule
-
-      const props = {
-        ...(freq && { freq: freqToRRule(freq) }),
-        ...(byweekday && { byweekday: [6, 1, 2, 3, 4, 5, 0][byweekday] }),
-        ...(bymonth && { bymonth: bymonth - 1 }),
-        ...(dtstart && { dtstart: dtstart.toJSDate() }),
-        ...rest,
-      }
-
       try {
-        return new RRule(props)
+        const rrule = new RRule(asRRule(rule))
+        self.setError(null)
+        return rrule
       } catch (err) {
         self.setError(err.message)
         return null

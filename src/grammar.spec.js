@@ -79,8 +79,10 @@ testParse("TimeConstructExpr", "next monday morning", {
 
 testParse("TimeConstructExpr", "every 2 mondays", {
   freq: Frequency.WEEKLY,
-  byweekday: 1,
   interval: 2,
+  byweekday: 1,
+  byhour: 0,
+  byminute: 0,
 })
 
 // testParse("TimeConstructExpr", "every year on the 1st friday", {},)
@@ -88,32 +90,40 @@ testParse("TimeConstructExpr", "every 2 mondays", {
 testParse("TimeConstructExpr", "every 2 days", {
   freq: Frequency.DAILY,
   interval: 2,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "every 2 thursdays at 11h", {
   freq: Frequency.WEEKLY,
+  interval: 2,
   byweekday: 4,
   byhour: 11,
   byminute: 0,
-  interval: 2,
 })
 
 testParse("TimeConstructExpr", "every 29/12", {
   freq: Frequency.YEARLY,
   bymonthday: 29,
   bymonth: 12,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "every 29 december", {
   freq: Frequency.YEARLY,
   bymonthday: 29,
   bymonth: 12,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "every august", {
   freq: Frequency.MONTHLY,
   bymonth: 8,
   bymonthday: 1,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "every day at 10", {
@@ -125,10 +135,14 @@ testParse("TimeConstructExpr", "every day at 10", {
 testParse("TimeConstructExpr", "every month", {
   freq: Frequency.MONTHLY,
   bymonthday: 1,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "every day starting next month", {
   freq: Frequency.DAILY,
+  byhour: 0,
+  byminute: 0,
   dtstart: DateTime.local(2021, 2, 1, 0, 0, 0, 0),
 })
 
@@ -153,6 +167,8 @@ testParse("TimeConstructExpr", "every day at 2h for 1h", {
 
 testParse("TimeConstructExpr", "every day for 15m", {
   freq: Frequency.DAILY,
+  byhour: 0,
+  byminute: 0,
   duration: Duration.fromObject({ minutes: 15 }),
 })
 
@@ -184,11 +200,15 @@ testParse("TimeConstructExpr", "every weekend for 1h", {
   duration: Duration.fromObject({ hours: 1 }),
   freq: Frequency.WEEKLY,
   byweekday: 6,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "once a day", {
   freq: Frequency.DAILY,
   interval: 1,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("TimeConstructExpr", "23/12/2022 at 20:50", {
@@ -215,13 +235,17 @@ testParse("Root", "word every 2 thursdays at 11h", {
 })
 
 testParse("Root", "two words every day", {
-  freq: Frequency.DAILY,
   subject: "two words",
+  freq: Frequency.DAILY,
+  byhour: 0,
+  byminute: 0,
 })
 
 testParse("Root", "exercise every day for 15m", {
-  freq: Frequency.DAILY,
   subject: "exercise",
+  freq: Frequency.DAILY,
+  byhour: 0,
+  byminute: 0,
   duration: Duration.fromObject({ minutes: 15 }),
 })
 
@@ -239,4 +263,6 @@ testParse("Root", "birthday every 11 september", {
   subject: "birthday",
   bymonth: 9,
   bymonthday: 11,
+  byhour: 0,
+  byminute: 0,
 })

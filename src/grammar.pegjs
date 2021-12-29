@@ -184,6 +184,8 @@ EverySubExpr
 		return Recurrency.yearly({
 			bymonth: expr.month,
 			bymonthday: expr.day,
+			byhour: 0,
+			byminute: 0,
 		})
 	}
     // every weekend
@@ -197,29 +199,31 @@ EverySubExpr
 	}
 	// every monday
 	/ expr:DayName {
-		return {
-			freq: Frequency.WEEKLY,
+		return Recurrency.weekly({
 			byweekday: getWeekDayByName(expr),
-		}
+		})
 	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
 	/ expr:MonthName {
-		return {
-			freq: Frequency.MONTHLY,
+		return Recurrency.monthly({
 			bymonth: getMonthByName(expr),
 			bymonthday: 1,
-		}
+		})
 	}
 	// every end of january, february, march, april, may, june, july, august, september, october, november, december
 	/ "end" _ "of" _ expr:MonthName {
-		return {
-			freq: Frequency.MONTHLY,
+		return Recurrency.monthly({
 			bymonth: getMonthByName(expr),
 			bymonthday: -1,
-		}
+		})
 	}
 	// every morning
-	/ expr:TimeOfTheDayExpr
+	/ expr:TimeOfTheDayExpr {
+		return Recurrency.daily({
+			byhour: expr.hour,
+			byminute: expr.minute,
+		})
+	}
 	// every 5 minutes
 	/ expr:Period
 	// every minute hour, day, week, month, year
@@ -266,7 +270,7 @@ ForExpr
 
 DateRelative "relative date"
 	= "today"i { return Now.startOf("day") }
-    / "tomorrow"i { return Now.plus({ days: 1 }) }
+    / "tomorrow"i { return Now.startOf("day").plus({ days: 1 }) }
     / "weekend"i {
 		// return Now.set({ weekday: [6, 7] })
 		let current = Now.startOf("day")

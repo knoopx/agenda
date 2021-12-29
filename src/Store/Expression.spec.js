@@ -20,8 +20,10 @@ function testOutput(expression, expected) {
 
 describe("output", () => {
   testOutput("every monday", {
-    byweekday: 1,
     freq: "weekly",
+    byweekday: 1,
+    byhour: 0,
+    byminute: 0,
   })
 })
 

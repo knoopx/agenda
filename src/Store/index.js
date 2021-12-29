@@ -16,7 +16,7 @@ const Store = t
     input: t.optional(Input, { subject: "", expression: "" }),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
-    hoveredTask: t.maybe(t.reference(Task)),
+    hoveredTask: t.maybeNull(t.reference(Task)),
   })
   .actions((self) => ({
     afterCreate() {
