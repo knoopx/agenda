@@ -18,25 +18,26 @@ const Day = observer(({ start, isSameMonth }) => {
   return (
     <div
       className={classNames(
-        "table-cell text-right text-xs p-1 leading-none bg-white rounded w-[calc(100%/7)] h-[calc(100%/5)]",
+        "table-cell text-right text-xs p-1 leading-none rounded w-[calc(100%/7)] h-[calc(100%/5)]",
         {
           "font-bold": isToday,
           "font-light": !shouldHighlight && !isToday,
-          "opacity-60": !isSameMonth || start < now(5000),
+          "bg-white": isSameMonth,
+          // "opacity-60": !isSameMonth || start < now(5000),
           "border border-black": isSameMonth && shouldHighlight,
         },
       )}
     >
-      <div className="flex flex-col items-between space-y-1">
-        <h6>{start.day}</h6>
-        {isSameMonth && (
+      {isSameMonth && (
+        <div className="flex flex-col items-between space-y-1">
+          <h6>{start.day}</h6>
           <div className="flex flex-auto flex-wrap">
             {tasks.map((task) => (
               <DayTask key={task.id} task={task} />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 })
