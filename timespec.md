@@ -1,8 +1,13 @@
-call somebody
+lunch with friend next tuesday at 14
+weekly meeting every wednesday at 5
+bi-weekly meeting every 2 thursdays at 10
+
+call john
 appointment tomorrow at 8h
 exam in 2 months
 
 work from 9h-14h and 15h-18h every weekday
+
 wake up at 9h every day
 sleep for 8h every day
 lunch at 2h for 1h every day
@@ -15,14 +20,13 @@ exercise for 15 min every day
 walk for 1h every weekend
 birthday on december 29 every year
 meet with friends every week
-
 plan summer holidays every june
 plan winter holidays every october
 taxes every august
 
 buy coffee every end of month
 pay rent every end of month
+groceries every monday after work
 
 meds every day after wake up
-groceries every monday after work
 brush teeth every day after lunch

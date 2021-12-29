@@ -26,13 +26,13 @@ export const Colors = [
 const Task = Expression.named("Task")
   .props({
     id: t.optional(t.identifier, () => nanoid()),
-    lastCompletedAt: t.maybeNull(t.Date),
+    createdAt: t.optional(t.Date, () => new Date()),
+    lastCompletedAt: t.optional(t.Date, () => new Date()),
   })
   .actions((self) => ({
     complete() {
-      if (self.isRecurring) {
-        self.lastCompletedAt = self.nextAt
-      } else {
+      self.lastCompletedAt = self.nextAt.toJSDate()
+      if (!self.isRecurring) {
         self.remove()
       }
     },
@@ -53,7 +53,7 @@ const Task = Expression.named("Task")
     get highlightColor() {
       try {
         const store = getParent(self, 2)
-        return Colors[store.tasks.indexOf(self) % Colors.length]
+        return Colors[store.sortedTasks.indexOf(self) % Colors.length]
       } catch {
         return null
       }

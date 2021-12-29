@@ -22,7 +22,8 @@ export function useEnterKey(inputRef, onSubmit, deps = []) {
 export function useEscapeKey(inputRef, onSubmit) {
   return useKeys(inputRef, ["Escape"], onSubmit)
 }
-function useOnFocus(ref, onFocus) {
+
+export function useOnFocus(ref, onFocus) {
   const listener = (event) => {
     onFocus(event)
   }

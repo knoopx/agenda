@@ -1,25 +1,5 @@
 import { Interval } from "luxon"
 
-export function formatDuration(duration) {
-  const segments = []
-
-  const days = Math.floor(duration / (60 * 24))
-  if (days > 0) {
-    segments.push(`${days}d`)
-  }
-
-  const hours = Math.floor((duration % (60 * 24)) / 60)
-  if (hours > 0) {
-    segments.push(`${hours}h`)
-  }
-  const minutes = Math.floor(duration % 60)
-  if (minutes > 0) {
-    segments.push(`${minutes}m`)
-  }
-
-  return segments.join(" ")
-}
-
 export function formatDistance(start, end, timeZone) {
   const isFuture = end > start
   const relative = end.toRelative({ base: start, style: "short" })

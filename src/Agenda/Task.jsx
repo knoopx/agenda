@@ -5,11 +5,18 @@ import { MdUpdate } from "react-icons/md"
 import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
 
-import { useFocus, useEnterKey, useOnBlur, useEscapeKey } from "../hooks"
+import {
+  useOnFocus,
+  useEnterKey,
+  useOnBlur,
+  useEscapeKey,
+  useFocus,
+} from "../hooks"
+import { useStore } from "../Store"
 
 import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
 
-const CheckBox = ({ isFocused, task }) => {
+const CheckBox = observer(({ isFocused, task }) => {
   return (
     <input
       type="checkbox"
@@ -19,26 +26,28 @@ const CheckBox = ({ isFocused, task }) => {
       onChange={() => task.complete()}
     />
   )
-}
-
-const SubjectInput = forwardRef(({ isFocused, task }, ref) => {
-  return (
-    <input
-      ref={ref}
-      type="text"
-      value={isFocused ? task.expression : task.subject}
-      className={classNames(
-        "flex-auto font-medium bg-transparent outline-none",
-        {
-          "text-red-500": !task.isValid,
-        },
-      )}
-      onChange={(e) => {
-        task.update({ expression: e.target.value })
-      }}
-    />
-  )
 })
+
+const SubjectInput = observer(
+  forwardRef(({ isFocused, task }, ref) => {
+    return (
+      <input
+        ref={ref}
+        type="text"
+        value={isFocused ? task.expression : task.subject}
+        className={classNames(
+          "flex-auto font-medium bg-transparent outline-none",
+          {
+            "text-red-500": !task.isValid,
+          },
+        )}
+        onChange={(e) => {
+          task.update({ expression: e.target.value })
+        }}
+      />
+    )
+  }),
+)
 
 const RecurringIcon = (props) => {
   return (
@@ -48,60 +57,66 @@ const RecurringIcon = (props) => {
   )
 }
 
-const TaskActions = ({ task, isFocused }) => {
+const TaskAction = ({ className, ...props }) => (
+  <button
+    type="button"
+    className={classNames(
+      "w-6 h-6 flex items-center justify-center text-gray-500 hover:text-black rounded cursor-pointer",
+      className,
+    )}
+    {...props}
+  />
+)
+
+const TaskActionGroup = observer(({ className, task, isFocused }) => {
   return (
-    <div className="flex absolute right-0 invisible group-hover:visible w-24">
-      <button
-        type="button"
-        className="flex items-center justify-center h-10 w-10 text-gray-500 hover:bg-gray-50 rounded cursor-pointer"
-        onClick={() => task.remove()}
-      >
+    <div
+      className={classNames("hidden group-hover:flex items-center", className)}
+    >
+      <TaskAction className="hover:text-red-500" onClick={() => task.remove()}>
         <IoMdTrash />
-      </button>
+      </TaskAction>
 
       {!isFocused && task.isRecurring && (
-        <button
-          type="button"
-          className="flex items-center justify-center h-10 w-10 text-gray-500 hover:bg-gray-50 rounded cursor-pointer"
+        <TaskAction
+          className="hover:text-blue-500"
           onClick={() => task.reset()}
         >
           <MdUpdate />
-        </button>
+        </TaskAction>
       )}
     </div>
   )
-}
+})
 
 export const Task = observer(({ task, inputRef, isFocused, ...props }) => {
   return (
-    <div {...props} className="flex relative group">
-      <div className="flex flex-auto items-center mr-24 space-x-4">
-        <div className="flex items-center">
-          <CheckBox {...{ isFocused, task }} />
-          <div className="flex flex-col items-end justify-center w-20 text-xs">
-            {task.nextAt && <TimeLabel date={task.nextAt} />}
-            {task.duration && <DurationLabel time={task.duration} />}
-          </div>
-        </div>
-
-        <div
-          className={classNames(
-            "flex flex-auto items-center px-4 py-2 space-x-2 border-l-4",
-            `border-${task.highlightColor}-500`, // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
-          )}
-        >
-          {!isFocused && task.isRecurring && (
-            <RecurringIcon title={task.freq} />
-          )}
-          <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
-
-          <div className="flex items-center space-x-4 text-xs">
-            {task.nextAt && <DistanceLabel date={task.nextAt} />}
-          </div>
+    <div
+      {...props}
+      className="flex flex-auto relative items-center hover:bg-gray-50 group"
+    >
+      <div className="flex items-center px-4">
+        <CheckBox {...{ isFocused, task }} />
+        <div className="flex flex-col items-end justify-center w-20 text-xs">
+          {task.nextAt && <TimeLabel date={task.nextAt} />}
+          {task.duration && <DurationLabel duration={task.duration} />}
         </div>
       </div>
 
-      <TaskActions task={task} isFocused={isFocused} />
+      <div
+        className={classNames(
+          "flex flex-auto items-center px-4 py-2 space-x-2 border-l-4 ",
+          `border-${task.highlightColor}-500`, // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
+        )}
+      >
+        {!isFocused && task.isRecurring && <RecurringIcon title={task.freq} />}
+        <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
+
+        {task.nextAt && (
+          <DistanceLabel className="text-xs" date={task.nextAt} />
+        )}
+        <TaskActionGroup task={task} isFocused={isFocused} />
+      </div>
     </div>
   )
 })
@@ -112,14 +127,21 @@ const TaskWrapper = observer(({ task, ...props }) => {
   const target = isFocused ? clone(task) : task
 
   const onSubmit = () => {
-    if (target.isValid) {
+    if (target.isValid && target.subject.trim()) {
       applySnapshot(task, target)
       inputRef.current?.blur()
     }
   }
 
+  const store = useStore()
   useEnterKey(inputRef, onSubmit, [target])
-  useOnBlur(onSubmit)
+  useOnFocus(() => {
+    store.setHoveredTask(task)
+  })
+  useOnBlur(() => {
+    onSubmit()
+    store.setHoveredTask(null)
+  })
   useEscapeKey(inputRef, () => {
     inputRef.current?.blur()
   })

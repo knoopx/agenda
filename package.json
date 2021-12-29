@@ -6,8 +6,7 @@
     "build": "vite build",
     "test": "vitest"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@originjs/vite-plugin-commonjs": "^1.0.1",
     "@types/jest": "^27.0.3",
@@ -23,6 +22,7 @@
     "mobx": "^6.3.10",
     "mobx-react": "^7.2.1",
     "mobx-state-tree": "^5.1.0",
+    "mobx-utils": "^6.0.4",
     "nanoid": "^3.1.30",
     "peggy": "^1.2.0",
     "postcss": "^8.4.5",

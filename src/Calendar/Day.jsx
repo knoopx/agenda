@@ -1,49 +1,41 @@
 import classNames from "classnames"
 import { observer } from "mobx-react"
-import { useMemo } from "react"
-import { DateTime } from "luxon"
 
 import { useStore } from "../Store"
+import { now } from "../helpers"
 
 import DayTask from "./DayTask"
 
 const Day = observer(({ start, isSameMonth }) => {
   const store = useStore()
 
-  // const tasks = Array.from(store.occurrences.entries())
-  //   .filter(([d]) => start.hasSame(d, "day"))
-  //   .map(([, [task]]) => task)
+  const tasks = store.getTasksAtDay(start)
 
-  const isToday = DateTime.now().hasSame(start, "day")
-
-  const highlightClass = useMemo(() => {
-    if (store.input.occurrences.some((o) => start.hasSame(o, "day")))
-      return "outline-auto"
-
-    return null
-  }, [start, store.input.occurrences])
+  const isToday = now(5000).hasSame(start, "day")
+  const shouldHighlight =
+    store.input.occurrencesAtDay(start) > 0 || tasks.includes(store.hoveredTask)
 
   return (
     <div
       className={classNames(
-        "table-cell text-right text-xs p-1 leading-none border",
+        "table-cell text-right text-xs p-1 leading-none border w-[calc(100%/7)] h-[calc(100%/5)]",
         {
           "font-bold": isToday,
-          "font-light": !highlightClass && !isToday,
+          "font-light": !shouldHighlight && !isToday,
           "opacity-25": !isSameMonth,
-          [highlightClass]: isSameMonth,
+          "bg-gray-100": isSameMonth && shouldHighlight,
         },
       )}
     >
       <div className="flex flex-col items-between space-y-1">
         <h6>{start.day}</h6>
-        {/* {isSameMonth && (
-          <div className="flex justify-self-end space-x-1">
+        {isSameMonth && (
+          <div className="flex flex-auto flex-wrap">
             {tasks.map((task) => (
               <DayTask key={task.id} task={task} />
             ))}
           </div>
-        )} */}
+        )}
       </div>
     </div>
   )

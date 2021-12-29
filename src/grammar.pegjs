@@ -131,18 +131,10 @@ TimeConstructExpr
 		if (at) return {
 			...forExp,
 			dtstart: dtstart.set(at[1]),
-			byhour: at[1].hour,
-			byminute: at[1].minute,
-			count: 1
 		}
 		return {
 			...forExp,
 			dtstart,
-			bymonth: dtstart.month,
-			bymonthday: dtstart.day,
-			byhour: 0,
-			byminute: 0,
-			count: 1
 		}
 	}
 
@@ -150,9 +142,6 @@ TimeConstructExpr
 	/ at:TimeOfTheDayExpr {
 		return {
 			dtstart: Now.set(at),
-			byhour: at.hour,
-			byminute: at.minute,
-			count: 1
 		}
 	}
 
@@ -160,9 +149,6 @@ TimeConstructExpr
     / at:AtTimeExpr _for:(_ ForExpr)? {
 		return {
 			dtstart: Now.set(at),
-			byhour: at.hour,
-			byminute: at.minute,
-			count: 1,
 		}
 	}
 
@@ -172,9 +158,6 @@ TimeConstructExpr
 			...expr,
 			...(_for && {
 				dtstart: _for[1],
-				byhour: 0,
-				byminute: 0,
-				count: 1
 			})
 		}
 	}
@@ -193,37 +176,30 @@ RecurringExpr
 
 EveryExpr
 	= "every"i _ expr:EverySubExpr { return expr }
-	/ "everyday"i { return Frequency.daily() }
+	/ "everyday"i { return Recurrency.daily() }
 
 EverySubExpr
 	// every 29 december
 	= expr:DateShort {
-		return {
-			freq: Frequency.YEARLY,
+		return Recurrency.yearly({
 			bymonth: expr.month,
 			bymonthday: expr.day,
-			byhour: 0,
-			byminute: 0,
-		}
+		})
 	}
     // every weekend
 	/ "weekend"i { return Recurrency.weekly({ byweekday: getWeekDayByName("saturday") }) }
 	// every 2 tuesdays
 	/ interval:NumberExpr _ expr:DayName "s" {
-		return {
-			freq: Frequency.WEEKLY,
+		return Recurrency.weekly({
+			interval,
 			byweekday: getWeekDayByName(expr),
-			byhour: 0,
-			byminute: 0,
-			interval
-	} }
+		})
+	}
 	// every monday
 	/ expr:DayName {
 		return {
 			freq: Frequency.WEEKLY,
 			byweekday: getWeekDayByName(expr),
-			byhour: 0,
-			byminute: 0,
 		}
 	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
@@ -232,8 +208,6 @@ EverySubExpr
 			freq: Frequency.MONTHLY,
 			bymonth: getMonthByName(expr),
 			bymonthday: 1,
-			byhour: 0,
-			byminute: 0,
 		}
 	}
 	// every end of january, february, march, april, may, june, july, august, september, october, november, december
@@ -242,8 +216,6 @@ EverySubExpr
 			freq: Frequency.MONTHLY,
 			bymonth: getMonthByName(expr),
 			bymonthday: -1,
-			byhour: 0,
-			byminute: 0,
 		}
 	}
 	// every morning
@@ -259,9 +231,6 @@ InExpr
 	= "in"i _ duration:Duration {
 		return {
 			dtstart: Now.plus(duration),
-			byhour: 0,
-			byminute: 0,
-			count: 1
 		}
 	}
 

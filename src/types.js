@@ -38,8 +38,6 @@ export class Recurrency {
   static make(freq, { interval, ...rest }) {
     return {
       freq,
-      byhour: 0,
-      byminute: 0,
       ...(interval && { interval }),
       ...rest,
     }

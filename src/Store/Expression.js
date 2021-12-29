@@ -4,6 +4,23 @@ import { DateTime } from "luxon"
 
 import grammar from "../grammar.pegjs"
 
+const freqToRRule = (freq) => {
+  switch (freq) {
+    case "hourly":
+      return RRule.HOURLY
+    case "daily":
+      return RRule.DAILY
+    case "weekly":
+      return RRule.WEEKLY
+    case "monthly":
+      return RRule.MONTHLY
+    case "yearly":
+      return RRule.YEARLY
+    default:
+      throw new Error(`Unknown freq: ${freq}`)
+  }
+}
+
 const Expression = t
   .model("Expression", {
     expression: t.string,
@@ -23,11 +40,11 @@ const Expression = t
   .views((self) => ({
     get isValid() {
       if (self.expression.length === 0) return true
-      return self.error === "" && self.subject
+      return self.error === ""
     },
 
     get output() {
-      if (self.expression.trim() === "") return {}
+      if (self.expression.trim() === "") return { subject: "" }
 
       try {
         const out = grammar.parse(self.expression)
@@ -40,7 +57,7 @@ const Expression = t
     },
 
     get subject() {
-      return self.output?.subject
+      return self.output?.subject ?? ""
     },
 
     get isRecurring() {
@@ -69,9 +86,12 @@ const Expression = t
 
       if (Object.keys(rule).length === 0) return null
 
-      const { dtstart, freq, ...rest } = rule
+      const { dtstart, freq, byweekday, bymonth, ...rest } = rule
 
       const props = {
+        ...(freq && { freq: freqToRRule(freq) }),
+        ...(byweekday && { byweekday: [6, 1, 2, 3, 4, 5, 0][byweekday] }),
+        ...(bymonth && { bymonth: bymonth - 1 }),
         ...(dtstart && { dtstart: dtstart.toJSDate() }),
         ...rest,
       }
@@ -85,9 +105,10 @@ const Expression = t
     },
 
     get nextAt() {
-      return DateTime.fromJSDate(
+      const date = DateTime.fromJSDate(
         self.nextAfter(DateTime.fromJSDate(self.lastCompletedAt ?? new Date())),
       )
+      return date.isValid ? date : null
     },
 
     nextAfter(start) {
