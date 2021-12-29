@@ -266,3 +266,11 @@ testParse("Root", "birthday every 11 september", {
   byhour: 0,
   byminute: 0,
 })
+
+testParse("Root", "sleep every day at 23 for 8h", {
+  subject: "sleep",
+  freq: Frequency.DAILY,
+  byhour: 23,
+  byminute: 0,
+  duration: Duration.fromObject({ hours: 8 }),
+})

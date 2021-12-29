@@ -164,21 +164,20 @@ TimeConstructExpr
 
 RecurringExpr
 	// every wednesday at 1
-	= every:EveryExpr
-	  at:(_ RecurringAtTimeExpr)?
-	  {
+	= every:EveryExpr at:(_ RecurringAtTimeExpr)? {
 		return {
 			...every,
 			...(at && at[1])
 		}
 	}
+	// 2 times a week
 	/ RecurrencyExpr
 
 EveryExpr
 	= "every"i _ expr:EverySubExpr { return expr }
 	/ "everyday"i { return Recurrency.daily() }
 
-EverySubExpr
+EveryDateSpecifierExpr
 	// every 29 december
 	= expr:DateShort {
 		return Recurrency.yearly({
@@ -189,7 +188,7 @@ EverySubExpr
 		})
 	}
     // every weekend
-	/ "weekend"i { return Recurrency.weekly({ byweekday: getWeekDayByName("saturday") }) }
+	/ "weekend"i { return Recurrency.weekly({ byweekday: 6 }) }
 	// every 2 tuesdays
 	/ interval:NumberExpr _ expr:DayName "s" {
 		return Recurrency.weekly({
@@ -217,8 +216,10 @@ EverySubExpr
 			bymonthday: -1,
 		})
 	}
+
+EveryTimeSpecifierExpr
 	// every morning
-	/ expr:TimeOfTheDayExpr {
+	= expr:TimeOfTheDayExpr {
 		return Recurrency.daily({
 			byhour: expr.hour,
 			byminute: expr.minute,
@@ -228,6 +229,10 @@ EverySubExpr
 	/ expr:Period
 	// every minute hour, day, week, month, year
 	/ unit:UnitTime { return Recurrency.fromDurationLike({ unit }) }
+
+EverySubExpr
+	= EveryDateSpecifierExpr / EveryTimeSpecifierExpr
+
 
 // in 5 minutes, in 1w
 InExpr

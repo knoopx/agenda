@@ -1,3 +1,5 @@
+import classNames from "classnames"
+import { DateTime } from "luxon"
 import { observer } from "mobx-react-lite"
 
 import Day from "./Day"
@@ -5,12 +7,20 @@ import EachDay from "./EachDay"
 import EachWeek from "./EachWeek"
 
 const Month = observer(({ start: monthStart, displayYear }) => {
+  const isThisMonth = monthStart.hasSame(DateTime.now(), "month")
   return (
     <div className="flex flex-col m-2">
       <div className="flex items-center justify-between space-x-2">
-        <span>{monthStart.monthLong}</span>
+        <span
+          className={classNames("text-neutral-500", {
+            // "font-medium": isThisMonth,
+            // "text-neutral-500": !isThisMonth,
+          })}
+        >
+          {monthStart.monthLong}
+        </span>
         {displayYear && (
-          <span className="text-gray-500 text-xs">{monthStart.year}</span>
+          <span className="text-neutral-500 text-xs">{monthStart.year}</span>
         )}
       </div>
       <EachWeek start={monthStart}>

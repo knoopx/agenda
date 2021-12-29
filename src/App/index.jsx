@@ -7,11 +7,13 @@ import TopBar from "./TopBar"
 
 const App = observer(() => {
   return (
-    <div className="container mx-auto py-8 font-sans-serif">
+    <div className="font-sans-serif">
       <TopBar />
-      <div className="grid grid-cols-2 gap-16">
-        <Agenda />
-        <Calendar />
+      <div className="container mx-auto">
+        <div className="grid grid-cols-2 gap-16">
+          <Calendar />
+          <Agenda />
+        </div>
       </div>
     </div>
   )

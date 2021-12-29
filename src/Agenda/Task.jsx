@@ -62,7 +62,7 @@ const TaskAction = ({ className, ...props }) => (
   <button
     type="button"
     className={classNames(
-      "w-6 h-6 flex items-center justify-center text-gray-500 hover:text-black rounded cursor-pointer",
+      "w-6 h-6 flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer",
       className,
     )}
     {...props}
@@ -96,7 +96,7 @@ export const Task = observer(
       <div
         {...props}
         ref={ref}
-        className="flex flex-auto relative items-center hover:bg-gray-50 group"
+        className="flex flex-auto relative items-center hover:bg-neutral-50 group"
       >
         <div className="flex items-center px-4">
           <CheckBox {...{ isFocused, task }} />
