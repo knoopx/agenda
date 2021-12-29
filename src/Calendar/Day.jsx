@@ -18,7 +18,7 @@ const Day = observer(({ start, isSameMonth }) => {
   return (
     <div
       className={classNames(
-        "table-cell text-right text-xs p-1 leading-none rounded w-[calc(100%/7)] h-[calc(100%/5)]",
+        "table-cell text-right text-xs p-1 leading-none rounded-[2px] w-[calc(100%/7)] h-[calc(100%/5)]",
         {
           "font-bold": isToday,
           "font-light": !shouldHighlight && !isToday,
