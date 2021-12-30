@@ -88,9 +88,11 @@ const Expression = t
       return this.nextAfter(DateTime.now())
     },
 
-    get implicitStart() : DateTime {
-      throw new Error("Not implemented")
+    get implicitStart() {
+      return DateTime.now();
     },
+
+
   }))
 
 export default Expression

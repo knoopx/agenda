@@ -13,10 +13,6 @@ const Input = Expression.named("Input").views((self) => {
       return !!(self.output && self.subject);
     },
 
-    get implicitStart() {
-      return DateTime.now();
-    },
-
     get occurrences(): DateAdapter[] {
       return self.schedule
         .occurrences({

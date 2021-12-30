@@ -1,6 +1,6 @@
 import { observer } from "mobx-react"
 import { forwardRef, useRef } from "react"
-import { applySnapshot, clone } from "mobx-state-tree"
+import { applySnapshot, clone, getSnapshot } from "mobx-state-tree"
 import { MdUpdate } from "react-icons/md"
 import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
@@ -12,8 +12,9 @@ import {
   useFocus,
   useOnMouseOut,
   useOnMouseOver,
+  useStore,
 } from "../hooks"
-import { useStore } from "../hooks"
+import { Expression } from "../models"
 
 import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
 
@@ -50,7 +51,7 @@ const SubjectInput = observer(
   }),
 )
 
-const RecurringIcon = (props) => {
+function RecurringIcon(props) {
   return (
     <span className="flex items-center" {...props}>
       <MdUpdate />
@@ -58,16 +59,18 @@ const RecurringIcon = (props) => {
   )
 }
 
-const TaskAction = ({ className, ...props }) => (
-  <button
-    type="button"
-    className={classNames(
-      "w-6 h-6 flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer",
-      className,
-    )}
-    {...props}
-  />
-)
+function TaskAction({ className, ...props }) {
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "w-6 h-6 flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer",
+        className,
+      )}
+      {...props}
+    />
+  )
+}
 
 const TaskActionGroup = observer(({ className, task, isFocused }) => {
   return (

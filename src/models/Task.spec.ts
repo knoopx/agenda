@@ -37,5 +37,5 @@ it("nextAfter", () => {
   })
 
   expect(task.nextAfter(Now)).toEqual(DateTime.local(2021, 1, 4));
-  // expect(task.nextAt).toEqual(task.nextAfter(Now))
+  expect(task.nextAt).toEqual(task.nextAfter(Now))
 });

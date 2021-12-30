@@ -34,6 +34,10 @@ const Task = Expression.named("Task")
     lastCompletedAt: t.optional(dateTime, () => DateTime.now()),
   })
   .actions((self) => ({
+    update(props: Partial<ITask>) {
+      Object.assign(self, props);
+    },
+
     complete() {
       if (self.isRecurring && self.nextAt) {
         self.lastCompletedAt = self.nextAt;
@@ -50,10 +54,6 @@ const Task = Expression.named("Task")
     reset() {
       self.lastCompletedAt = self.createdAt;
     },
-
-    update(props: Partial<ITask>) {
-      Object.assign(self, props);
-    },
   }))
   .views((self) => {
     return {
@@ -62,12 +62,16 @@ const Task = Expression.named("Task")
       },
 
       get implicitStart(): DateTime {
-        return self.createdAt;
+        return self.createdAt.toLocal();
       },
 
       get highlightColor() {
-        const { sortedTasks } = getParent(self, 2);
-        return Colors[sortedTasks.indexOf(self) % Colors.length];
+        try {
+          const { sortedTasks } = getParent(self, 2);
+          return Colors[sortedTasks.indexOf(self) % Colors.length];
+        } catch (e) {
+          return null
+        }
       },
     };
   });
