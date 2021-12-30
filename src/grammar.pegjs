@@ -2,14 +2,15 @@
 	const path = require("path")
 	const { DateTime, Duration, Interval } = require("luxon")
 
-	const DayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+	const DayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]
+	const WeekDays = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
 	const MonthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
 
 	const { Frequency, Recurrency } = require("./types")
 
 	// 1 is Monday and 7 is Sunday
 	function getWeekDayByName(name) {
-		return DayNames.indexOf(name.toLowerCase()) + 1
+		return WeekDays[DayNames.indexOf(name)]
 	}
 
 	function getMonthByName(name){
@@ -116,39 +117,39 @@ UnitTimeExpr = UnitTimePlural / UnitTime / UnitTimeShort
 
 TimeConstructExpr
 	// every wednesday at 1 for 1h starting tomorrow
-	= expr:RecurringExpr _for:(_ ForExpr)? dtstart:(_ StartingExpr)? {
+	= expr:RecurringExpr _for:(_ ForExpr)? start:(_ StartingExpr)? {
 		return {
 			...expr,
-			...(dtstart && {
-					dtstart: dtstart[1]
+			...(start && {
+					start: start[1]
 				}),
 			...(_for && _for[1] )
 		}
 	}
 	// tomorrow at 1h, 23/12/2022 at 20:50
-    / dtstart:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
+    / start:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
 		const forExp = _for && _for[1]
 		if (at) return {
 			...forExp,
-			dtstart: dtstart.set(at[1]),
+			start: start.set(at[1]),
 		}
 		return {
 			...forExp,
-			dtstart,
+			start,
 		}
 	}
 
 	// after work, morning
 	/ at:TimeOfTheDayExpr {
 		return {
-			dtstart: Now.set(at),
+			start: Now.set(at),
 		}
 	}
 
 	// at 5h
     / at:AtTimeExpr _for:(_ ForExpr)? {
 		return {
-			dtstart: Now.set(at),
+			start: Now.set(at),
 		}
 	}
 
@@ -157,7 +158,7 @@ TimeConstructExpr
 		return {
 			...expr,
 			...(_for && {
-				dtstart: _for[1],
+				start: _for[1],
 			})
 		}
 	}
@@ -181,39 +182,39 @@ EveryDateSpecifierExpr
 	// every 29 december
 	= expr:DateShort {
 		return Recurrency.yearly({
-			bymonth: expr.month,
-			bymonthday: expr.day,
-			byhour: 0,
-			byminute: 0,
+			byMonthOfYear: [expr.month],
+			byDayOfMonth: [expr.day],
+			byHourOfDay: [0],
+			byMinuteOfHour: [0],
 		})
 	}
     // every weekend
-	/ "weekend"i { return Recurrency.weekly({ byweekday: 6 }) }
+	/ "weekend"i { return Recurrency.weekly({ byDayOfWeek: ["SA"] }) }
 	// every 2 tuesdays
 	/ interval:NumberExpr _ expr:DayName "s" {
 		return Recurrency.weekly({
 			interval,
-			byweekday: getWeekDayByName(expr),
+			byDayOfWeek: [getWeekDayByName(expr)],
 		})
 	}
 	// every monday
 	/ expr:DayName {
 		return Recurrency.weekly({
-			byweekday: getWeekDayByName(expr),
+			byDayOfWeek: [getWeekDayByName(expr)],
 		})
 	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
-	/ expr:MonthName {
+	/ expr:MonthName exprs:("and" _ MonthName)* {
 		return Recurrency.monthly({
-			bymonth: getMonthByName(expr),
-			bymonthday: 1,
+			byMonthOfYear: [getMonthByName(expr)],
+			byDayOfMonth: [1],
 		})
 	}
 	// every end of january, february, march, april, may, june, july, august, september, october, november, december
 	/ "end" _ "of" _ expr:MonthName {
 		return Recurrency.monthly({
-			bymonth: getMonthByName(expr),
-			bymonthday: -1,
+			byMonthOfYear: [getMonthByName(expr)],
+			byDayOfMonth: [-1],
 		})
 	}
 
@@ -221,8 +222,8 @@ EveryTimeSpecifierExpr
 	// every morning
 	= expr:TimeOfTheDayExpr {
 		return Recurrency.daily({
-			byhour: expr.hour,
-			byminute: expr.minute,
+			byHourOfDay: [expr.hour],
+			byMinuteOfHour: [expr.minute],
 		})
 	}
 	// every 5 minutes
@@ -239,7 +240,7 @@ InExpr
 	//"in ..."
 	= "in"i _ duration:Duration {
 		return {
-			dtstart: Now.plus(duration),
+			start: Now.plus(duration),
 		}
 	}
 
@@ -260,11 +261,11 @@ AtTimeSubExpr
 	/ expr:TimeOfTheDayExpr { return Now.set(expr)  }
 
 RecurringAtTimeExpr
-	= time:AtTimeExpr {
-		return Object.keys(time).reduce((res, key) => ({
-			...res,
-			["by" + key]: time[key]
-		}), {})
+	= time:AtTimeExpr expr:(_ "and" _ MonthName)* {
+		return {
+			byHourOfDay: [time.hour],
+			byMinuteOfHour: [time.minute]
+		}
 	}
 
 OnExpr
@@ -277,12 +278,12 @@ DateRelative "relative date"
 	= "today"i { return Now.startOf("day") }
     / "tomorrow"i { return Now.startOf("day").plus({ days: 1 }) }
     / "weekend"i {
-		// return Now.set({ weekday: [6, 7] })
-		let current = Now.startOf("day")
-		while (![6,7].include(current.weekday)) {
-			current = current.plus({days: 1})
-		}
-		return current
+		return Now.set({ weekday: [6, 7] })
+		// let current = Now.startOf("day")
+		// while (![6,7].include(current.weekday)) {
+		// 	current = current.plus({days: 1})
+		// }
+		// return current
 	}
 	/ NextDateExpr
 
@@ -298,13 +299,23 @@ NextDateSubExpr
 
 	// next monday
 	/ dayName:DayName {
-		// return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: getWeekDayByName(dayName) })
-		let current = Now.startOf("day")
-		const weekDay = getWeekDayByName(dayName)
-		while (current.weekday !== weekDay) {
-			current = current.plus({ days: 1 })
-		}
-		return current
+		return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: DayNames.indexOf(dayName)  })
+		// let start, current = Now.startOf("day")
+		// const weekDay = getWeekDayByName(dayName)
+
+		// if (typeof weekDay !== "number")
+		// 	return null
+
+		// if (!(weekDay > 0 && weekDay < 7))
+		// 	return null
+
+		// while (current.weekday !== weekDay) {
+		// 	current = current.plus({ days: 1 })
+		// 	if (end.diff(start).days > 7){
+		// 		return null
+		// 	}
+		// }
+		// return current
 	 }
 
 DateShort

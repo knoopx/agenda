@@ -13,7 +13,7 @@ import {
   useOnMouseOut,
   useOnMouseOver,
 } from "../hooks"
-import { useStore } from "../Store"
+import { useStore } from "../hooks"
 
 import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
 
@@ -113,7 +113,7 @@ export const Task = observer(
           )}
         >
           {!isFocused && task.isRecurring && (
-            <RecurringIcon title={task.freq} />
+            <RecurringIcon title={task.frequency} />
           )}
           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
 

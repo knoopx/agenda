@@ -1,7 +1,7 @@
 import classNames from "classnames"
 import { observer } from "mobx-react"
 
-import { useStore } from "../Store"
+import { useStore } from "../hooks"
 import { now } from "../helpers"
 
 import DayTask from "./DayTask"

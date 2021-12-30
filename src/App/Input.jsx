@@ -7,8 +7,7 @@ import { MdUpdate } from "react-icons/md"
 import { useFloating, shift, arrow, offset } from "@floating-ui/react-dom"
 import { createPortal } from "react-dom"
 
-import { useStore } from "../Store"
-import { useEnterKey, useEscapeKey, useFocus } from "../hooks"
+import { useStore, useEnterKey, useEscapeKey, useFocus } from "../hooks"
 import { TimeLabel, DurationLabel, DateLabel } from "../Agenda/Label"
 
 const Arrow = forwardRef(({ placement, left, top }, ref) => {
@@ -57,12 +56,12 @@ const Input = observer(() => {
     let { expression } = getSnapshot(input)
 
     if (input.isValid) {
-      if (!input.isRecurring && input.dtstart) {
+      if (!input.isRecurring && input.start) {
         expression = [
           expression.subject,
-          expression.dtstart.toLocaleString(),
+          expression.start.toLocaleString(),
           "at",
-          expression.dtstart.toLocaleString(DateTime.TIME_SIMPLE),
+          expression.start.toLocaleString(DateTime.TIME_SIMPLE),
         ].join(" ")
       }
 
@@ -110,7 +109,7 @@ const Input = observer(() => {
         onChange={onChangeExpression}
       />
 
-      {!input.isValid &&
+      {input.expression && input.error &&
         isFocused &&
         createPortal(
           <div

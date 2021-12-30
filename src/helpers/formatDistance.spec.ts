@@ -7,7 +7,7 @@ import { formatDistance } from "."
 
 const Now = DateTime.local(2021, 1, 1)
 
-function testFormatDistance(offset, expected) {
+function testFormatDistance(offset: any, expected: any) {
   it(`${inspect(offset)} ${inspect(expected)}`, () => {
     expect(formatDistance(Now, Now.plus(offset), "UTC")).toEqual(expected)
   })

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react"
 
-import { useStore } from "../Store"
+import { useStore } from "../hooks"
 
 import EachMonth from "./EachMonth"
 import Month from "./Month"

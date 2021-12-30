@@ -9,12 +9,22 @@ const peggyPlugin = (options = {}) => {
     enforce: "pre",
     transform(input, id) {
       if (id.endsWith(".pegjs")) {
-        const code = peggy.generate(input, {
-          ...options,
-          format: "commonjs",
-          output: "source",
-        })
-        return { code }
+        try {
+          const code = peggy.generate(input, {
+            ...options,
+            grammarSource: id,
+            format: "commonjs",
+            output: "source",
+            map: null,
+          })
+          return { code }
+        } catch (e) {
+          if (typeof e.format === "function") {
+            throw new Error(e.format([{ source: id, text: input }]))
+          } else {
+            throw e
+          }
+        }
       }
 
       return null

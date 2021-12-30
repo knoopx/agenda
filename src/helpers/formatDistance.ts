@@ -1,6 +1,6 @@
-import { Interval } from "luxon"
+import { DateTime, Interval } from "luxon"
 
-export function formatDistance(start, end, timeZone) {
+export function formatDistance(start: DateTime, end: DateTime) {
   const isFuture = end > start
   const relative = end.toRelative({ base: start, style: "short" })
   if (!isFuture) [end, start] = [start, end]
@@ -14,10 +14,9 @@ export function formatDistance(start, end, timeZone) {
     "minutes",
   ])
 
-  const concat = (...args) => args.filter(Boolean).join(" ")
-  const nextOrPast = (text) => concat(isFuture ? `next` : `past`, text)
-  const tomorrowOrYesterday = (text) =>
-    concat(isFuture ? `tomorrow` : `yesterday`, text)
+  const concat = (...args: any[]) => args.filter(Boolean).join(" ")
+  const nextOrPast = (text?: string) => concat(isFuture ? `next` : `past`, text)
+  const tomorrowOrYesterday = (text?: string) => concat(isFuture ? `tomorrow` : `yesterday`, text)
 
   const monthAndDay = concat(end.monthShort, end.day)
 
@@ -44,11 +43,6 @@ export function formatDistance(start, end, timeZone) {
         return monthAndDay
       }
     }
-  }
-
-  // next week
-  if (end.plus({ weeks: 1 }).hasSame(start, "week")) {
-    return nextOrPast(formatWeekDay(end, "en", timeZone))
   }
 
   // tomorrow/yesterday

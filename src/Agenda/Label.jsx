@@ -4,7 +4,7 @@ import { IoMdCalendar, IoMdTime } from "react-icons/io"
 import { observer } from "mobx-react"
 
 import { now, formatDistance } from "../helpers"
-import { useStore } from "../Store"
+import { useStore } from "../hooks"
 
 const Label = ({ children, className, icon: Icon, position = "left" }) => {
   return (

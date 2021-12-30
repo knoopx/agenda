@@ -2,7 +2,7 @@ import { observer } from "mobx-react"
 import { groupBy } from "lodash"
 import { DateTime } from "luxon"
 
-import { useStore } from "../Store"
+import { useStore } from "../hooks"
 
 import Group from "./Group"
 

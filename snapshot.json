@@ -1,0 +1,136 @@
+{
+    "hoveredTask": null,
+    "input": {
+        "expression": "tomorrow"
+    },
+    "locale": "es-ES",
+    "tasks": [
+        {
+            "createdAt": 1640738564841,
+            "expression": "lunch with friend next tuesday at 14",
+            "id": "Oxph_1IR4OLTaxOD7vgUu",
+            "lastCompletedAt": 1640735011169
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "weekly meeting every wednesday at 11",
+            "id": "1DN-cwIrLi5xdFzVhPNVq",
+            "lastCompletedAt": 1640735482176
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "bi-weekly meeting every 2 thursdays at 10",
+            "id": "jWG7XR-oZl1QKPuCFhNyH",
+            "lastCompletedAt": 1640735493216
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "study every week for 4h",
+            "id": "5_jWIbjNQIrK5L7Y95Psy",
+            "lastCompletedAt": 1640742974000
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "wake up every day at 9h",
+            "id": "YxCj2F8FGvJKEapdSBZsR",
+            "lastCompletedAt": 1640764856181
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "sleep for 8h every day at 23",
+            "id": "4GAStPWG6XXidpNYFvVQf",
+            "lastCompletedAt": 1640822400000
+        },
+        {
+            "createdAt": 1640738564841,
+            "expression": "lunch at 14h for 1h every day",
+            "id": "wBcYgsGG_vk7wTy24cLWk",
+            "lastCompletedAt": 1640739629259
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "dinner at 21h every day for 1h",
+            "id": "YJtYcuvykxV2wIYv0LpAM",
+            "lastCompletedAt": 1640737778779
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "release every 2 mondays",
+            "id": "E1c4CbYSwn7kIJ9eHqfCl",
+            "lastCompletedAt": 1640737792363
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "exercise twice a week after work for 15m",
+            "id": "0WOs5rSTHKbOwdAvtvZbC",
+            "lastCompletedAt": 1640742974000
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "walk every weekend for 1h",
+            "id": "f9XF4Ejs6o1DtwbsZg3JD",
+            "lastCompletedAt": 1640742974000
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "birthday every 29 december",
+            "id": "FsQEC17DMLXKUxAGlI7Tq",
+            "lastCompletedAt": 1640737813115
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "meet with friends every week",
+            "id": "rO8sX2KlvQ6b3xekqo1ja",
+            "lastCompletedAt": 1640742974000
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "plan summer holidays every june",
+            "id": "w7l8sxg1lBS5rNIR-V6-J",
+            "lastCompletedAt": 1640737821227
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "plan winter holidays every october",
+            "id": "nScAHdgxq8vQ9l7NkPipV",
+            "lastCompletedAt": 1640737826139
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "taxes every august",
+            "id": "mv0hdOk9zBVcT472IEXNs",
+            "lastCompletedAt": 1640737829611
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "buy coffee every month",
+            "id": "8u1Y4wrfKGN5g7MDckCbz",
+            "lastCompletedAt": 1640737834203
+        },
+        {
+            "createdAt": 1640738564842,
+            "expression": "brush teeth every day after lunch",
+            "id": "UfNVIydkE0-BaripeHNTg",
+            "lastCompletedAt": 1640790059000
+        },
+        {
+            "createdAt": 1640741337092,
+            "expression": "buy battery",
+            "id": "9PDZqGRUZxEoZXUW-9E_o",
+            "lastCompletedAt": 1640741337092
+        },
+        {
+            "createdAt": 1640743230065,
+            "expression": "take out the trash every week after work",
+            "id": "EQ5GR6eK_5XiWQQrUlFsC",
+            "lastCompletedAt": 1640743230065
+        },
+        {
+            "createdAt": 1640744919997,
+            "expression": "brush teeth every day after diner",
+            "id": "TuLIFHuIj6K1D1_F_nWUc",
+            "lastCompletedAt": 1640815225000
+        }
+    ],
+    "timeZone": "Europe/Madrid"
+}

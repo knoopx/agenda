@@ -1,15 +1,15 @@
 /* eslint-disable max-classes-per-file */
 
 export class Frequency {
-  static MINUTELY = "minutely"
+  static MINUTELY = "MINUTELY"
 
-  static DAILY = "daily"
+  static DAILY = "DAILY"
 
-  static WEEKLY = "weekly"
+  static WEEKLY = "WEEKLY"
 
-  static MONTHLY = "monthly"
+  static MONTHLY = "MONTHLY"
 
-  static YEARLY = "yearly"
+  static YEARLY = "YEARLY"
 
   static fromUnit(unit) {
     return {
@@ -35,9 +35,9 @@ export class Recurrency {
     }[unit]
   }
 
-  static make(freq, { interval, ...rest }) {
+  static make(frequency, { interval, ...rest }) {
     return {
-      freq,
+      frequency,
       ...(interval && { interval }),
       ...rest,
     }
@@ -48,36 +48,44 @@ export class Recurrency {
   }
 
   static hourly(rest) {
-    return this.make(Frequency.HOURLY, { byhour: 0, byminute: 0, ...rest })
+    return this.make(Frequency.HOURLY, {
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
+      ...rest,
+    })
   }
 
   static daily(rest) {
-    return this.make(Frequency.DAILY, { byhour: 0, byminute: 0, ...rest })
+    return this.make(Frequency.DAILY, {
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
+      ...rest,
+    })
   }
 
   static weekly(rest) {
     return this.make(Frequency.WEEKLY, {
-      byweekday: 1,
-      byhour: 0,
-      byminute: 0,
+      byDayOfWeek: ["MO"],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     })
   }
 
   static monthly(rest) {
     return this.make(Frequency.MONTHLY, {
-      bymonthday: 1,
-      byhour: 0,
-      byminute: 0,
+      byDayOfMonth: [1],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     })
   }
 
   static yearly(rest) {
     return this.make(Frequency.YEARLY, {
-      bymonth: 1,
-      byhour: 0,
-      byminute: 0,
+      byMonthOfYear: [1],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     })
   }
