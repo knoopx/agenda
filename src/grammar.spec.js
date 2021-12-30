@@ -49,6 +49,22 @@ testParse("TimeConstructExpr", "at 5", {
   start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
 })
 
+testParse("TimeConstructExpr", "at 5:00", {
+  start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
+})
+
+testParse("TimeConstructExpr", "at 5am", {
+  start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
+})
+
+testParse("TimeConstructExpr", "at 5:00 am", {
+  start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
+})
+
+testParse("TimeConstructExpr", "at 5pm", {
+  start: DateTime.local(2021, 1, 1, 17, 0, 0, 0),
+})
+
 testParse("TimeConstructExpr", "in 2 months", {
   start: DateTime.local(2021, 3, 1, 0, 0, 0, 0),
 })
@@ -279,8 +295,29 @@ testParse("Root", "event 11 september", {
   start: DateTime.local(2021, 9, 11, 0, 0, 0, 0),
 })
 
-// testParse("Root", "every day after lunch and after diner", {})
-// testParse("Root", "every tuesday and wednesday at 6", {})
+testParse("Root", "brush teeth every day after lunch and after diner", {
+  subject: "brush teeth",
+  frequency: "DAILY",
+  byHourOfDay: [15, 22],
+  byMinuteOfHour: [0],
+})
+
+testParse("Root", "yoga every tuesday and wednesday at 6", {
+  subject: "yoga",
+  frequency: "WEEKLY",
+  byDayOfWeek: ["TU", "WE"],
+  byHourOfDay: [6],
+  byMinuteOfHour: [0],
+})
+
+testParse("Root", "holidays every july and august", {
+  subject: "holidays",
+  frequency: "MONTHLY",
+  byDayOfMonth: [1],
+  byHourOfDay: [0],
+  byMinuteOfHour: [0],
+  byMonthOfYear: [7, 8],
+})
 
 testParse("Root", "birthday every 11 september", {
   frequency: Frequency.YEARLY,

@@ -1,7 +1,7 @@
 {
-    "hoveredTask": null,
+    "hoveredTask": "TuLIFHuIj6K1D1_F_nWUc",
     "input": {
-        "expression": "tomorrow"
+        "expression": ""
     },
     "locale": "es-ES",
     "tasks": [
@@ -55,7 +55,7 @@
         },
         {
             "createdAt": 1640738564842,
-            "expression": "release every 2 mondays",
+            "expression": "release planning every 2 mondays",
             "id": "E1c4CbYSwn7kIJ9eHqfCl",
             "lastCompletedAt": 1640737792363
         },
@@ -109,7 +109,7 @@
         },
         {
             "createdAt": 1640738564842,
-            "expression": "brush teeth every day after lunch",
+            "expression": "brush teeth every day after lunch and after diner",
             "id": "UfNVIydkE0-BaripeHNTg",
             "lastCompletedAt": 1640790059000
         },
@@ -126,10 +126,16 @@
             "lastCompletedAt": 1640743230065
         },
         {
-            "createdAt": 1640744919997,
-            "expression": "brush teeth every day after diner",
-            "id": "TuLIFHuIj6K1D1_F_nWUc",
-            "lastCompletedAt": 1640815225000
+            "createdAt": 1640903834290,
+            "expression": "practice every monday and wednesday at 6",
+            "id": "Qki38zjQ7Y6LYqk8qclfy",
+            "lastCompletedAt": 1640903834291
+        },
+        {
+            "createdAt": 1640904361071,
+            "expression": "lunch with friend 1/4/2022 at 2:00 PM",
+            "id": "soCyrf6C6P06ESdrR4Jzq",
+            "lastCompletedAt": 1640904361072
         }
     ],
     "timeZone": "Europe/Madrid"

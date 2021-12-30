@@ -56,12 +56,12 @@ const Input = observer(() => {
     let { expression } = getSnapshot(input)
 
     if (input.isValid) {
-      if (!input.isRecurring && input.start) {
+      if (!input.isRecurring && input.output.start) {
         expression = [
-          expression.subject,
-          expression.start.toLocaleString(),
+          input.output.subject,
+          input.output.start.toLocaleString(),
           "at",
-          expression.start.toLocaleString(DateTime.TIME_SIMPLE),
+          input.output.start.toLocaleString(DateTime.TIME_SIMPLE),
         ].join(" ")
       }
 
@@ -109,7 +109,8 @@ const Input = observer(() => {
         onChange={onChangeExpression}
       />
 
-      {input.expression && input.error &&
+      {input.expression &&
+        input.error &&
         isFocused &&
         createPortal(
           <div

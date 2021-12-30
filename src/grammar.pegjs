@@ -1,5 +1,6 @@
 {
 	const path = require("path")
+	const { mergeWith } = require('lodash')
 	const { DateTime, Duration, Interval } = require("luxon")
 
 	const DayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]
@@ -13,8 +14,12 @@
 		return WeekDays[DayNames.indexOf(name)]
 	}
 
-	function getMonthByName(name){
-		return MonthNames.indexOf(name.toLowerCase()) + 1
+	function mergeWithArray(initial, ...rest){
+		return mergeWith(initial, ...rest, (a, b) => {
+			if (Array.isArray(a) && Array.isArray(b)){
+				return Array.from(new Set(a.concat(b)))
+			}
+		})
 	}
 
 	const Now = options.now ?? DateTime.now()
@@ -82,7 +87,7 @@ RecurrencyExpr
 	// an hour
 	= expr:CountExpr _ "an"i _ "hour"i { return Recurrency.hourly() }
 	// a day, week, month, year
-	/ value:CountExpr _ "a"i _ unit:UnitTimeExpr {
+	/ value:CountExpr _ "a"i _ unit:UnitTemporalExpr {
 		return Recurrency.fromDurationLike({ value, unit })
 	}
 
@@ -95,25 +100,24 @@ Word "word"
 Sentence "sentence"
 	= Word (_ Word)* { return text() }
 
-UnitMinute = "minute"i { return "minutes" }
-UnitHour = "hour"i { return "hours" }
-UnitDay = "day"i { return "days" }
-UnitWeek = "week"i { return "weeks" }
-UnitMonth = "month"i { return "months" }
-UnitYear = "year"i { return "years" }
+TimeUnit
+	= "minute"i { return "minutes" }
+	/ "hour"i { return "hours" }
+	/ "day"i { return "days" }
+	/ "week"i { return "weeks" }
+	/ "month"i { return "months" }
+	/ "year"i { return "years" }
 
-UnitTime = UnitMinute / UnitHour / UnitDay / UnitWeek / UnitMonth / UnitYear
-
-UnitTimeShort
+TimeUnitShort
 	= "m"i { return "minutes" }
 	/ "h"i { return "hours" }
 	/ "d"i { return "days" }
 	/ "w"i { return "weeks" }
 	/ "y"i { return "years" }
 
-UnitTimePlural = expr:UnitTime "s"i { return text() }
+TimeUnitPlural = expr:TimeUnit "s"i { return text() }
 
-UnitTimeExpr = UnitTimePlural / UnitTime / UnitTimeShort
+UnitTemporalExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
 
 TimeConstructExpr
 	// every wednesday at 1 for 1h starting tomorrow
@@ -165,7 +169,7 @@ TimeConstructExpr
 
 RecurringExpr
 	// every wednesday at 1
-	= every:EveryExpr at:(_ RecurringAtTimeExpr)? {
+	= every:EveryExpr at:(_ RecurringAtTimeExprChain)? {
 		return {
 			...every,
 			...(at && at[1])
@@ -204,17 +208,10 @@ EveryDateSpecifierExpr
 		})
 	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
-	/ expr:MonthName exprs:("and" _ MonthName)* {
+	/ head:MonthNameAsNumber tail:(_ "and" _ MonthNameAsNumber)* {
 		return Recurrency.monthly({
-			byMonthOfYear: [getMonthByName(expr)],
+			byMonthOfYear: [head, ...tail.map(([,,,t]) => t)],
 			byDayOfMonth: [1],
-		})
-	}
-	// every end of january, february, march, april, may, june, july, august, september, october, november, december
-	/ "end" _ "of" _ expr:MonthName {
-		return Recurrency.monthly({
-			byMonthOfYear: [getMonthByName(expr)],
-			byDayOfMonth: [-1],
 		})
 	}
 
@@ -229,10 +226,13 @@ EveryTimeSpecifierExpr
 	// every 5 minutes
 	/ expr:Period
 	// every minute hour, day, week, month, year
-	/ unit:UnitTime { return Recurrency.fromDurationLike({ unit }) }
+	/ unit:TimeUnit { return Recurrency.fromDurationLike({ unit }) }
 
 EverySubExpr
-	= EveryDateSpecifierExpr / EveryTimeSpecifierExpr
+	= head:EveryDateSpecifierExpr tail:(_ "and"i _ EveryDateSpecifierExpr)* {
+		return mergeWithArray(head, ...tail.map(t => t[3]))
+	}
+	/ EveryTimeSpecifierExpr
 
 
 // in 5 minutes, in 1w
@@ -261,11 +261,16 @@ AtTimeSubExpr
 	/ expr:TimeOfTheDayExpr { return Now.set(expr)  }
 
 RecurringAtTimeExpr
-	= time:AtTimeExpr expr:(_ "and" _ MonthName)* {
+	= time:AtTimeExpr {
 		return {
 			byHourOfDay: [time.hour],
 			byMinuteOfHour: [time.minute]
 		}
+	}
+
+RecurringAtTimeExprChain
+	= head:RecurringAtTimeExpr tail:(_ "and"i _ RecurringAtTimeExpr)* {
+		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
 
 OnExpr
@@ -322,10 +327,10 @@ DateShort
 	// 25/12
 	= day:DayNumber "/" month:MonthNumber { return Now.set({ month, day }) }
 	// 25 december
-	/ day:DayNumber _ monthName:MonthName { return Now.set({ month: getMonthByName(monthName), day }) }
+	/ day:DayNumber _ month:MonthNameAsNumber { return Now.set({ month, day }) }
 
 DateFull
-	= day:DayNumber "/" month:MonthExpr "/" year:YearFull  { return DateTime.local(year, month, day)  }
+	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day)  }
 
 DateExpr
 	= DateRelative
@@ -344,17 +349,23 @@ MonthNumber "0..12"
 MonthName "february..december"
 	= name:("january"i / "february"i / "march"i / "april"i / "may"i / "june"i / "july"i / "august"i / "september"i / "october"i / "november"i / "december"i) { return name }
 
+MonthNameAsNumber "1..12"
+	= name:MonthName { return MonthNames.indexOf(name.toLowerCase()) + 1 }
+
 MonthExpr
-	= monthName:MonthName { return getMonthByName(monthName) }
+	= MonthNameAsNumber
 	/ MonthNumber
 
-YearFull "year number"
+Number4Digit "year number"
 	= [0-9][0-9][0-9][0-9] { return parseInt(text(), 10) }
 
-TimeHour "0..24"
+NumberUpTo12 "0..12"
+	= ("1"[0-2] / ("0"?"1"[0-9]/[0-9])) { return parseInt(text(), 10) }
+
+NumberUpTo24 "0..24"
 	= ("2"[0-4] / ("0"?"1"[0-9]/[0-9])) { return parseInt(text(), 10) }
 
-TimeMinute "00..59"
+NumberUpTo59 "00..59"
 	= ([1-5][0-9] / "0"[0-9] ) { return parseInt(text(), 10) }
 
 TimeOfTheDayExpr
@@ -363,24 +374,36 @@ TimeOfTheDayExpr
 	/ ("evening"i / "after"i _ "work"i / "this"i _ "evening"i) { return { hour: 18, minute: 0 } }
 	/ ("night"i / "after" _ "diner"i / "tonight"i) { return { hour: 22, minute: 0 } }
 
-TimeShort "%m/h/d/w/y"
+Hour24Abbr "(n)h"
 	// 0h
-	= hour:TimeHour _?"h"?  { return { hour, minute: 0 } }
+	= hour:NumberUpTo24 _?"h"?  { return { hour, minute: 0 } }
 
-TimeLong "0..24:0..59"
+Hour12  "(n){am,pm}"
+	// 0am
+	= hour:NumberUpTo12 _?"am"i  { return { hour, minute: 0 } }
+	// 0pm
+	/ hour:NumberUpTo12 _?"pm"i  { return { hour: hour + 12, minute: 0 } }
+
+TimeLong24 "0..24:0..59"
 	// 00:00
-	= hour:TimeHour ":" minute:TimeMinute { return { hour, minute } }
+	= hour:NumberUpTo24 ":" minute:NumberUpTo59 { return { hour, minute } }
+
+TimeLong12 "0..12:0..59"
+	// 00:00 am
+	= hour:NumberUpTo12 ":" minute:NumberUpTo59 _? "am"i { return { hour, minute } }
+	// 00:00 pm
+	/ hour:NumberUpTo12 ":" minute:NumberUpTo59 _? "pm"i { return { hour: hour + 12, minute } }
 
 TimeExpr
-	= TimeLong / TimeShort
+	= TimeLong12 / TimeLong24 / Hour12 / Hour24Abbr
 
 DurationLike "% minute..year(s)"
 	// 1 week
-	= value:TextualOne _ unit:UnitTime  { return { value, unit } }
+	= value:TextualOne _ unit:TimeUnit  { return { value, unit } }
 	// 5 min, 5 minutes
-	/ value:NumberExpr _ unit:UnitTimePlural  { return { value, unit } }
+	/ value:NumberExpr _ unit:TimeUnitPlural  { return { value, unit } }
 	// 30m
-	/ value:NumberExpr unit:UnitTimeShort  { return { value, unit } }
+	/ value:NumberExpr unit:TimeUnitShort  { return { value, unit } }
 
 Duration "% minute..year(s)"
 	= duration:DurationLike  { return Duration.fromDurationLike({ [duration.unit]: duration.value }) }

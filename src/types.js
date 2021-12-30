@@ -43,6 +43,17 @@ export class Recurrency {
     }
   }
 
+  static onceAt(dateTime) {
+    return this.make(Frequency.DAILY, {
+      byMinuteOfHour: [dateTime.minute],
+      byHourOfDay: [dateTime.hour],
+      byDayOfMonth: [dateTime.day],
+      byMonthOfYear: [dateTime.month],
+      byYear: [dateTime.year],
+      count: 1,
+    })
+  }
+
   static minutely(rest) {
     return this.make(Frequency.MINUTELY, rest)
   }
