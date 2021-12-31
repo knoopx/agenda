@@ -1,7 +1,5 @@
 /* eslint-disable max-classes-per-file */
 
-import { merge } from "lodash"
-
 export class Frequency {
   static MINUTELY = "MINUTELY"
 
