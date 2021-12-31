@@ -46,14 +46,14 @@ export default defineConfig({
       cache: true,
       allowedStartRules: [
         "Root",
-        "TimeConstructExpr",
+        "NaturalTimeExpr",
         "RecurringExpr",
         "RecurringExprWithOption",
         "NextDateExpr",
         "DateRelativeExpr",
         "OccurrenceExpr",
         "ForExpr",
-        "DateFull",
+        "Date",
       ],
     }),
     react({

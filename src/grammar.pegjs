@@ -3,16 +3,9 @@
 	const { merge, mergeWith } = require('lodash')
 	const { DateTime, Duration, Interval } = require("luxon")
 
-	const DayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]
-	const WeekDays = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
 	const MonthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
 
 	const { Frequency, Recurrency } = require("./types")
-
-	// 1 is Monday and 7 is Sunday
-	function getWeekDayByName(name) {
-		return WeekDays[DayNames.indexOf(name)]
-	}
 
 	function mergeWithArray(initial, ...rest){
 		return mergeWith(initial, ...rest, (a, b) => {
@@ -26,8 +19,8 @@
 }
 
 Root
-	= TimeConstructExpr
-	/ head:Word tail:(_ (TimeConstructExpr / Word))* {
+	= NaturalTimeExpr
+	/ head:Word tail:(_ (NaturalTimeExpr / Word))* {
 		let words = []
 		return tail.reduce((acc, [,x]) => {
 			if (typeof x == "object") {
@@ -43,7 +36,7 @@ _ "space"
 	= [ ]+ { }
 
 Number "number"
-	= [0-9]+ { return parseInt(text(), 10) }
+	= [0-9]+ { return Number(text()) }
 
 NumberOneTextual = "one"i { return 1 }
 NumberTwoTextual = "two"i { return 2 }
@@ -68,9 +61,9 @@ NumberExpr
 NumberOneExpr = (NumberOneTextual / "1") { return  1 }
 
 OcurrenceTextualExpr "once..thrice"
-	= "once" { return 1 }
-    / "twice" { return 2 }
-    / "thrice" { return 3 }
+	= "once"i { return 1 }
+    / "twice"i { return 2 }
+    / "thrice"i { return 3 }
 
 OccurenceNumericExpr "(n) time(s)"
 	// one time, 1 time
@@ -81,13 +74,6 @@ OccurenceNumericExpr "(n) time(s)"
 OccurrenceExpr
 	// 1 time, twice, 3 times
 	= OccurenceNumericExpr / OcurrenceTextualExpr
-
-// 2 times a week, once a day
-RecurrencyExpr
-	// an hour
-	= expr:OccurrenceExpr _ "an"i _ "hour"i { return Recurrency.hourly() }
-	// a day, week, month, year
-	/ value:OccurrenceExpr _ "a"i _ unit:TimeUnitExpr { return Recurrency.fromDurationLike({ value, unit }) }
 
 Char "char"
 	= !(_) . { return text() }
@@ -118,23 +104,7 @@ TimeUnitPlural = expr:TimeUnit "s"i { return text() }
 
 TimeUnitExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
 
-RecurringExprWithOption
-	// every wednesday (at 11) for 1h starting tomorrow
-	= expr:RecurringExpr _ forExpr:ForExpr _ start:StartingExpr {
-		return { ...expr, start,...forExpr }
-	}
-	// every wednesday (at 11) starting tomorrow
-	/ expr:RecurringExpr _ start:StartingExpr {
-		return { ...expr, start }
-	}
-	// every wednesday (at 11) for 1h
-	/ expr:RecurringExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
-
-	// every wednesday (at 11)
-	/ RecurringExpr
-
-
-TimeConstructExpr
+NaturalTimeExpr
 	// every wednesday (at 11) for 1h starting tomorrow
 	= RecurringExprWithOption
 
@@ -165,15 +135,28 @@ TimeConstructExpr
 	}
 
 RecurringExpr
-	// every wednesday at 1
-	= every:EveryExpr at:(_ RecurringAtTimeExprChain)? {
-		return {
-			...every,
-			...(at && at[1])
-		}
-	}
+	// every wednesday at 11
+	= every:EveryExpr _ at:RecurringAtTimeExprChain { return { ...every, ...at } }
+	// every wednesday
+	/ every:EveryExpr
 	// 2 times a week
 	/ RecurrencyExpr
+
+RecurringExprWithOption
+	// every wednesday (at 11) for 1h starting tomorrow
+	= expr:RecurringExpr _ forExpr:ForExpr _ start:StartingExpr { return { ...expr, start,...forExpr } }
+	// every wednesday (at 11) starting tomorrow
+	/ expr:RecurringExpr _ start:StartingExpr { return { ...expr, start } }
+	// every wednesday (at 11) for 1h
+	/ expr:RecurringExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
+	// every wednesday (at 11)
+	/ RecurringExpr
+
+RecurrencyExpr
+	// twice an hour
+	= expr:OccurrenceExpr _ "an"i _ "hour"i { return Recurrency.hourly() }
+	// three times a day
+	/ value:OccurrenceExpr _ "a"i _ unit:TimeUnitExpr { return Recurrency.fromDurationLike({ value, unit }) }
 
 EveryExpr
 	= "every"i _ expr:EverySubExpr { return expr }
@@ -192,16 +175,16 @@ EveryDateSpecifierExpr
     // every weekend
 	/ "weekend"i { return Recurrency.weekly({ byDayOfWeek: ["SA"] }) }
 	// every 2 tuesdays
-	/ interval:NumberExpr _ expr:DayName "s" {
+	/ interval:NumberExpr _ expr:DayNameAsShort "s" {
 		return Recurrency.weekly({
 			interval,
-			byDayOfWeek: [getWeekDayByName(expr)],
+			byDayOfWeek: [expr],
 		})
 	}
 	// every monday
-	/ expr:DayName {
+	/ expr:DayNameAsShort {
 		return Recurrency.weekly({
-			byDayOfWeek: [getWeekDayByName(expr)],
+			byDayOfWeek: [expr],
 		})
 	}
 	// every january, february, march, april, may, june, july, august, september, october, november, december
@@ -226,6 +209,7 @@ EveryTimeSpecifierExpr
 	/ unit:TimeUnit { return Recurrency.fromDurationLike({ unit }) }
 
 EverySubExpr
+	// every
 	= head:EveryDateSpecifierExpr tail:(_ "and"i _ EveryDateSpecifierExpr)* {
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
@@ -289,30 +273,20 @@ NextDateExpr
 	= ("next"i / "on"i) _ expr:NextDateSubExpr { return expr }
 
 NextDateSubExpr
-    = "week" { return Now.plus({ weeks: 1 }).startOf("week") }
-    / "month" { return Now.plus({ months: 1 }).startOf("month") }
-    / "quarter" { return Now.plus({ months: 4 }).startOf("month") }
-    / "year" { return Now.plus({ years: 1 }).startOf("year") }
+    = "week"i { return Now.plus({ weeks: 1 }).startOf("week") }
+    / "month"i { return Now.plus({ months: 1 }).startOf("month") }
+    / "quarter"i { return Now.plus({ months: 4 }).startOf("month") }
+    / "year"i { return Now.plus({ years: 1 }).startOf("year") }
 
 	// next monday
-	/ dayName:DayName {
-		return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: DayNames.indexOf(dayName)  })
-		// let start, current = Now.startOf("day")
-		// const weekDay = getWeekDayByName(dayName)
-
-		// if (typeof weekDay !== "number")
-		// 	return null
-
-		// if (!(weekDay > 0 && weekDay < 7))
-		// 	return null
-
-		// while (current.weekday !== weekDay) {
-		// 	current = current.plus({ days: 1 })
-		// 	if (end.diff(start).days > 7){
-		// 		return null
-		// 	}
-		// }
-		// return current
+	/ number:DayNameAsNumber {
+		// return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: number })
+		let current = Now.startOf("day")
+		while (current.weekday !== number) {
+			console.log(current.weekday, number)
+			current = current.plus({ days: 1 })
+		}
+		return current
 	 }
 
 DateShort
@@ -321,27 +295,33 @@ DateShort
 	// 25 december
 	/ day:DayNumber _ month:MonthNameAsNumber { return Now.set({ month, day }) }
 
-DateFull
+Date
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day)  }
 
 DateExpr
 	= DateRelativeExpr
-    / DateFull
+    / Date
 	/ DateShort
 
 DayNumber "0..31"
-	= ("3" [0-1] / [0-2] [0-9] / [0-9]) { return parseInt(text(), 10) }
+	= ("3" [0-1] / [0-2] [0-9] / [0-9]) { return Number(text()) }
 
 DayName "monday...sunday"
 	= name:("monday"i / "tuesday"i / "wednesday"i / "thursday"i / "friday"i / "saturday"i / "sunday"i) { return name }
 
+DayNameAsShort
+	= number:DayNameAsNumber { return ["MO", "TU", "WE", "TH", "FR", "SA", "SU"][number - 1] }
+
+DayNameAsNumber
+	= name:DayName { return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(name) + 1 }
+
 MonthNumber "0..12"
-	= ("1"[0-2] / [0-9]) {  return parseInt(text(), 10) }
+	= ("1"[0-2] / [0-9]) {  return Number(text()) }
 
 MonthName "february..december"
 	= name:("january"i / "february"i / "march"i / "april"i / "may"i / "june"i / "july"i / "august"i / "september"i / "october"i / "november"i / "december"i) { return name }
 
-MonthNameAsNumber "1..12"
+MonthNameAsNumber
 	= name:MonthName { return MonthNames.indexOf(name.toLowerCase()) + 1 }
 
 MonthExpr
@@ -349,16 +329,16 @@ MonthExpr
 	/ MonthNumber
 
 Number4Digit "year number"
-	= [0-9][0-9][0-9][0-9] { return parseInt(text(), 10) }
+	= [0-9][0-9][0-9][0-9] { return Number(text()) }
 
 NumberUpTo12 "0..12"
-	= ("1"[0-2] / ("0"?"1"[0-9]/[0-9])) { return parseInt(text(), 10) }
+	= ("1"[0-2] / ("0"?"1"[0-9]/[0-9])) { return Number(text()) }
 
 NumberUpTo24 "0..24"
-	= ("2"[0-4] / ("0"?"1"[0-9]/[0-9])) { return parseInt(text(), 10) }
+	= ("2"[0-4] / ("0"?"1"[0-9]/[0-9])) { return Number(text()) }
 
 NumberUpTo59 "00..59"
-	= ([1-5][0-9] / "0"[0-9] ) { return parseInt(text(), 10) }
+	= ([1-5][0-9] / "0"[0-9] ) { return Number(text()) }
 
 TimeOfTheDayExpr
 	= ("morning"i / "after" _ "wake" _ "up" / "this" _ "morning") { return { hour: 9, minute: 0 } }
