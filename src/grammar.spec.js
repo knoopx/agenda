@@ -25,20 +25,15 @@ function parse(input, startRule = "Root") {
 }
 
 function testRule(name, cb) {
-  const assertions = []
   const assert = (input, expected) => {
-    assertions.push([input, expected])
+    it(`parses ${inspect(input)}`, () => {
+      expect(parse(input, name)).toEqual(expected)
+      expect(parse(input.toUpperCase(), name)).toEqual(expected)
+    })
   }
 
-  cb(assert)
-
   describe(name, () => {
-    assertions.forEach(([input, expected]) => {
-      it(`parses ${inspect(input)}`, () => {
-        expect(parse(input, name)).toEqual(expected)
-        expect(parse(input.toUpperCase(), name)).toEqual(expected)
-      })
-    })
+    cb(assert)
   })
 }
 

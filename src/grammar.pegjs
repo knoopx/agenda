@@ -162,7 +162,7 @@ EveryExpr
 	= "every"i _ expr:EverySubExpr { return expr }
 	/ "everyday"i { return Recurrency.daily() }
 
-EveryDateSpecifierExpr
+EveryDateSpecifierSubExpr
 	// every 29 december
 	= expr:DateShort {
 		return Recurrency.yearly({
@@ -195,7 +195,7 @@ EveryDateSpecifierExpr
 		})
 	}
 
-EveryTimeSpecifierExpr
+EveryTimeSpecifierSubExpr
 	// every morning
 	= expr:TimeOfTheDayExpr {
 		return Recurrency.daily({
@@ -210,10 +210,10 @@ EveryTimeSpecifierExpr
 
 EverySubExpr
 	// every
-	= head:EveryDateSpecifierExpr tail:(_ "and"i _ EveryDateSpecifierExpr)* {
+	= head:EveryDateSpecifierSubExpr tail:(_ "and"i _ EveryDateSpecifierSubExpr)* {
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
-	/ EveryTimeSpecifierExpr
+	/ EveryTimeSpecifierSubExpr
 
 
 // in 5 minutes, in 1w
@@ -280,10 +280,8 @@ NextWeekDayExpr
 		// return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: number })
 		let current = Now
 		while (current.weekday !== number) {
-			console.log(current.weekday, number, current)
 			current = current.plus({ days: 1 })
 		}
-		console.log(current)
 		return current
 	 }
 
