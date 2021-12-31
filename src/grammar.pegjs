@@ -109,7 +109,7 @@ NaturalTimeExpr
 	= RecurringExprWithOption
 
 	// tomorrow at 1h, 23/12/2022 at 20:50
-    / start:DateExpr at:(_ AtTimeExpr)? forExpr:(_ ForExpr)? {
+    / start:DateExpr at:(_ AtExpr)? forExpr:(_ ForExpr)? {
 		if (at) start = start.set(at[1])
 		return Recurrency.onceAt(start, forExpr && forExpr[1])
 	}
@@ -120,7 +120,7 @@ NaturalTimeExpr
 	}
 
 	// at 5h
-    / at:AtTimeExpr forExpr:(_ ForExpr)? {
+    / at:AtExpr forExpr:(_ ForExpr)? {
 		return Recurrency.onceAt(Now.set(at), forExpr && forExpr[1])
 	}
 
@@ -231,18 +231,18 @@ StartingExpr
 UntilExpr
 	= "until"i _ expr:DateExpr { return expr }
 
-AtTimeExpr
+AtExpr "at..."
 	// morning, at night
 	= ("at"i _)? expr:TimeOfTheDayExpr { return expr }
 	// at 5h
-	/ "at"i _ expr:AtTimeSubExpr { return expr }
+	/ "at"i _ expr:AtSubExpr { return expr }
 
-AtTimeSubExpr
+AtSubExpr
 	= TimeExpr
 	/ expr:TimeOfTheDayExpr { return Now.set(expr)  }
 
 RecurringAtTimeExpr
-	= time:AtTimeExpr {
+	= time:AtExpr {
 		return {
 			byHourOfDay: [time.hour],
 			byMinuteOfHour: [time.minute]
@@ -254,40 +254,47 @@ RecurringAtTimeExprChain
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
 
-OnExpr "on..."
-	= "on"i _ expr:DateShort { return expr }
-
 ForExpr "for..."
 	= "for"i _ expr:Duration { return { duration: expr } }
 
-DateRelativeExpr "relative date"
-	= "today"i { return Now.startOf("day") }
-    / "tomorrow"i { return Now.startOf("day").plus({ days: 1 }) }
-    / "weekend"i {
-		return Now.startOf("week").set({ weekday: 6 })
-	}
-	/ NextDateExpr
+OnExpr "on..."
+	= "on"i _ expr:DateShort { return expr }
 
-NextDateExpr
+NextExpr "next..."
 	// next monday
-	= ("next"i / "on"i) _ expr:NextDateSubExpr { return expr }
+	= "next"i _ expr:NextSubExpr { return expr }
 
-NextDateSubExpr
+NextSubExpr
+	= NextPeriodExpr
+	/ NextWeekDayExpr
+
+NextPeriodExpr
     = "week"i { return Now.plus({ weeks: 1 }).startOf("week") }
     / "month"i { return Now.plus({ months: 1 }).startOf("month") }
     / "quarter"i { return Now.plus({ months: 4 }).startOf("month") }
     / "year"i { return Now.plus({ years: 1 }).startOf("year") }
 
+NextWeekDayExpr
 	// next monday
-	/ number:DayNameAsNumber {
+	= number:DayNameAsNumber {
 		// return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: number })
-		let current = Now.startOf("day")
+		let current = Now
 		while (current.weekday !== number) {
-			console.log(current.weekday, number)
+			console.log(current.weekday, number, current)
 			current = current.plus({ days: 1 })
 		}
+		console.log(current)
 		return current
 	 }
+
+TodayAsDate
+	= "today"i { return Now.startOf("day") }
+
+TomorrowAsDate
+	= "tomorrow"i { return Now.startOf("day").plus({ days: 1 }) }
+
+WeekendAsDate
+	= "weekend"i { return Now.startOf("week").set({ weekday: 6 }) }
 
 DateShort
 	// 25/12
@@ -299,8 +306,11 @@ Date
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day)  }
 
 DateExpr
-	= DateRelativeExpr
-    / Date
+	= TodayAsDate
+    / TomorrowAsDate
+    / WeekendAsDate
+	/ NextExpr
+	/ Date
 	/ DateShort
 
 DayNumber "0..31"

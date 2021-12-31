@@ -59,12 +59,12 @@ testRule("OccurrenceExpr", (assert) => {
   assert("3 times", 3)
 })
 
-testRule("NextDateExpr", (assert) => {
+testRule("NextExpr", (assert) => {
   assert("next monday", DateTime.local(2021, 1, 4))
   assert("next month", DateTime.local(2021, 2, 1))
 })
 
-// testRule("DateRelativeExpr", (assert) => {
+// testRule("NextSubExpr", (assert) => {
 //   assert("today", DateTime.local(2021, 1, 1))
 //   assert("tomorrow", DateTime.local(2021, 1, 2))
 //   assert("weekend", DateTime.local(2021, 1, 2))
