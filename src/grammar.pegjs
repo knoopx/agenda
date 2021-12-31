@@ -1,6 +1,6 @@
 {
 	const path = require("path")
-	const { mergeWith } = require('lodash')
+	const { merge, mergeWith } = require('lodash')
 	const { DateTime, Duration, Interval } = require("luxon")
 
 	const DayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]
@@ -45,51 +45,49 @@ _ "space"
 Number "number"
 	= [0-9]+ { return parseInt(text(), 10) }
 
-TextualOne = "one"i { return 1 }
-TextualTwo = "two"i { return 2 }
-TextualThree = "three"i { return 3 }
-TextualFour = "four"i { return 4 }
-TextualFive = "five"i { return 5 }
-TextualSix = "six"i { return 6 }
-TextualSeven = "seven"i { return 7 }
-TextualEight = "eight"i { return 8 }
-TextualNine = "nine"i { return 9 }
-TextualTen = "ten"i { return 10 }
-TextualEleven = "eleven"i { return 11 }
-TextualTwelve = "twelve"i { return 12 }
+NumberOneTextual = "one"i { return 1 }
+NumberTwoTextual = "two"i { return 2 }
+NumberThreeTextual = "three"i { return 3 }
+NumberFourTextual = "four"i { return 4 }
+NumberFiveTextual = "five"i { return 5 }
+NumberSixTextual = "six"i { return 6 }
+NumberSevenTextual = "seven"i { return 7 }
+NumberEightTextual = "eight"i { return 8 }
+NumberNineTextual = "nine"i { return 9 }
+NumberTenTextual = "ten"i { return 10 }
+NumberElevenTextual = "eleven"i { return 11 }
+NumberTwelveTextual = "twelve"i { return 12 }
 
-TextualNumber "one..twelve"
-	= (TextualOne / TextualTwo / TextualThree / TextualFour / TextualFive / TextualSix / TextualSeven / TextualEight / TextualNine / TextualTen / TextualEleven / TextualTwelve)
+NumberTextualExpr "one..twelve"
+	= (NumberOneTextual / NumberTwoTextual / NumberThreeTextual / NumberFourTextual / NumberFiveTextual / NumberSixTextual / NumberSevenTextual / NumberEightTextual / NumberNineTextual / NumberTenTextual / NumberElevenTextual / NumberTwelveTextual)
 
 NumberExpr
 	= Number
-	/ TextualNumber
+	/ NumberTextualExpr
 
-OneExpr = (TextualOne / "1") { return  1 }
+NumberOneExpr = (NumberOneTextual / "1") { return  1 }
 
-NumericOccurenceExpr "% times"
-	// 1 time
-	=  OneExpr _ { return 1 }
-	// 5 times
-	/value:NumberExpr { return value }
-
-TextualOcurrenceExpr "once..thrice"
+OcurrenceTextualExpr "once..thrice"
 	= "once" { return 1 }
     / "twice" { return 2 }
     / "thrice" { return 3 }
 
-CountExpr
+OccurenceNumericExpr "(n) time(s)"
+	// one time, 1 time
+	=  NumberOneExpr _ "time"i { return 1 }
+	// 5 times
+	/ expr:NumberExpr _ "times"i { return expr }
+
+OccurrenceExpr
 	// 1 time, twice, 3 times
-	= value:(NumericOccurenceExpr / TextualOcurrenceExpr) { return  value }
+	= OccurenceNumericExpr / OcurrenceTextualExpr
 
 // 2 times a week, once a day
 RecurrencyExpr
 	// an hour
-	= expr:CountExpr _ "an"i _ "hour"i { return Recurrency.hourly() }
+	= expr:OccurrenceExpr _ "an"i _ "hour"i { return Recurrency.hourly() }
 	// a day, week, month, year
-	/ value:CountExpr _ "a"i _ unit:UnitTemporalExpr {
-		return Recurrency.fromDurationLike({ value, unit })
-	}
+	/ value:OccurrenceExpr _ "a"i _ unit:TimeUnitExpr { return Recurrency.fromDurationLike({ value, unit }) }
 
 Char "char"
 	= !(_) . { return text() }
@@ -109,60 +107,59 @@ TimeUnit
 	/ "year"i { return "years" }
 
 TimeUnitShort
-	= "m"i { return "minutes" }
+	= "min"i { return "minutes" }
 	/ "h"i { return "hours" }
 	/ "d"i { return "days" }
 	/ "w"i { return "weeks" }
+	/ "mo"i { return "months" }
 	/ "y"i { return "years" }
 
 TimeUnitPlural = expr:TimeUnit "s"i { return text() }
 
-UnitTemporalExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
+TimeUnitExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
+
+RecurringExprWithOption
+	// every wednesday (at 11) for 1h starting tomorrow
+	= expr:RecurringExpr _ forExpr:ForExpr _ start:StartingExpr {
+		return { ...expr, start,...forExpr }
+	}
+	// every wednesday (at 11) starting tomorrow
+	/ expr:RecurringExpr _ start:StartingExpr {
+		return { ...expr, start }
+	}
+	// every wednesday (at 11) for 1h
+	/ expr:RecurringExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
+
+	// every wednesday (at 11)
+	/ RecurringExpr
+
 
 TimeConstructExpr
-	// every wednesday at 1 for 1h starting tomorrow
-	= expr:RecurringExpr _for:(_ ForExpr)? start:(_ StartingExpr)? {
-		return {
-			...expr,
-			...(start && {
-					start: start[1]
-				}),
-			...(_for && _for[1] )
-		}
-	}
+	// every wednesday (at 11) for 1h starting tomorrow
+	= RecurringExprWithOption
+
 	// tomorrow at 1h, 23/12/2022 at 20:50
-    / start:DateExpr at:(_ AtTimeExpr)? _for:(_ ForExpr)? {
-		const forExp = _for && _for[1]
-		if (at) return {
-			...forExp,
-			start: start.set(at[1]),
-		}
-		return {
-			...forExp,
-			start,
-		}
+    / start:DateExpr at:(_ AtTimeExpr)? forExpr:(_ ForExpr)? {
+		if (at) start = start.set(at[1])
+		return Recurrency.onceAt(start, forExpr && forExpr[1])
 	}
 
 	// after work, morning
 	/ at:TimeOfTheDayExpr {
-		return {
-			start: Now.set(at),
-		}
+		return Recurrency.onceAt(Now.set(at))
 	}
 
 	// at 5h
-    / at:AtTimeExpr _for:(_ ForExpr)? {
-		return {
-			start: Now.set(at),
-		}
+    / at:AtTimeExpr forExpr:(_ ForExpr)? {
+		return Recurrency.onceAt(Now.set(at), forExpr && forExpr[1])
 	}
 
 	// in 5m, in 5 minutes
-	/ expr:InExpr _for:(_ ForExpr)? {
+	/ expr:InExpr forExpr:(_ ForExpr)? {
 		return {
 			...expr,
-			...(_for && {
-				start: _for[1],
+			...(forExpr && {
+				start: forExpr[1],
 			})
 		}
 	}
@@ -273,22 +270,17 @@ RecurringAtTimeExprChain
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
 
-OnExpr
+OnExpr "on..."
 	= "on"i _ expr:DateShort { return expr }
 
-ForExpr
+ForExpr "for..."
 	= "for"i _ expr:Duration { return { duration: expr } }
 
-DateRelative "relative date"
+DateRelativeExpr "relative date"
 	= "today"i { return Now.startOf("day") }
     / "tomorrow"i { return Now.startOf("day").plus({ days: 1 }) }
     / "weekend"i {
-		return Now.set({ weekday: [6, 7] })
-		// let current = Now.startOf("day")
-		// while (![6,7].include(current.weekday)) {
-		// 	current = current.plus({days: 1})
-		// }
-		// return current
+		return Now.startOf("week").set({ weekday: 6 })
 	}
 	/ NextDateExpr
 
@@ -333,7 +325,7 @@ DateFull
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day)  }
 
 DateExpr
-	= DateRelative
+	= DateRelativeExpr
     / DateFull
 	/ DateShort
 
@@ -397,15 +389,15 @@ TimeLong12 "0..12:0..59"
 TimeExpr
 	= TimeLong12 / TimeLong24 / Hour12 / Hour24Abbr
 
-DurationLike "% minute..year(s)"
-	// 1 week
-	= value:TextualOne _ unit:TimeUnit  { return { value, unit } }
+DurationLike "(n) minute..year(s)"
+	// one day, 2 weeks, 3 months
+	= value:NumberOneTextual _ unit:TimeUnit  { return { value, unit } }
 	// 5 min, 5 minutes
 	/ value:NumberExpr _ unit:TimeUnitPlural  { return { value, unit } }
 	// 30m
 	/ value:NumberExpr unit:TimeUnitShort  { return { value, unit } }
 
-Duration "% minute..year(s)"
+Duration "(n) minute..year(s)"
 	= duration:DurationLike  { return Duration.fromDurationLike({ [duration.unit]: duration.value }) }
 
 Period

@@ -8,7 +8,9 @@ Settings.now = () => Now.toMillis()
 
 it("works", () => {
   const store = Store.create({
-    tasks: [{ id: "1", expression: "task every monday" }],
+    tasks: [
+      { id: "recurring", expression: "task every 2 days at 5 for 1w" }
+    ],
   })
 
   expect(store.tasks.length).toEqual(1)

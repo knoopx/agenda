@@ -44,7 +44,17 @@ export default defineConfig({
     viteCommonjs(),
     peggyPlugin({
       cache: true,
-      allowedStartRules: ["Root", "TimeConstructExpr", "DateFull"],
+      allowedStartRules: [
+        "Root",
+        "TimeConstructExpr",
+        "RecurringExpr",
+        "RecurringExprWithOption",
+        "NextDateExpr",
+        "DateRelativeExpr",
+        "OccurrenceExpr",
+        "ForExpr",
+        "DateFull",
+      ],
     }),
     react({
       fastRefresh: process.env.NODE_ENV !== "test",

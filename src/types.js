@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
+import { merge } from "lodash"
+
 export class Frequency {
   static MINUTELY = "MINUTELY"
 
@@ -43,15 +45,18 @@ export class Recurrency {
     }
   }
 
-  static onceAt(dateTime) {
-    return this.make(Frequency.DAILY, {
-      byMinuteOfHour: [dateTime.minute],
-      byHourOfDay: [dateTime.hour],
-      byDayOfMonth: [dateTime.day],
-      byMonthOfYear: [dateTime.month],
-      byYear: [dateTime.year],
-      count: 1,
-    })
+  static onceAt(start, rest = {}) {
+    // return this.make(Frequency.DAILY, {
+    //   start,
+    //   byMinuteOfHour: [start.minute],
+    //   byHourOfDay: [start.hour],
+    //   byDayOfMonth: [start.day],
+    //   byMonthOfYear: [start.month],
+    //   byYear: [start.year],
+    //   count: 1,
+    //   ...rest,
+    // })
+    return { start, ...rest }
   }
 
   static minutely(rest) {
