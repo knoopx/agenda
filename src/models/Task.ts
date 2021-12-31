@@ -73,13 +73,6 @@ const Task = Expression.named("Task")
           return null
         }
       },
-
-      get nextAt() {
-        if (self.isRecurring) {
-          return self.nextAfter(DateTime.now())
-        }
-        return self.output?.start
-      },
     };
   });
 

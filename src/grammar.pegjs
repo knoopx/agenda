@@ -52,7 +52,18 @@ NumberElevenTextual = "eleven"i { return 11 }
 NumberTwelveTextual = "twelve"i { return 12 }
 
 NumberTextualExpr "one..twelve"
-	= (NumberOneTextual / NumberTwoTextual / NumberThreeTextual / NumberFourTextual / NumberFiveTextual / NumberSixTextual / NumberSevenTextual / NumberEightTextual / NumberNineTextual / NumberTenTextual / NumberElevenTextual / NumberTwelveTextual)
+	= NumberOneTextual
+	/ NumberTwoTextual
+	/ NumberThreeTextual
+	/ NumberFourTextual
+	/ NumberFiveTextual
+	/ NumberSixTextual
+	/ NumberSevenTextual
+	/ NumberEightTextual
+	/ NumberNineTextual
+	/ NumberTenTextual
+	/ NumberElevenTextual
+	/ NumberTwelveTextual
 
 NumberExpr
 	= Number
@@ -104,19 +115,9 @@ TimeUnitPlural = expr:TimeUnit "s"i { return text() }
 
 TimeUnitExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
 
-NaturalDueExpr
-	= expr:InExpr forExpr:(_ ForExpr)? {
-		return {
-			...expr,
-			...(forExpr && {
-				start: forExpr[1],
-			})
-		}
-	}
-
 NaturalTimeExpr
 	// every wednesday (at 11) for 1h starting tomorrow
-	= NaturalRecurringExpr
+	= NaturalRecurringSubExpr
 	// tomorrow at 1h, 23/12/2022 at 20:50
     / NaturalDateTimeExpr
 	// after work, morning
@@ -125,6 +126,17 @@ NaturalTimeExpr
     / NaturalAtTimeExpr
 	// in 5m, in 5 minutes
 	/ NaturalDueExpr
+
+NaturalRecurringExpr
+	// every wednesday (at 11) for 1h starting tomorrow
+	// = expr:NaturalRecurringSubExpr _ forExpr:ForExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd,...forExpr } }
+	= expr:NaturalRecurringSubExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd,...forExpr } }
+	// every wednesday (at 11) starting tomorrow
+	/ expr:NaturalRecurringSubExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd } }
+	// every wednesday (at 11) for 1h
+	/ expr:NaturalRecurringSubExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
+	// every wednesday (at 11)
+	/ NaturalRecurringSubExpr
 
 NaturalDateTimeExpr
 	= start:DateExpr at:(_ AtTimeSubExpr)? forExpr:(_ ForExpr)? {
@@ -142,23 +154,19 @@ NaturalAtTimeExpr
 		return Recurrency.onceAt(Now.set(at), forExpr && forExpr[1])
 	}
 
-NaturalRecurringExpr
-	// every wednesday (at 11) for 1h starting tomorrow
-	= expr:RecurringSubExpr _ forExpr:ForExpr _ start:StartingExpr { return { ...expr, start,...forExpr } }
-	// every wednesday (at 11) starting tomorrow
-	/ expr:RecurringSubExpr _ start:StartingExpr { return { ...expr, start } }
-	// every wednesday (at 11) for 1h
-	/ expr:RecurringSubExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
-	// every wednesday (at 11)
-	/ RecurringSubExpr
+NaturalDueExpr
+	= expr:InExpr forExpr:(_ ForExpr)? {
+		return {
+			...expr,
+			...(forExpr && {
+				start: forExpr[1],
+			})
+		}
+	}
 
-RecurringSubExpr
-	// every monday and wednesday at 11
-	= EveryManyAtTimeExpr
-	// every wednesday at 11
-	/ EveryAtTimeExpr
+NaturalRecurringSubExpr
 	// every wednesday
-	/ EveryExpr
+	= EveryExpr
 	// 2 times a week
 	/ RecurrencyExpr
 
@@ -172,10 +180,33 @@ EveryExpr
 	= "every"i _ expr:EverySubExpr { return expr }
 	/ "everyday"i { return Recurrency.daily() }
 
-EveryWeekDay
+EverySubExpr
+	= expr:EveryTimeExtendableSubExpr _ at:EveryAtTimeSubExpr { return { ...expr, ...at } }
+	/ expr:EveryTimeExtendableSubExpr _ _for:ForExpr { return { ...expr, ..._for } }
+	/ EveryTimeExtendableSubExpr
+	// ...{5 minutes,morning, hour}
+	/ EveryTimeSubExpr
+
+EveryTimeSubExpr
+	// every morning
+	= EveryTimeOfTheDayExpr
+	// every 5 minutes
+	/ Period
+
+EveryTimeExtendableSubExpr
+	// ...{monday and wednesday,january and march}
+	= ManyEveryRepeatableSubExpr
+	// ...{wednesday,january}
+	/ EveryRepeatableSubExpr
+	// ...{10 august,10/8/2020}
+	/ EveryDateSubExpr
+
+
+
+EveryWeekDaySubExpr
 	= expr:DayNameAsShort { return Recurrency.weekly({ byDayOfWeek: [expr] }) }
 
-EveryMonth
+EveryMonthSubExpr
 	= head:MonthNameAsNumber tail:(_ "and" _ MonthNameAsNumber)* {
 		return Recurrency.monthly({
 			byMonthOfYear: [head, ...tail.map(([,,,t]) => t)],
@@ -195,34 +226,26 @@ EveryDate
 EveryWeekend = "weekend"i { return Recurrency.weekly({ byDayOfWeek: ["SA"] }) }
 EveryInterval = interval:NumberExpr _ expr:DayNameAsShort "s" { return Recurrency.weekly({ interval, byDayOfWeek: [expr] }) }
 
-EveryDateSpecifierSubExpr
-	// every 29 december
-	= EveryDate
+EveryDateSubExpr
+	// every monday, every january
+	= EveryRepeatableSubExpr
     // every weekend
 	/ EveryWeekend
 	// every 2 tuesdays
 	/ EveryInterval
-	// every monday, every january
-	/ EveryRepeatableExpr
 
-EveryRepeatableExpr
+EveryRepeatableSubExpr
+	// every 29 december
+	= EveryDate
 	// every january, february, march, april, may, june, july, august, september, october, november, december
-	= EveryMonth
+	/ EveryMonthSubExpr
 	// every monday
-	/EveryWeekDay
+	/ EveryWeekDaySubExpr
 
-ManyEveryRepeatableExpr
-	= head:EveryRepeatableExpr tail:(_ "and"i _ EveryRepeatableExpr)* {
+ManyEveryRepeatableSubExpr //"monday..friday (and...)*"
+	= head:EveryRepeatableSubExpr tail:(_ "and"i _ EveryRepeatableSubExpr)* {
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
-
-EveryManyAtTimeExpr
-	= every:EveryExpr _ at:ManyEveryAtTimeExpr { return { ...every, ...at } }
-
-EverySubExpr
-	// every
-	= ManyEveryRepeatableExpr
-	/ EveryTimeSpecifierSubExpr
 
 EveryTimeOfTheDayExpr
 	= expr:TimeOfTheDayExpr {
@@ -231,35 +254,31 @@ EveryTimeOfTheDayExpr
 			byMinuteOfHour: [expr.minute],
 		})
 	}
-EveryTimeSpecifierSubExpr
-	// every morning
-	= EveryTimeOfTheDayExpr
-	// every 5 minutes
-	/ Period
-	// every minute hour, day, week, month, year
-	/ unit:TimeUnit { return Recurrency.fromDurationLike({ unit }) }
 
-
-// in 5 minutes, in 1w
 InExpr
-	//"in ..."
-	= "in"i _ duration:Duration {
-		return {
-			start: Now.plus(duration),
-		}
-	}
+	// in 5 minutes, in 1w
+	= "in"i _ duration:Duration { return { start: Now.plus(duration) } }
 
-StartingExpr
+StartingSubExpr
+	// starting tomorrow, starting in 2w, starting next week
 	= "starting"i _ expr:DateExpr { return expr }
 
-UntilExpr
+UntilSubExpr
 	= "until"i _ expr:DateExpr { return expr }
+
+StartAndEndSubExpr
+	= left:StartingSubExpr _ right:StartingSubExpr { return { ...left, ...right } }
+
+StartEndSubExpr
+	= StartAndEndSubExpr
+	/ StartingSubExpr
+	/ UntilSubExpr
 
 AtTimeExpr
 	= TimeOfTheDayExpr
 	/ "at"i _ expr:AtTimeSubExpr { return expr }
 
-AtTimeSubExpr "at..."
+AtTimeSubExpr //"at..."
 	// morning, at night
 	= TimeOfTheDayExpr
 	// at 5h
@@ -269,7 +288,7 @@ AtTimeSubExpr "at..."
 	// morning
 	/ expr:TimeOfTheDayExpr { return Now.set(expr)  }
 
-EveryAtTimeExpr
+EveryAtTimeSubExpr
 	= time:AtTimeSubExpr {
 		return {
 			byHourOfDay: [time.hour],
@@ -278,7 +297,7 @@ EveryAtTimeExpr
 	}
 
 ManyEveryAtTimeExpr
-	= head:EveryAtTimeExpr tail:(_ "and"i _ EveryAtTimeExpr)* {
+	= head:EveryAtTimeSubExpr tail:(_ "and"i _ EveryAtTimeSubExpr)* {
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
 
@@ -380,7 +399,7 @@ TimeOfTheDayExpr
 	= ("morning"i / "after" _ "wake" _ "up" / "this" _ "morning") { return { hour: 9, minute: 0 } }
 	/ ("afternoon"i / "after"i _ "lunch"i / "this"i _ "afternoon"i) { return { hour: 15, minute: 0 } }
 	/ ("evening"i / "after"i _ "work"i / "this"i _ "evening"i) { return { hour: 18, minute: 0 } }
-	/ ("night"i / "after" _ "diner"i / "tonight"i) { return { hour: 22, minute: 0 } }
+	/ ("night"i / "after" _ "diner"i) { return { hour: 22, minute: 0 } }
 
 Hour24Abbr "(n)h"
 	// 0h

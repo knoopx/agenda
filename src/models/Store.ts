@@ -58,22 +58,6 @@ const Store = t
     get calendarEnd() {
       return this.calendarStart.plus({ months: 11 }).endOf("month");
     },
-    // get schedule() {
-    //   return new Schedule({
-    //     // timezone: self.timeZone,
-    //     rrules: self.tasks.map((task) => task.rrule).filter(Boolean),
-    //   });
-    // },
-    // get occurrences() {
-    //   return (
-    //     this.schedule
-    //       .occurrences({
-    //         start: this.calendarStart,
-    //         end: this.calendarEnd,
-    //       })
-    //       .toArray()
-    //   );
-    // },
 
     get occurrencesByDay() {
       const result = new Map();

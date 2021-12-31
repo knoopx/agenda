@@ -54,7 +54,7 @@ export default defineConfig({
         "OccurrenceExpr",
         "NaturalRecurringExpr",
         "NaturalRecurringExpr",
-        "RecurringSubExpr",
+        "NaturalRecurringSubExpr",
         "Root",
       ],
     }),

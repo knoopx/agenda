@@ -70,7 +70,7 @@ testRule("DateExpr", (e) => {
   e("weekend").toEqual(DateTime.local(2021, 1, 2))
 })
 
-testRule("RecurringSubExpr", (e) => {
+testRule("NaturalRecurringSubExpr", (e) => {
   e("every wednesday").toEqual({
     frequency: Frequency.WEEKLY,
     byDayOfWeek: ["WE"],
@@ -93,7 +93,7 @@ testRule("RecurringSubExpr", (e) => {
   // })
 })
 
-testRule("RecurringSubExpr", (e) => {
+testRule("NaturalRecurringSubExpr", (e) => {
   e("every wednesday").toEqual({
     frequency: Frequency.WEEKLY,
     byDayOfWeek: ["WE"],
@@ -140,8 +140,6 @@ testRule("RecurringSubExpr", (e) => {
     byHourOfDay: [11],
     byMinuteOfHour: [0],
   })
-
-
 
   // e("every wednesday at 11 starting tomorrow").toEqual({
   //   start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
