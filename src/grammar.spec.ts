@@ -1,4 +1,4 @@
-import Tracer from 'pegjs-backtrace'
+import Tracer from "pegjs-backtrace";
 
 import { inspect } from "util";
 
@@ -17,10 +17,10 @@ function parse(input: string, startRule = "Root") {
       grammarSource: "",
       startRule,
       now: Now,
-      tracer
+      tracer,
     });
   } catch (e) {
-    throw new Error([e.message, tracer.getBacktraceString()].join("\n"))
+    throw new Error([e.message, tracer.getBacktraceString()].join("\n"));
   }
 }
 
@@ -192,8 +192,7 @@ testRule("AtTimeExpr", (e) => {
   e("after diner").toEqual({ hour: 22, minute: 0 });
   e("morning").toEqual({ hour: 9, minute: 0 });
   e("at night").toEqual({ hour: 22, minute: 0 });
-})
-
+});
 
 testRule("EverySubExprListExpr", (e) => {
   e("july and august").toEqual({
@@ -202,37 +201,53 @@ testRule("EverySubExprListExpr", (e) => {
     byDayOfMonth: [1],
     byHourOfDay: [0],
     byMinuteOfHour: [0],
-  })
+  });
 
   e("monday and wednesday").toEqual({
     frequency: Frequency.WEEKLY,
     byDayOfWeek: ["MO", "WE"],
     byHourOfDay: [0],
     byMinuteOfHour: [0],
-  })
-})
+  });
+});
 
 testRule("EveryExprEndAtTimeOrForExpr", (e) => {
-  e("after diner for 5 min").toEqual({ byHourOfDay: [22], byMinuteOfHour: [0], duration: Duration.fromObject({ minutes: 5 }) })
-  e("at 22h for 15 min").toEqual({ byHourOfDay: [22], byMinuteOfHour: [0], duration: Duration.fromObject({ minutes: 15 }) });
-  e("at 14 for 1h").toEqual({ byHourOfDay: [14], byMinuteOfHour: [0], duration: Duration.fromObject({ hours: 1 }) });
+  e("after diner for 5 min").toEqual({
+    byHourOfDay: [22],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ minutes: 5 }),
+  });
+  e("at 22h for 15 min").toEqual({
+    byHourOfDay: [22],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ minutes: 15 }),
+  });
+  e("at 14 for 1h").toEqual({
+    byHourOfDay: [14],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ hours: 1 }),
+  });
   e("at 12 and 16").toEqual({ byHourOfDay: [12, 16], byMinuteOfHour: [0] });
   e("after lunch and after diner").toEqual({
     byHourOfDay: [15, 22],
     byMinuteOfHour: [0],
-  })
-})
+  });
+});
 
 testRule("ForExpr", (e) => {
   e("for 15 min").toEqual({ duration: Duration.fromObject({ minutes: 15 }) });
   e("for 1h").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
-})
+});
 
 testRule("EveryExprEnd", (e) => {
   e("at 14").toEqual({ byHourOfDay: [14], byMinuteOfHour: [0] });
   e("for 1h").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
-  e("at 14 for 1h").toEqual({ byHourOfDay: [14], byMinuteOfHour: [0], duration: Duration.fromObject({ hours: 1 }) });
-})
+  e("at 14 for 1h").toEqual({
+    byHourOfDay: [14],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ hours: 1 }),
+  });
+});
 
 testRule("Root", (e) => {
   e("").toEqual({});
@@ -304,6 +319,22 @@ testRule("Root", (e) => {
     duration: Duration.fromObject({ minutes: 15 }),
   });
 
-  // e("brush teeth every day after lunch and after diner").toEqual({
-  // })
+  e("brush teeth every day after lunch and after diner").toEqual({
+    byHourOfDay: [15, 22],
+    byMinuteOfHour: [0],
+    frequency: "DAILY",
+    subject: "brush teeth",
+  });
+
+  e("meeting every wednesday at 10 @work").toEqual({
+    subject: "meeting",
+    frequency: "WEEKLY",
+    byDayOfWeek: ["WE"],
+    byHourOfDay: [10],
+    byMinuteOfHour: [0],
+    context: "work",
+  })
+
+  e("buy battery 04/01 at 09:00 @personal").toEqual({
+  });
 });

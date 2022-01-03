@@ -4,26 +4,8 @@ import { nanoid } from "nanoid";
 
 import Expression from "./Expression";
 import dateTime from "./DateTime";
+import { IStore } from ".";
 
-export const Colors = [
-  // "amber",
-  "yellow",
-  "green",
-  "orange",
-  "blue",
-  "red",
-  // "emerald",
-  // "teal",
-  // "cyan",
-  "violet",
-  "purple",
-  "sky",
-  "fuchsia",
-  "indigo",
-  "pink",
-  "lime",
-  "rose",
-];
 
 const Task = Expression.named("Task")
   .props({
@@ -38,7 +20,7 @@ const Task = Expression.named("Task")
 
     complete() {
       if (self.isRecurring && self.nextAt) {
-        self.lastCompletedAt = self.nextAt;
+        self.lastCompletedAt = DateTime.now();
       } else {
         this.remove();
       }
@@ -56,19 +38,19 @@ const Task = Expression.named("Task")
   .views((self) => {
     return {
       get isValid() {
-        return !!(self.output && self.subject);
+        return !!(self.ast && self.subject);
       },
 
       get implicitStart(): DateTime {
         return self.lastCompletedAt.toLocal();
       },
 
-      get highlightColor() {
+      get highlightColor(): string {
         try {
-          const { sortedTasks } = getParent(self, 2);
-          return Colors[sortedTasks.indexOf(self) % Colors.length];
+          const parent = getParent(self, 2) as IStore;
+          return parent.getContextColor(self.context)
         } catch (e) {
-          return null
+          return "neutral"
         }
       },
     };

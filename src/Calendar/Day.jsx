@@ -4,12 +4,12 @@ import { observer } from "mobx-react"
 import { useStore } from "../hooks"
 import { now } from "../helpers"
 
-import DayTask from "./DayTask"
+import Indicator from "./Indicator"
 
 const Day = observer(({ start, isSameMonth }) => {
   const store = useStore()
 
-  const tasks = store.getTasksAtDay(start) // .filter((t) => !t.isRecurring)
+  const contexts = store.getContextsAtDay(start)
 
   const isToday = now(5000).hasSame(start, "day")
 
@@ -32,8 +32,8 @@ const Day = observer(({ start, isSameMonth }) => {
         <div className="flex flex-col items-between space-y-1">
           <h6>{start.day}</h6>
           <div className="flex flex-auto flex-wrap">
-            {tasks.map((task) => (
-              <DayTask key={task.id} task={task} />
+            {contexts.map((context) => (
+              <Indicator key={context} color={store.getContextColor(context)} />
             ))}
           </div>
         </div>

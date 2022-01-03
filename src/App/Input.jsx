@@ -69,9 +69,9 @@ const Input = observer(() => {
     <div
       ref={reference}
       className={classNames(
-        "flex relative items-center px-4 py-2 space-x-2 bg-purple-600 rounded",
+        "flex relative items-center px-4 py-2 space-x-2 bg-neutral-600 rounded",
         {
-          // "border border-red-500": !input.isValid,
+          "outline outline-red-500": !input.isBlank && !input.isValid,
         },
       )}
     >

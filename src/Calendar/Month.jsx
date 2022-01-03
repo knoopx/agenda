@@ -12,9 +12,9 @@ const Month = observer(({ start: monthStart, displayYear }) => {
     <div className="flex flex-col m-2">
       <div className="flex items-center justify-between space-x-2">
         <span
-          className={classNames("text-neutral-500", {
-            // "font-medium": isThisMonth,
-            // "text-neutral-500": !isThisMonth,
+          className={classNames({
+            "font-medium": isThisMonth,
+            "text-neutral-500": !isThisMonth,
           })}
         >
           {monthStart.monthLong}

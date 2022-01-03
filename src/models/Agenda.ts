@@ -33,6 +33,7 @@ export default t.model("Agenda", {
                 anytime: []  ,
                 today: [],
                 tomorrow: [],
+                "later this week": [],
                 later: [],
                 upcoming: [],
             } as { [key: string]: ITask[] }

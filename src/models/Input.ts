@@ -10,7 +10,7 @@ const Input = Expression.named("Input").views((self) => {
 
   return {
     get isValid() {
-      return !!(self.output && self.subject);
+      return !!(self.ast && self.subject);
     },
 
     get occurrences(): DateAdapter[] {

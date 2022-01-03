@@ -1,10 +1,7 @@
 import { observer } from "mobx-react"
 import { forwardRef, useRef } from "react"
 import { applySnapshot, clone } from "mobx-state-tree"
-import { MdUpdate } from "react-icons/md"
-import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
-import { DateTime } from "luxon"
 
 import {
   useEnterKey,
@@ -15,86 +12,13 @@ import {
   useOnMouseOver,
   useStore,
   useOnFocus,
-} from "../hooks"
+} from "../../hooks"
+import { TimeLabel, DurationLabel, DistanceLabel } from "../Label"
 
-import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
-
-const CheckBox = observer(({ isFocused, task }) => {
-  return (
-    <input
-      type="checkbox"
-      className="inline-block"
-      checked={false}
-      disabled={isFocused}
-      onChange={() => task.complete()}
-    />
-  )
-})
-
-const SubjectInput = observer(
-  forwardRef(({ isFocused, task }, ref) => {
-    const value = isFocused ? task.expression : task.subject
-
-    return (
-      <input
-        ref={ref}
-        type="text"
-        value={value || task.expression}
-        className={classNames(
-          "flex-auto font-medium bg-transparent outline-none",
-          {
-            "text-red-500": !task.isValid,
-          },
-        )}
-        onChange={(e) => {
-          task.update({ expression: e.target.value })
-        }}
-      />
-    )
-  }),
-)
-
-function RecurringIcon(props) {
-  return (
-    <span className="flex items-center" {...props}>
-      <MdUpdate />
-    </span>
-  )
-}
-
-function TaskAction({ className, ...props }) {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "w-6 h-6 flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer",
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-const TaskActionGroup = observer(({ className, task, isFocused }) => {
-  return (
-    <div
-      className={classNames("hidden group-hover:flex items-center", className)}
-    >
-      <TaskAction className="hover:text-red-500" onClick={() => task.remove()}>
-        <IoMdTrash />
-      </TaskAction>
-
-      {!isFocused && task.isRecurring && (
-        <TaskAction
-          className="hover:text-blue-500"
-          onClick={() => task.reset()}
-        >
-          <MdUpdate />
-        </TaskAction>
-      )}
-    </div>
-  )
-})
+import { RecurringIcon } from "./RecurringIcon"
+import { SubjectInput } from "./SubjectInput"
+import { TaskActionGroup } from "./TaskActionGroup"
+import { CheckBox } from "./CheckBox"
 
 export const Task = observer(
   forwardRef(({ task, inputRef, isFocused, ...props }, ref) => {
@@ -104,7 +28,7 @@ export const Task = observer(
         ref={ref}
         className="flex flex-auto relative items-center space-x-4 hover:bg-neutral-50 group"
       >
-        <div className="flex flex-col items-end justify-center w-16 text-xs">
+        <div className="flex flex-col items-end justify-center w-20 text-xs">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
           {task.duration && <DurationLabel duration={task.duration} />}
         </div>
@@ -118,12 +42,14 @@ export const Task = observer(
           {!isFocused && task.isRecurring && (
             <RecurringIcon title={task.frequency} />
           )}
+
           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
 
           {task.nextAt && (
             <DistanceLabel className="text-xs" date={task.nextAt} />
           )}
-          <TaskActionGroup task={task} isFocused={isFocused} />
+
+          <TaskActionGroup task={task} />
 
           <CheckBox {...{ isFocused, task }} />
         </div>
@@ -149,14 +75,14 @@ const TaskWrapper = observer(({ task, ...props }) => {
   useEnterKey(inputRef, onSubmit, [target])
 
   useOnMouseOver(ref, () => {
-    // store.setHoveredTask(task)
+    store.setHoveredTask(task)
   })
   useOnMouseOut(ref, () => {
     if (store.hoveredTask === task) store.setHoveredTask(null)
   })
 
   useOnFocus(inputRef, () => {
-    if (task.output && !task.isRecurring && task.output.start) {
+    if (task.ast && !task.isRecurring && task.ast.start) {
       task.setExpression(task.simplifiedExpression)
     }
   })

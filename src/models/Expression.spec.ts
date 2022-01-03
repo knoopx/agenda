@@ -17,10 +17,10 @@ test("isValid", () => {
   expect(make("task every monday").isValid).toEqual(true)
 })
 
-test("output", () => {
+test("ast", () => {
   const expr = make("something")
   expect(expr.error).toEqual("")
-  expect(expr.output).toEqual({
+  expect(expr.ast).toEqual({
     subject: "something",
   })
 })

@@ -34,7 +34,8 @@
 
 Root
 	= _* NaturalTimeExpr _*
-	/ _* head:Subject _ tail:NaturalTimeExpr _* { return { ...head, ...tail } }
+	/ _* head:Subject _ tail:NaturalTimeExpr _ context:Context _* { return merge(head, tail, context) }
+	/ _* head:Subject _ tail:NaturalTimeExpr _* { return merge(head, tail) }
 	/ _* head:Subject _*  { return head }
 	/ _* { return {} }
 
@@ -43,6 +44,9 @@ _ "space"
 
 Subject
 	= Word (_ ! NaturalTimeExpr Word)* { return { subject: text() } }
+
+Context
+	= "@" expr:Word { return { context: expr } }
 
 Number "number"
 	= [0-9]+ { return Number(text()) }
@@ -365,10 +369,10 @@ Number4Digit "year number"
 	= [0-9][0-9][0-9][0-9] { return Number(text()) }
 
 NumberUpTo12 "0..12"
-	= ("1"[0-2] / ("0"?"1"[0-9]/[0-9])) { return Number(text()) }
+	= ("1"[0-2] / "1" [0-9] / "0"? [0-9]) { return Number(text()) }
 
 NumberUpTo24 "0..24"
-	= ("2"[0-4] / ("0"?"1"[0-9]/[0-9])) { return Number(text()) }
+	= ("2"[0-4] / "1"[0-9] / "0"? [0-9]) { return Number(text()) }
 
 NumberUpTo59 "00..59"
 	= ([1-5][0-9] / "0"[0-9] ) { return Number(text()) }

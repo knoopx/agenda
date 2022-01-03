@@ -6,10 +6,32 @@ import { autorun } from "mobx";
 import Task, { ITask } from "./Task";
 import Input from "./Input";
 
-import "../schedule"
+import "../schedule";
 import Agenda from "./Agenda";
 
-interface VolatileProps { hoveredTask: ITask | null }
+export const Colors = [
+  // "amber",
+  "yellow",
+  "green",
+  "orange",
+  "blue",
+  "red",
+  // "emerald",
+  // "teal",
+  // "cyan",
+  "violet",
+  "purple",
+  "sky",
+  "fuchsia",
+  "indigo",
+  "pink",
+  "lime",
+  "rose",
+];
+
+interface VolatileProps {
+  hoveredTask: ITask | null;
+}
 
 const Store = t
   .model("Store", {
@@ -17,11 +39,14 @@ const Store = t
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
-    agenda: t.optional(Agenda, {})
+    agenda: t.optional(Agenda, {}),
   })
-  .volatile((self) => ({
-    hoveredTask: null,
-  } as VolatileProps))
+  .volatile(
+    (self) =>
+      ({
+        hoveredTask: null,
+      } as VolatileProps)
+  )
   .actions((self) => ({
     afterCreate() {
       // autorun(() => {
@@ -33,6 +58,7 @@ const Store = t
     },
     addTask(task: ITask) {
       self.tasks.push(task);
+      return task;
     },
     removeTask(task: ITask) {
       self.tasks.remove(task);
@@ -58,22 +84,31 @@ const Store = t
     get calendarStart() {
       return DateTime.now();
     },
+
     get calendarEnd() {
       return this.calendarStart.plus({ months: 11 }).endOf("month");
+    },
+
+    get contexts() {
+      return _.uniq(self.tasks.map((task) => task.context)).filter(Boolean);
     },
 
     get occurrencesByDay() {
       const result = new Map();
       this.sortedTasks.forEach((task) => {
-        const occurrences = task.schedule ? task.schedule.occurrences({
-          start: this.calendarStart,
-          end: this.calendarEnd,
-        }).toArray() : []
+        const occurrences = task.schedule
+          ? task.schedule
+              .occurrences({
+                start: this.calendarStart,
+                end: this.calendarEnd,
+              })
+              .toArray()
+          : [];
 
         occurrences.forEach((occurrence) => {
           const day = occurrence.date.startOf("day").toISODate();
           const existing = result.get(day) ?? [];
-          result.set(day, Array.from(new Set([...existing, task])));
+          result.set(day, _.uniq([...existing, task]));
         });
       });
       return result;
@@ -81,6 +116,17 @@ const Store = t
 
     getTasksAtDay(day: DateTime): ITask[] {
       return this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [];
+    },
+
+    getContextsAtDay(day: DateTime): string[] {
+      return _.uniq(this.getTasksAtDay(day).map((task) => task.context)).filter(Boolean);
+    },
+
+    getContextColor(context: string) {
+      if (context) {
+        return Colors[this.contexts.indexOf(context) % Colors.length];
+      }
+      return "neutral";
     },
   }));
 

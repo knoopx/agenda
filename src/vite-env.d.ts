@@ -5,3 +5,9 @@ declare module '*.pegjs' {
     const parser: Parser
     export default parser
 }
+
+declare module '*.pegjs?trace' {
+    import { Parser } from 'peggy'
+    const parser: Parser
+    export default parser
+}

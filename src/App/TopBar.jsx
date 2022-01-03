@@ -5,8 +5,8 @@ import Settings from "./Settings"
 
 const TopBar = observer(() => {
   return (
-    <div className="text-white bg-purple-700">
-      <div className="container grid grid-cols-2 gap-16 mb-8 mx-auto py-2">
+    <div className="text-white bg-neutral-700">
+      <div className="container grid grid-cols-2 gap-16 mb-8 mx-auto px-8 py-2">
         <Settings />
         <Input />
       </div>

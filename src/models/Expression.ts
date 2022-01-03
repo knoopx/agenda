@@ -21,7 +21,7 @@ const Expression = t
     },
   }))
   .views((self) => ({
-    get output() {
+    get ast() {
       try {
         const out = grammar.parse(self.expression, {
           grammarSource: "",
@@ -36,11 +36,19 @@ const Expression = t
     },
 
     get isValid() {
-      return !!this.output;
+      return !!this.ast;
+    },
+
+    get isBlank() {
+      return self.expression.trim() === "";
+    },
+
+    get context(){
+      return this.ast?.context
     },
 
     get subject() {
-      return this.output?.subject ?? "";
+      return this.ast?.subject ?? "";
     },
 
     get isRecurring() {
@@ -55,17 +63,17 @@ const Expression = t
     },
 
     get duration(): Duration | null {
-      return this.output?.duration;
+      return this.ast?.duration;
     },
 
     get frequency() {
-      return this.output?.frequency;
+      return this.ast?.frequency;
     },
 
     get rrule() {
-      if (!this.output) return null;
+      if (!this.ast) return null;
 
-      const { subject, duration, start = this.implicitStart, ...rrule } = this.output;
+      const { subject, duration, start = this.implicitStart, ...rrule } = this.ast;
 
       if (Object.keys(rrule).length === 0) return null;
 
@@ -80,8 +88,8 @@ const Expression = t
       if (this.isRecurring) {
         return new Schedule<ITask>({ rrules: [this.rrule].filter(Boolean) });
       }
-      if (this.output && this.output.start) {
-        return new Schedule<ITask>({ rdates: [this.output.start] });
+      if (this.ast && this.ast.start) {
+        return new Schedule<ITask>({ rdates: [this.ast.start] });
       }
     },
 
@@ -101,25 +109,28 @@ const Expression = t
     },
 
     get simplifiedExpression(){
-      let parts = [this.output.subject]
+      let parts = [this.ast.subject]
 
-      if (this.output.start.year === DateTime.now().year) {
-        parts.push(this.output.start.toFormat("dd/MM"))
+      if (this.ast.start.year === DateTime.now().year) {
+        parts.push(this.ast.start.toFormat("dd/MM"))
       } else {
-        parts.push(this.output.start.toFormat("dd/MM/YYYY"))
+        parts.push(this.ast.start.toFormat("dd/MM/YYYY"))
       }
 
-      if (!(this.output.start.hour === 0 && this.output.start.minute === 0)) {
+      if (!(this.ast.start.hour === 0 && this.ast.start.minute === 0)) {
         parts = [
           ...parts,
           "at",
-          this.output.start.toLocaleString({
+          this.ast.start.toLocaleString({
             hour: "2-digit",
             minute: "2-digit",
             hourCycle: "h23",
           }),
         ]
       }
+
+      if (this.context)
+        parts.push("@" + this.context)
 
       return parts.join(" ")
     }

@@ -9,7 +9,7 @@ const App = observer(() => {
   return (
     <div className="font-sans-serif">
       <TopBar />
-      <div className="container mx-auto">
+      <div className="container mx-auto px-8">
         <div className="grid grid-cols-2 gap-16">
           <Calendar />
           <Agenda />
