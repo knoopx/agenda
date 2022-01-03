@@ -52,22 +52,9 @@ const Input = observer(() => {
   })
 
   useEnterKey(inputRef, () => {
-    let { expression } = getSnapshot(input)
+    const { expression } = getSnapshot(input)
 
     if (input.isValid) {
-      if (!input.isRecurring && input.output.start) {
-        expression = [
-          input.output.subject,
-          input.output.start.toLocaleString({ locale: "en-gb" }),
-          "at",
-          input.output.start.toLocaleString({
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          }),
-        ].join(" ")
-      }
-
       addTask({ expression })
 
       input.setExpression("")

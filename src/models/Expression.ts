@@ -71,6 +71,7 @@ const Expression = t
 
       return {
         start,
+        ...(duration && {duration: duration.toMillis()}),
         ...rrule,
       };
     },

@@ -181,6 +181,23 @@ testRule("Root", (e) => {
     subject: "something",
   });
 
+  e("something ").toEqual({
+    subject: "something",
+  });
+
+  e(" something").toEqual({
+    subject: "something",
+  });
+
+  e(" something ").toEqual({
+    subject: "something",
+  });
+
+  e("task for 1h").toEqual({
+    subject: "task",
+    duration: Duration.fromObject({ hours: 1 }),
+  });
+
   e("task tomorrow").toEqual({
     subject: "task",
     start: DateTime.local(2021, 1, 2),

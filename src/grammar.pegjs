@@ -19,8 +19,8 @@
 }
 
 Root
-	= NaturalTimeExpr
-	/ head:Word tail:(_ (NaturalTimeExpr / Word))* {
+	= _* NaturalTimeExpr _*
+	/ _* head:Word tail:(_ (NaturalTimeExpr / Word))* _* {
 		let words = []
 		return tail.reduce((acc, [,x]) => {
 			if (typeof x == "object") {
@@ -146,6 +146,7 @@ NaturalAtTimeExpr
 	}
 
 NaturalDueExpr
+	// in 2 days for 1h
 	= expr:InExpr forExpr:(_ ForExpr)? {
 		return {
 			...expr,

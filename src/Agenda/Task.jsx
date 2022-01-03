@@ -32,7 +32,20 @@ const CheckBox = observer(({ isFocused, task }) => {
 
 const SubjectInput = observer(
   forwardRef(({ isFocused, task }, ref) => {
-    const value = isFocused ? task.expression : task.subject
+    let value = isFocused ? task.expression : task.subject
+
+    if (isFocused && !task.isRecurring && task.output.start) {
+      value = [
+        task.output.subject,
+        task.output.start.toLocaleString({ locale: "en-gb" }),
+        "at",
+        task.output.start.toLocaleString({
+          hour: "2-digit",
+          minute: "2-digit",
+          hourCycle: "h23",
+        }),
+      ].join(" ")
+    }
 
     return (
       <input
