@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { getParent } from "mobx-state-tree";
 
-import Store, { IStore } from "./Store";
+import { IStore } from "./Store";
 import Expression from "./Expression";
 import { DateAdapter } from "../schedule";
 
@@ -15,11 +15,13 @@ const Input = Expression.named("Input").views((self) => {
 
     get occurrences(): DateAdapter[] {
       return self.schedule
-        .occurrences({
-          start: store.calendarStart,
-          end: store.calendarEnd,
-        })
-        .toArray();
+        ? self.schedule
+            .occurrences({
+              start: store.calendarStart,
+              end: store.calendarEnd,
+            })
+            .toArray()
+        : [];
     },
 
     get occurrencesByDay() {

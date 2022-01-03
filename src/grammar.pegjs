@@ -31,6 +31,7 @@ Root
 			}
 		}, { subject: head })
 	}
+	/ _* { return {} }
 
 _ "space"
 	= [ ]+ { }
@@ -117,7 +118,7 @@ TimeUnitExpr = TimeUnitPlural / TimeUnit / TimeUnitShort
 
 NaturalTimeExpr
 	// every wednesday (at 11) for 1h starting tomorrow
-	= NaturalRecurringSubExpr
+	= NaturalRecurringExpr
 	// tomorrow at 1h, 23/12/2022 at 20:50
     / NaturalDateTimeExpr
 	// after work, morning
@@ -127,16 +128,6 @@ NaturalTimeExpr
 	// in 5m, in 5 minutes
 	/ NaturalDueExpr
 
-NaturalRecurringExpr
-	// every wednesday (at 11) for 1h starting tomorrow
-	// = expr:NaturalRecurringSubExpr _ forExpr:ForExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd,...forExpr } }
-	= expr:NaturalRecurringSubExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd,...forExpr } }
-	// every wednesday (at 11) starting tomorrow
-	/ expr:NaturalRecurringSubExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd } }
-	// every wednesday (at 11) for 1h
-	/ expr:NaturalRecurringSubExpr _ forExpr:ForExpr { return { ...expr, ...forExpr} }
-	// every wednesday (at 11)
-	/ NaturalRecurringSubExpr
 
 NaturalDateTimeExpr
 	= start:DateExpr at:(_ AtTimeSubExpr)? forExpr:(_ ForExpr)? {
@@ -164,9 +155,9 @@ NaturalDueExpr
 		}
 	}
 
-NaturalRecurringSubExpr
+NaturalRecurringExpr
 	// every wednesday
-	= EveryExpr
+	= EveryExprLeft
 	// 2 times a week
 	/ RecurrencyExpr
 
@@ -177,31 +168,29 @@ RecurrencyExpr
 	/ value:OccurrenceExpr _ "a"i _ unit:TimeUnitExpr { return Recurrency.fromDurationLike({ value, unit }) }
 
 EveryExpr
-	= "every"i _ expr:EverySubExpr { return expr }
+	= expr:EveryExprLeft _ forExpr:ForExpr _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd, ...forExpr } }
+	/ expr:EveryExprLeft _ startEnd:StartEndSubExpr { return { ...expr, ...startEnd } }
+	/ EveryExprLeft
+
+EveryExprLeft
+	= "every"i _ expr:EveryExprRight { return expr }
 	/ "everyday"i { return Recurrency.daily() }
 
-EverySubExpr
-	= expr:EveryTimeExtendableSubExpr _ at:EveryAtTimeSubExpr { return { ...expr, ...at } }
-	/ expr:EveryTimeExtendableSubExpr _ _for:ForExpr { return { ...expr, ..._for } }
+EveryExprRight
+	// ...{monday and wednesday,january and march}
+	= expr:(ManyEveryRepeatableSubExpr / EveryTimeExtendableSubExpr) _ at:EveryAtTimeSubExpr { return { ...expr, ...at } }
+	/ ManyEveryRepeatableSubExpr
 	/ EveryTimeExtendableSubExpr
-	// ...{5 minutes,morning, hour}
-	/ EveryTimeSubExpr
-
-EveryTimeSubExpr
 	// every morning
-	= EveryTimeOfTheDayExpr
+	/ EveryTimeOfTheDayExpr
 	// every 5 minutes
 	/ Period
 
 EveryTimeExtendableSubExpr
-	// ...{monday and wednesday,january and march}
-	= ManyEveryRepeatableSubExpr
 	// ...{wednesday,january}
-	/ EveryRepeatableSubExpr
+	= EveryRepeatableSubExpr
 	// ...{10 august,10/8/2020}
 	/ EveryDateSubExpr
-
-
 
 EveryWeekDaySubExpr
 	= expr:DayNameAsShort { return Recurrency.weekly({ byDayOfWeek: [expr] }) }
@@ -225,12 +214,15 @@ EveryDate
 
 EveryWeekend = "weekend"i { return Recurrency.weekly({ byDayOfWeek: ["SA"] }) }
 EveryInterval = interval:NumberExpr _ expr:DayNameAsShort "s" { return Recurrency.weekly({ interval, byDayOfWeek: [expr] }) }
+EveryTimeUnit = expr:TimeUnitExpr { return Recurrency.fromDurationLike({ unit: expr }) }
 
 EveryDateSubExpr
 	// every monday, every january
 	= EveryRepeatableSubExpr
     // every weekend
 	/ EveryWeekend
+	// every month
+	/ EveryTimeUnit
 	// every 2 tuesdays
 	/ EveryInterval
 
@@ -261,10 +253,10 @@ InExpr
 
 StartingSubExpr
 	// starting tomorrow, starting in 2w, starting next week
-	= "starting"i _ expr:DateExpr { return expr }
+	= "starting"i _ start:DateExpr { return { start } }
 
 UntilSubExpr
-	= "until"i _ expr:DateExpr { return expr }
+	= "until"i _ end:DateExpr { return { end } }
 
 StartAndEndSubExpr
 	= left:StartingSubExpr _ right:StartingSubExpr { return { ...left, ...right } }
@@ -324,12 +316,11 @@ NextPeriodExpr
 NextWeekDayExpr
 	// next monday
 	= number:DayNameAsNumber {
-		return Now.plus({ weeks: 1 }).startOf("week").set({ weekday: number })
-		// let current = Now
-		// while (current.weekday !== number) {
-		// 	current = current.plus({ days: 1 })
-		// }
-		// return current
+		let current = Now
+		while (current.weekday !== number) {
+			current = current.plus({ days: 1 })
+		}
+		return current.startOf("day")
 	 }
 
 TodayAsDate
@@ -348,6 +339,7 @@ DateShort
 	/ day:DayNumber _ month:MonthNameAsNumber { return Now.set({ month, day }) }
 
 Date
+	// 25/12/2020
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day)  }
 
 DateExpr

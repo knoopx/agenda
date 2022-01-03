@@ -45,17 +45,16 @@ export default defineConfig({
     peggyPlugin({
       cache: true,
       allowedStartRules: [
+        "Root",
         "Date",
         "DateExpr",
         "ForExpr",
+        "EveryExpr",
         "NaturalTimeExpr",
         "NextExpr",
         "NextSubExpr",
         "OccurrenceExpr",
         "NaturalRecurringExpr",
-        "NaturalRecurringExpr",
-        "NaturalRecurringSubExpr",
-        "Root",
       ],
     }),
     react({

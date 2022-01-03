@@ -23,7 +23,10 @@ const Expression = t
   .views((self) => ({
     get output() {
       try {
-        const out = grammar.parse(self.expression);
+        const out = grammar.parse(self.expression, {
+          grammarSource: "",
+          startRule: "Root",
+        });
         self.setError("");
         return out;
       } catch (e: any) {
@@ -62,7 +65,7 @@ const Expression = t
     get rrule() {
       if (!this.output) return null;
 
-      const { subject, start = this.implicitStart, ...rrule } = this.output;
+      const { subject, duration, start = this.implicitStart, ...rrule } = this.output;
 
       if (Object.keys(rrule).length === 0) return null;
 
@@ -76,12 +79,16 @@ const Expression = t
       if (this.isRecurring) {
         return new Schedule<ITask>({ rrules: [this.rrule].filter(Boolean) });
       }
-      return new Schedule<ITask>({ rdates: this.rrule });
+      if (this.output && this.output.start) {
+        return new Schedule<ITask>({ rdates: [this.output.start] });
+      }
     },
 
     nextAfter(start: DateTime): DateTime | void {
-      const { value } = this.schedule.occurrences({ start, take: 1 }).next();
-      return value?.date;
+      if (this.schedule){
+        const { value } = this.schedule.occurrences({ start, take: 1 }).next();
+        return value?.date;
+      }
     },
 
     get nextAt() {

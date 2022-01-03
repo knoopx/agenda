@@ -1,5 +1,5 @@
 import { DateTime, Settings } from "luxon"
-import { describe, expect, it } from "vitest"
+import { describe, expect, test, it } from "vitest"
 
 import Expression from "./Expression"
 
@@ -10,9 +10,17 @@ function make(expression: string) {
   return Expression.create({ expression })
 }
 
-it("validates", () => {
-  expect(make("").isValid).toEqual(false)
+test("isValid", () => {
+  expect(make("").isValid).toEqual(true)
   expect(make("something").isValid).toEqual(true)
   expect(make("every monday").isValid).toEqual(true)
   expect(make("task every monday").isValid).toEqual(true)
+})
+
+test("output", () => {
+  const expr = make("something")
+  expect(expr.error).toEqual("")
+  expect(expr.output).toEqual({
+    subject: "something",
+  })
 })

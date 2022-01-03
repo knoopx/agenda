@@ -1,7 +1,6 @@
 import classNames from "classnames"
 import { forwardRef, useRef } from "react"
 import { getSnapshot } from "mobx-state-tree"
-import { DateTime } from "luxon"
 import { observer } from "mobx-react-lite"
 import { MdUpdate } from "react-icons/md"
 import { useFloating, shift, arrow, offset } from "@floating-ui/react-dom"
@@ -59,9 +58,13 @@ const Input = observer(() => {
       if (!input.isRecurring && input.output.start) {
         expression = [
           input.output.subject,
-          input.output.start.toLocaleString(),
+          input.output.start.toLocaleString({ locale: "en-gb" }),
           "at",
-          input.output.start.toLocaleString(DateTime.TIME_SIMPLE),
+          input.output.start.toLocaleString({
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23",
+          }),
         ].join(" ")
       }
 

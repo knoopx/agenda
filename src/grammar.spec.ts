@@ -26,21 +26,24 @@ function parse(input: string, startRule = "Root") {
 
 type AssertFunction = (input: string) => Chai.Assertion;
 
-interface TestRuleCallback { (e: AssertFunction): void; }
+interface TestRuleCallback {
+  (e: AssertFunction): void;
+}
 
 function testRule(name: string, callback: TestRuleCallback) {
   const makeAssertion = (input: string) => {
     return expect(parse(input, name), `parses ${inspect(input)}`);
-  }
+  };
 
   it(name, () => {
     callback(makeAssertion);
   });
 }
 
-// edge cases
-// testParse("NaturalTimeExpr", "", {})
-// testParse("NaturalTimeExpr", " ", {})
+testRule("Date", (e) => {
+  e("25/12/2020").toEqual(DateTime.local(2020, 12, 25));
+  e("9/1/2022").toEqual(DateTime.local(2022, 1, 9));
+});
 
 testRule("ForExpr", (e) => {
   e("for 1h").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
@@ -65,25 +68,25 @@ testRule("NextExpr", (e) => {
 });
 
 testRule("DateExpr", (e) => {
-  e("today").toEqual(DateTime.local(2021, 1, 1))
-  e("tomorrow").toEqual(DateTime.local(2021, 1, 2))
-  e("weekend").toEqual(DateTime.local(2021, 1, 2))
-})
+  e("today").toEqual(DateTime.local(2021, 1, 1));
+  e("tomorrow").toEqual(DateTime.local(2021, 1, 2));
+  e("weekend").toEqual(DateTime.local(2021, 1, 2));
+});
 
-testRule("NaturalRecurringSubExpr", (e) => {
+testRule("EveryExpr", (e) => {
   e("every wednesday").toEqual({
     frequency: Frequency.WEEKLY,
     byDayOfWeek: ["WE"],
     byHourOfDay: [0],
     byMinuteOfHour: [0],
-  })
+  });
 
   e("every wednesday at 11").toEqual({
     frequency: Frequency.WEEKLY,
     byDayOfWeek: ["WE"],
     byHourOfDay: [11],
     byMinuteOfHour: [0],
-  })
+  });
 
   // e("2 times a week").toEqual({
   //   frequency: Frequency.DAILY,
@@ -91,30 +94,14 @@ testRule("NaturalRecurringSubExpr", (e) => {
   //   byHourOfDay: [0],
   //   byMinuteOfHour: [0],
   // })
-})
 
-testRule("NaturalRecurringSubExpr", (e) => {
-  e("every wednesday").toEqual({
-    frequency: Frequency.WEEKLY,
-    byDayOfWeek: ["WE"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
-  })
-
-  e("every wednesday at 11").toEqual({
-    frequency: Frequency.WEEKLY,
-    byDayOfWeek: ["WE"],
-    byHourOfDay: [11],
-    byMinuteOfHour: [0],
-  })
-
-  e("every wednesday for 1h").toEqual({
-    frequency: Frequency.WEEKLY,
-    duration: Duration.fromObject({ hours: 1 }),
-    byDayOfWeek: ["WE"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
-  })
+  // e("every wednesday for 1h").toEqual({
+  //   frequency: Frequency.WEEKLY,
+  //   duration: Duration.fromObject({ hours: 1 }),
+  //   byDayOfWeek: ["WE"],
+  //   byHourOfDay: [0],
+  //   byMinuteOfHour: [0],
+  // });
 
   e("every wednesday starting tomorrow").toEqual({
     start: DateTime.local(2021, 1, 2),
@@ -122,7 +109,7 @@ testRule("NaturalRecurringSubExpr", (e) => {
     byDayOfWeek: ["WE"],
     byHourOfDay: [0],
     byMinuteOfHour: [0],
-  })
+  });
 
   e("every wednesday for 1h starting tomorrow").toEqual({
     start: DateTime.local(2021, 1, 2),
@@ -131,15 +118,7 @@ testRule("NaturalRecurringSubExpr", (e) => {
     byHourOfDay: [0],
     byMinuteOfHour: [0],
     duration: Duration.fromObject({ hours: 1 }),
-  })
-
-  e("every wednesday at 11 for 1h").toEqual({
-    start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
-    frequency: Frequency.WEEKLY,
-    byDayOfWeek: ["WE"],
-    byHourOfDay: [11],
-    byMinuteOfHour: [0],
-  })
+  });
 
   // e("every wednesday at 11 starting tomorrow").toEqual({
   //   start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
@@ -147,27 +126,87 @@ testRule("NaturalRecurringSubExpr", (e) => {
   //   byDayOfWeek: ["WE"],
   //   byHourOfDay: [11],
   //   byMinuteOfHour: [0],
-  // })
+  // });
 
-// e("every wednesday at 11 for 1h starting tomorrow").toEqual({
-//   start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
-//   frequency: Frequency.WEEKLY,
-//   byDayOfWeek: ["WE"],
-//   byHourOfDay: [11],
-//   byMinuteOfHour: [0],
-// })
+  // e("every wednesday at 11 for 1h starting tomorrow").toEqual({
+  //   start: DateTime.local(2021, 1, 1, 5, 0, 0, 0),
+  //   frequency: Frequency.WEEKLY,
+  //   byDayOfWeek: ["WE"],
+  //   byHourOfDay: [11],
+  //   byMinuteOfHour: [0],
+  // });
 
-e("every monday and wednesday").toEqual({
-  frequency: Frequency.WEEKLY,
-  byDayOfWeek: ["MO", "WE"],
-  byHourOfDay: [0],
-  byMinuteOfHour: [0],
-})
+  e("every monday and wednesday").toEqual({
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["MO", "WE"],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
 
-e("every monday and wednesday at 10").toEqual({
-  frequency: Frequency.WEEKLY,
-  byDayOfWeek: ["MO", "WE"],
-  byHourOfDay: [0],
-  byMinuteOfHour: [0],
-})
-})
+  e("every monday and wednesday at 10").toEqual({
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["MO", "WE"],
+    byHourOfDay: [10],
+    byMinuteOfHour: [0],
+  });
+
+  e("every month").toEqual({
+    frequency: Frequency.MONTHLY,
+    byDayOfMonth: [1],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+
+  e("every month").toEqual({
+    frequency: Frequency.MONTHLY,
+    byDayOfMonth: [1],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+
+  e("every 2 months").toEqual({
+    frequency: Frequency.MONTHLY,
+    interval: 2,
+    byDayOfMonth: [1],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+});
+
+testRule("Root", (e) => {
+  e("").toEqual({});
+  e(" ").toEqual({});
+
+  e("something").toEqual({
+    subject: "something",
+  });
+
+  e("task tomorrow").toEqual({
+    subject: "task",
+    start: DateTime.local(2021, 1, 2),
+  });
+
+  e("task every wednesday").toEqual({
+    subject: "task",
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["WE"],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+
+  e("buy coffee every month").toEqual({
+    subject: "buy coffee",
+    frequency: Frequency.MONTHLY,
+    byDayOfMonth: [1],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+
+  // e("exercise every tuesday and wednesday after work for 15m").toEqual({
+  //   subject: "task",
+  //   frequency: Frequency.WEEKLY,
+  //   byDayOfWeek: ["WE"],
+  //   byHourOfDay: [0],
+  //   byMinuteOfHour: [0],
+  // });
+});

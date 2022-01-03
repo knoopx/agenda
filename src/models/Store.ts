@@ -11,14 +11,18 @@ import Input from "./Input";
 
 import "../schedule"
 
+interface VolatileProps { hoveredTask: ITask | null }
+
 const Store = t
   .model("Store", {
     tasks: t.array(Task),
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
-    hoveredTask: t.maybeNull(t.reference(Task)),
   })
+  .volatile((self) => ({
+    hoveredTask: null,
+  } as VolatileProps))
   .actions((self) => ({
     afterCreate() {
       // autorun(() => {
@@ -62,10 +66,10 @@ const Store = t
     get occurrencesByDay() {
       const result = new Map();
       this.sortedTasks.forEach((task) => {
-        const occurrences = task.schedule.occurrences({
+        const occurrences = task.schedule ? task.schedule.occurrences({
           start: this.calendarStart,
           end: this.calendarEnd,
-        }).toArray()
+        }).toArray() : []
 
         occurrences.forEach((occurrence) => {
           const day = occurrence.date.startOf("day").toISODate();

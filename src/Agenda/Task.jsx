@@ -1,6 +1,6 @@
 import { observer } from "mobx-react"
 import { forwardRef, useRef } from "react"
-import { applySnapshot, clone, getSnapshot } from "mobx-state-tree"
+import { applySnapshot, clone } from "mobx-state-tree"
 import { MdUpdate } from "react-icons/md"
 import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
@@ -32,11 +32,13 @@ const CheckBox = observer(({ isFocused, task }) => {
 
 const SubjectInput = observer(
   forwardRef(({ isFocused, task }, ref) => {
+    const value = isFocused ? task.expression : task.subject
+
     return (
       <input
         ref={ref}
         type="text"
-        value={isFocused ? task.expression : task.subject}
+        value={value || task.expression}
         className={classNames(
           "flex-auto font-medium bg-transparent outline-none",
           {
@@ -147,7 +149,7 @@ const TaskWrapper = observer(({ task, ...props }) => {
   useEnterKey(inputRef, onSubmit, [target])
 
   useOnMouseOver(ref, () => {
-    store.setHoveredTask(task)
+    // store.setHoveredTask(task)
   })
   useOnMouseOut(ref, () => {
     if (store.hoveredTask === task) store.setHoveredTask(null)

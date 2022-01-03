@@ -1,5 +1,5 @@
 {
-  "name": "gtd",
+  "name": "simply-do",
   "version": "0.0.0",
   "scripts": {
     "devel": "vite",
@@ -12,7 +12,6 @@
     "@originjs/vite-plugin-commonjs": "^1.0.1",
     "@rschedule/core": "^1.2.3",
     "@rschedule/luxon-date-adapter": "^1.3.1",
-    "@types/jest": "^27.0.3",
     "@types/lodash": "^4.14.178",
     "@types/luxon": "^2.0.8",
     "@types/react": "^17.0.38",
@@ -24,11 +23,11 @@
     "c8": "^7.11.0",
     "classnames": "^2.3.1",
     "d3-scale": "^4.0.2",
-    "eslint": "^8.5.0",
+    "eslint": "^8.6.0",
     "eslint-import-resolver-typescript": "^2.5.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-import": "^2.25.4",
     "lodash": "^4.17.21",
-    "luxon": "^2.2.0",
+    "luxon": "^2.3.0",
     "mobx": "^6.3.10",
     "mobx-react": "^7.2.1",
     "mobx-state-tree": "^5.1.0",
@@ -44,7 +43,7 @@
     "tailwindcss": "^3.0.8",
     "typescript": "^4.5.4",
     "vite": "^2.7.10",
-    "vitest": "^0.0.124"
+    "vitest": "^0.0.127"
   },
   "browserslist": {
     "production": [
