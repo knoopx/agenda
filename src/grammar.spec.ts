@@ -26,11 +26,7 @@ function parse(input: string, startRule = "Root") {
 
 type AssertFunction = (input: string) => Chai.Assertion;
 
-interface TestRuleCallback {
-  (e: AssertFunction): void;
-}
-
-function testRule(name: string, callback: TestRuleCallback) {
+function testRule(name: string, callback: (e: AssertFunction) => void) {
   const makeAssertion = (input: string) => {
     return expect(parse(input, name), `parses ${inspect(input)}`);
   };

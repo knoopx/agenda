@@ -1,15 +1,13 @@
 import _ from "lodash";
 import { Instance, types as t } from "mobx-state-tree";
 import { DateTime, Settings } from "luxon";
-import { autorun, toJS } from "mobx";
-
-import { now } from "../helpers";
-import { Schedule } from "../schedule";
+import { autorun } from "mobx";
 
 import Task, { ITask } from "./Task";
 import Input from "./Input";
 
 import "../schedule"
+import Agenda from "./Agenda";
 
 interface VolatileProps { hoveredTask: ITask | null }
 
@@ -19,6 +17,7 @@ const Store = t
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
+    agenda: t.optional(Agenda, {})
   })
   .volatile((self) => ({
     hoveredTask: null,

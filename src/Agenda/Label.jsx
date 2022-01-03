@@ -2,11 +2,12 @@ import classNames from "classnames"
 import { MdTimer } from "react-icons/md"
 import { IoMdCalendar, IoMdTime } from "react-icons/io"
 import { observer } from "mobx-react"
+import { DateTime } from "luxon"
 
 import { now, formatDistance } from "../helpers"
 import { useStore } from "../hooks"
 
-const Label = ({ children, className, icon: Icon, position = "left" }) => {
+function Label({ children, className, icon: Icon, position = "left" }) {
   return (
     <span className={classNames("flex items-center space-x-1", className)}>
       {Icon && position === "left" && <Icon />}
@@ -17,11 +18,12 @@ const Label = ({ children, className, icon: Icon, position = "left" }) => {
 }
 
 export const DistanceLabel = observer(({ className, date }) => {
-  const { timeZone } = useStore()
+  const { timeZone } = useStore() // todo: needed?
+  const isDue = date - DateTime.now() < 0
   return (
     <Label
       className={classNames(className, {
-        "text-red-500": date - now(5 * 1000) < 0,
+        "text-red-500": isDue,
       })}
     >
       {formatDistance(now(5 * 1000), date, timeZone)}

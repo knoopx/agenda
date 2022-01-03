@@ -13,7 +13,7 @@ const DateTimeType = types.custom<number, DateTime>({
     return date.invalidExplanation!
   },
   fromSnapshot(value: number) {
-    return DateTime.fromMillis(value).toLocal()
+    return DateTime.fromMillis(value)
   },
   toSnapshot(value: DateTime) {
     return value.toMillis()

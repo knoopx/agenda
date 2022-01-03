@@ -60,7 +60,7 @@ const Task = Expression.named("Task")
       },
 
       get implicitStart(): DateTime {
-        return self.createdAt.toLocal();
+        return self.lastCompletedAt.toLocal();
       },
 
       get highlightColor() {
