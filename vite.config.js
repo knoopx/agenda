@@ -8,13 +8,18 @@ const peggyPlugin = (options = {}) => {
     name: "vite-peggy",
     enforce: "pre",
     transform(input, id) {
-      if (id.endsWith(".pegjs")) {
+      if (id.startsWith("__vite")) return null
+
+      const url = new URL(`file://${id}`)
+
+      if (url.pathname.toLowerCase().endsWith(".pegjs")) {
         try {
           const code = peggy.generate(input, {
             ...options,
             grammarSource: id,
             format: "commonjs",
             output: "source",
+            trace: url.searchParams.has("trace"),
             map: null,
           })
           return { code }
@@ -50,11 +55,14 @@ export default defineConfig({
         "DateExpr",
         "ForExpr",
         "EveryExpr",
+        "EveryExprEnd",
         "NaturalTimeExpr",
+        "AtTimeExpr",
+        "EveryExprEndAtTimeExpr",
+        "EverySubExprListExpr",
+        "EveryExprEndAtTimeOrForExpr",
         "NextExpr",
         "NextSubExpr",
-        "OccurrenceExpr",
-        "NaturalRecurringExpr",
       ],
     }),
     react({

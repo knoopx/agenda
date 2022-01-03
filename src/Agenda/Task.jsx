@@ -4,6 +4,7 @@ import { applySnapshot, clone } from "mobx-state-tree"
 import { MdUpdate } from "react-icons/md"
 import { IoMdTrash } from "react-icons/io"
 import classNames from "classnames"
+import { DateTime } from "luxon"
 
 import {
   useEnterKey,
@@ -13,8 +14,8 @@ import {
   useOnMouseOut,
   useOnMouseOver,
   useStore,
+  useOnFocus,
 } from "../hooks"
-import { Expression } from "../models"
 
 import { TimeLabel, DurationLabel, DistanceLabel } from "./Label"
 
@@ -32,20 +33,7 @@ const CheckBox = observer(({ isFocused, task }) => {
 
 const SubjectInput = observer(
   forwardRef(({ isFocused, task }, ref) => {
-    let value = isFocused ? task.expression : task.subject
-
-    if (isFocused && !task.isRecurring && task.output.start) {
-      value = [
-        task.output.subject,
-        task.output.start.toLocaleString({ locale: "en-gb" }),
-        "at",
-        task.output.start.toLocaleString({
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23",
-        }),
-      ].join(" ")
-    }
+    const value = isFocused ? task.expression : task.subject
 
     return (
       <input
@@ -114,14 +102,11 @@ export const Task = observer(
       <div
         {...props}
         ref={ref}
-        className="flex flex-auto relative items-center hover:bg-neutral-50 group"
+        className="flex flex-auto relative items-center space-x-4 hover:bg-neutral-50 group"
       >
-        <div className="flex items-center px-4">
-          <CheckBox {...{ isFocused, task }} />
-          <div className="flex flex-col items-end justify-center w-20 text-xs">
-            {task.nextAt && <TimeLabel date={task.nextAt} />}
-            {task.duration && <DurationLabel duration={task.duration} />}
-          </div>
+        <div className="flex flex-col items-end justify-center w-16 text-xs">
+          {task.nextAt && <TimeLabel date={task.nextAt} />}
+          {task.duration && <DurationLabel duration={task.duration} />}
         </div>
 
         <div
@@ -139,6 +124,8 @@ export const Task = observer(
             <DistanceLabel className="text-xs" date={task.nextAt} />
           )}
           <TaskActionGroup task={task} isFocused={isFocused} />
+
+          <CheckBox {...{ isFocused, task }} />
         </div>
       </div>
     )
@@ -152,10 +139,10 @@ const TaskWrapper = observer(({ task, ...props }) => {
   const target = isFocused ? clone(task) : task
 
   const onSubmit = () => {
-    if (target.isValid && target.subject.trim()) {
-      applySnapshot(task, target)
-      inputRef.current?.blur()
-    }
+    // if (target.isValid && target.subject.trim()) {
+    applySnapshot(task, target)
+    inputRef.current?.blur()
+    // }
   }
 
   const store = useStore()
@@ -167,9 +154,15 @@ const TaskWrapper = observer(({ task, ...props }) => {
   useOnMouseOut(ref, () => {
     if (store.hoveredTask === task) store.setHoveredTask(null)
   })
-  useOnBlur(ref, () => {
-    onSubmit()
+
+  useOnFocus(inputRef, () => {
+    if (task.output && !task.isRecurring && task.output.start) {
+      task.setExpression(task.simplifiedExpression)
+    }
   })
+  // useOnBlur(inputRef, () => {
+  //   onSubmit()
+  // })
   useEscapeKey(inputRef, () => {
     inputRef.current?.blur()
   })

@@ -4,8 +4,6 @@ import { nanoid } from "nanoid";
 
 import Expression from "./Expression";
 import dateTime from "./DateTime";
-import { IStore } from "./Store";
-import { toJS } from "mobx";
 
 export const Colors = [
   // "amber",

@@ -99,6 +99,30 @@ const Expression = t
     get implicitStart() {
       return DateTime.now();
     },
+
+    get simplifiedExpression(){
+      let parts = [this.output.subject]
+
+      if (this.output.start.year === DateTime.now().year) {
+        parts.push(this.output.start.toFormat("dd/MM"))
+      } else {
+        parts.push(this.output.start.toFormat("dd/MM/YYYY"))
+      }
+
+      if (!(this.output.start.hour === 0 && this.output.start.minute === 0)) {
+        parts = [
+          ...parts,
+          "at",
+          this.output.start.toLocaleString({
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23",
+          }),
+        ]
+      }
+
+      return parts.join(" ")
+    }
   }));
 
 export default Expression;
