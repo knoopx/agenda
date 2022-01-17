@@ -2,8 +2,25 @@ import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
 
 import grammar from "../grammar.pegjs";
-import { Schedule } from "../schedule";
-import { ITask } from "./Task";
+import { Dates, IOccurrencesArgs, Rule } from "../schedule";
+import { IRuleOptions } from "@rschedule/core";
+import type { parser } from "peggy";
+
+import {
+  ICalRuleFrequency,
+  INormRRuleOptions,
+} from "@rschedule/core/rules/ICAL_RULES";
+import { toExpression } from "../helpers/toExpression";
+
+export type IExpressionResult = Omit<
+  Omit<INormRRuleOptions, "start">,
+  "duration"
+> & {
+  subject: string;
+  start: DateTime;
+  context: string;
+  duration: Duration;
+};
 
 const Expression = t
   .model("Expression", {
@@ -21,17 +38,22 @@ const Expression = t
     },
   }))
   .views((self) => ({
-    get ast() {
+    get ast(): IExpressionResult | null {
       try {
         const out = grammar.parse(self.expression, {
           grammarSource: "",
           startRule: "Root",
+          hours: this.timeOfTheDay,
         });
         self.setError("");
         return out;
       } catch (e: any) {
-        if (e.message) self.setError(e.message);
-        return null;
+        if (e instanceof grammar.SyntaxError) {
+          if (e.message) self.setError(e.message);
+          return null;
+        } else {
+          throw e;
+        }
       }
     },
 
@@ -43,8 +65,8 @@ const Expression = t
       return self.expression.trim() === "";
     },
 
-    get context(){
-      return this.ast?.context
+    get context() {
+      return this.ast?.context;
     },
 
     get subject() {
@@ -55,85 +77,133 @@ const Expression = t
       return !!this.frequency;
     },
 
-    endAt(): DateTime | null {
-      if (this.nextAt && this.duration) {
-        return this.nextAt.plus(this.duration);
-      }
-      return null;
+    get start() {
+      return this.ast?.start;
     },
 
-    get duration(): Duration | null {
+    // endAt(): DateTime | null {
+    //   if (this.nextAt && this.duration) {
+    //     return this.nextAt.plus(this.duration);
+    //   }
+    //   return null;
+    // },
+
+    get duration(): Duration | void {
       return this.ast?.duration;
     },
 
-    get frequency() {
+    get frequency(): ICalRuleFrequency | undefined {
       return this.ast?.frequency;
     },
 
-    get rrule() {
+    get asObject(): IRuleOptions | null {
       if (!this.ast) return null;
 
-      const { subject, duration, start = this.implicitStart, ...rrule } = this.ast;
+      const {
+        subject,
+        duration,
+        start = this.implicitStart,
+        ...rrule
+      } = this.ast;
 
       if (Object.keys(rrule).length === 0) return null;
 
       return {
-        start,
-        ...(duration && {duration: duration.toMillis()}),
         ...rrule,
+        ...(duration && { duration: duration.toMillis() }),
+        start,
       };
     },
 
-    get schedule() {
-      if (this.isRecurring) {
-        return new Schedule<ITask>({ rrules: [this.rrule].filter(Boolean) });
-      }
-      if (this.ast && this.ast.start) {
-        return new Schedule<ITask>({ rdates: [this.ast.start] });
-      }
+    get rrule() {
+      return this.asObject && new Rule(this.asObject);
     },
 
-    nextAfter(start: DateTime): DateTime | void {
-      if (this.schedule){
-        const { value } = this.schedule.occurrences({ start, take: 1 }).next();
-        return value?.date;
+    getOccurrences({
+      start = DateTime.now(),
+      take,
+      end,
+    }: {
+      start: DateTime;
+      take?: number;
+      end?: DateTime;
+    }): DateTime[] {
+      let target;
+
+      if (!take && !end) {
+        throw new Error("Either take or end must be specified");
       }
+
+      if (this.isRecurring && this.rrule) {
+        target = this.rrule;
+      } else if (this.start) {
+        target = new Dates({ dates: [this.start] });
+      } else {
+        return [];
+      }
+
+      let index = 1;
+      const matches = [] as DateTime[];
+      for (const { date } of target.occurrences()) {
+        if (take && index > take) break;
+        if (end && date > end) break;
+        if (date > start) {
+          matches.push(date as DateTime);
+        }
+        ++index;
+      }
+
+      return matches;
+    },
+
+    nextAfter(start: DateTime): DateTime | null {
+      return this.getOccurrences({ start, take: 2 })[0];
     },
 
     get nextAt() {
-      return this.nextAfter(DateTime.now());
+      return this.nextAfter(this.implicitStart);
     },
 
-    get implicitStart() {
+    get implicitStart(): DateTime {
       return DateTime.now();
     },
 
-    get simplifiedExpression(){
-      let parts = [this.ast.subject]
-
-      if (this.ast.start.year === DateTime.now().year) {
-        parts.push(this.ast.start.toFormat("dd/MM"))
-      } else {
-        parts.push(this.ast.start.toFormat("dd/MM/YYYY"))
+    get simplifiedExpression(): string {
+      if (this.ast) {
+        return toExpression(this.ast, this.timeOfTheDay);
       }
 
-      if (!(this.ast.start.hour === 0 && this.ast.start.minute === 0)) {
-        parts = [
-          ...parts,
-          "at",
-          this.ast.start.toLocaleString({
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          }),
-        ]
+      return self.expression;
+    },
+
+    timeOfTheDay(): { [key: string]: number } {
+      throw new Error("Not implemented");
+    },
+
+    get completions() {
+      try {
+        grammar.parse(self.expression, {
+          grammarSource: "",
+        });
+      } catch (e) {
+        if (e instanceof grammar.SyntaxError) {
+          const completions = [] as string[];
+          if (e.expected) {
+            const start = self.expression.substring(0, e.location.start.offset);
+            e.expected.forEach((expected: parser.Expectation) => {
+              if (expected.type != "literal") return;
+              const completion = start + expected;
+              if (
+                completion.substr(0, self.expression.length) == self.expression
+              ) {
+                completions.push(completion);
+              }
+            });
+          }
+          return completions;
+        }
       }
-
-      if (this.context)
-        parts.push("@" + this.context)
-
-      return parts.join(" ")
-    }
+    },
   }));
 
 export default Expression;

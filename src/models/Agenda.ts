@@ -1,49 +1,47 @@
-import { DateTime } from 'luxon'
-import { getParent, types as t } from 'mobx-state-tree'
-import { IStore } from '.'
-import { ITask } from './Task'
+import { DateTime } from "luxon";
+import { getParent, types as t } from "mobx-state-tree";
+import { IStore } from ".";
+import { ITask } from "./Task";
 
-function groupName(start: DateTime | void) {
-    const now = DateTime.now()
+const GroupNames = [
+  "today",
+  "anytime",
+  "tomorrow",
+  "later this week",
+  "next week",
+  "upcoming",
+];
 
-    if (!start) return "anytime"
+function groupName(start: DateTime | null) {
+  const now = DateTime.now().startOf("day");
 
-    if (start.hasSame(now, "day")) return "today"
+  if (!start) return "anytime";
 
-    if (start.hasSame(now.plus({ days: 1 }), "day")) return "tomorrow"
-    if (start.hasSame(now, "week")) return "later this week"
+  if (start.hasSame(now, "day")) return "today";
 
-    // if (
-    //   start.hasSame(now.plus({ days: 1 }), "day") ||
-    //   start.hasSame(now, "week")
-    // )
-    //   return "later"
+  if (start.hasSame(now.plus({ days: 1 }), "day")) return "tomorrow";
+  if (start.hasSame(now, "week")) return "later this week";
+  if (start.hasSame(now.plus({weeks: 1}).startOf("week"), "week")) return "next week";
 
-    // if (start.hasSame(now.plus({ weeks: 1 }), "week")) return "next week"
-    // if (start.hasSame(now, "month")) return "later this month"
-    return "upcoming"
-  }
+  return "upcoming";
+}
 
-export default t.model("Agenda", {
+export default t.model("Agenda", {}).views((self) => {
+  return {
+    get groupEntries(): [string, ITask[]][] {
+      const groups = GroupNames.reduce((res, key) => {
+        res[key] = [];
+        return res;
+      }, {} as { [key: string]: ITask[] });
 
-}).views(self => {
-    return ({
-        get groupEntries(): [string, ITask[]][] {
-            const groups = {
-                anytime: []  ,
-                today: [],
-                tomorrow: [],
-                "later this week": [],
-                later: [],
-                upcoming: [],
-            } as { [key: string]: ITask[] }
+      const { sortedTasks } = getParent(self) as IStore;
+      sortedTasks.forEach((task) => {
+        groups[groupName(task.nextAt)].push(task);
+      });
 
-            const { sortedTasks } = getParent(self) as IStore
-            sortedTasks.forEach((task) => {
-                groups[groupName(task.nextAt)].push(task)
-            })
-
-            return Object.keys(groups).filter(key => groups[key].length).map(key => [key, groups[key]])
-        }
-    })
-})
+      return Object.keys(groups)
+        .filter((key) => groups[key].length)
+        .map((key) => [key, groups[key]]);
+    },
+  };
+});

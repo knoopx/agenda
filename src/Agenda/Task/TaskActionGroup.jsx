@@ -1,31 +1,32 @@
 import classNames from "classnames"
 import { observer } from "mobx-react"
-import { IoMdTrash } from "react-icons/io"
-import { MdUpdate } from "react-icons/md"
 
-import { TaskAction } from "./TaskAction"
+import { TaskActionButton } from "./TaskActionButton"
 
 export const TaskActionGroup = observer(({ className, task }) => {
   return (
     <div
-      className={classNames("hidden group-hover:flex items-center", className)}
+      className={classNames(
+        "hidden group-hover:flex items-center space-x-1",
+        className,
+      )}
     >
       {task.isRecurring && (
-        <TaskAction
+        <TaskActionButton
           className="hover:text-red-500"
           onClick={() => task.remove()}
         >
-          <IoMdTrash />
-        </TaskAction>
+          <IconMdiTrashCan />
+        </TaskActionButton>
       )}
 
       {task.isRecurring && (
-        <TaskAction
+        <TaskActionButton
           className="hover:text-blue-500"
           onClick={() => task.reset()}
         >
-          <MdUpdate className="flip-x" />
-        </TaskAction>
+          <IconMdiUpdate className="flip-x" />
+        </TaskActionButton>
       )}
     </div>
   )

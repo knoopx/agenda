@@ -1,4 +1,4 @@
-import "@rschedule/luxon-date-adapter/v2/setup";
+import "@rschedule/luxon-date-adapter/v2/setup"
 
-export * from "@rschedule/core";
-export * from "@rschedule/core/generators";
+export * from "@rschedule/core"
+export * from "@rschedule/core/generators"

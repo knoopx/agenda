@@ -7,12 +7,14 @@ import TopBar from "./TopBar"
 
 const App = observer(() => {
   return (
-    <div className="font-sans-serif">
+    <div className="flex flex-col overflow-hidden max-h-screen font-sans-serif">
       <TopBar />
-      <div className="container mx-auto px-8">
-        <div className="grid grid-cols-2 gap-16">
-          <Calendar />
-          <Agenda />
+      <div className="container flex flex-auto mx-auto px-2 min-h-0">
+        <div className="grid flex-auto lg:grid-cols-2 lg:gap-4 xl:gap-8">
+          <div className="flex flex-col overflow-y-auto">
+            <Agenda />
+          </div>
+          <Calendar className="hidden flex-auto lg:flex w-full" />
         </div>
       </div>
     </div>

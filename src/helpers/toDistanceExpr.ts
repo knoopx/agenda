@@ -1,18 +1,21 @@
-import { DateTime, Interval } from "luxon"
+import { DateTime, Interval, ToRelativeUnit } from "luxon"
 
-export function formatDistance(start: DateTime, end: DateTime) {
-  const isFuture = end > start
-  const relative = end.toRelative({ base: start, style: "short" })
-  if (!isFuture) [end, start] = [start, end]
-
-  const interval = Interval.fromDateTimes(start, end)
-  const duration = interval.toDuration([
+export function toDistanceExpr(start: DateTime, end: DateTime) {
+  const unit = [
     "years",
     "months",
+    "weeks",
     "days",
     "hours",
     "minutes",
-  ])
+  ] as ToRelativeUnit[];
+
+  const isFuture = end > start
+  const relative = end.toRelative({ base: start, style: "short", unit })
+  if (!isFuture) [end, start] = [start, end]
+
+  const interval = Interval.fromDateTimes(start, end)
+  const duration = interval.toDuration(unit)
 
   const concat = (...args: any[]) => args.filter(Boolean).join(" ")
   const nextOrPast = (text?: string) => concat(isFuture ? `next` : `past`, text)
@@ -58,7 +61,7 @@ export function formatDistance(start: DateTime, end: DateTime) {
       return end.weekdayShort
     }
 
-    // next week
+    // next Tue
     if (end.hasSame(start.plus({ weeks: 1 }), "week")) {
       return nextOrPast(end.weekdayShort)
     }

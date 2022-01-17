@@ -1,11 +1,10 @@
 import { observer } from "mobx-react"
 import { forwardRef, useRef } from "react"
-import { applySnapshot, clone } from "mobx-state-tree"
+import { applySnapshot, clone, getSnapshot } from "mobx-state-tree"
 import classNames from "classnames"
 
 import {
   useEnterKey,
-  useOnBlur,
   useEscapeKey,
   useFocus,
   useOnMouseOut,
@@ -18,24 +17,23 @@ import { TimeLabel, DurationLabel, DistanceLabel } from "../Label"
 import { RecurringIcon } from "./RecurringIcon"
 import { SubjectInput } from "./SubjectInput"
 import { TaskActionGroup } from "./TaskActionGroup"
-import { CheckBox } from "./CheckBox"
 
-export const Task = observer(
-  forwardRef(({ task, inputRef, isFocused, ...props }, ref) => {
+export const TaskContent = observer(
+  forwardRef(({ task, inputRef, isFocused, onComplete, ...props }, ref) => {
     return (
-      <div
+      <tr
         {...props}
         ref={ref}
-        className="flex flex-auto relative items-center space-x-4 hover:bg-neutral-50 group"
+        className="align-middle hover:bg-neutral-50 border-b last-of-type:border-0 group"
       >
-        <div className="flex flex-col items-end justify-center w-20 text-xs">
+        <td className="px-4 w-0 text-right text-xs align-middle">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
           {task.duration && <DurationLabel duration={task.duration} />}
-        </div>
+        </td>
 
-        <div
+        <td
           className={classNames(
-            "flex flex-auto items-center px-4 py-2 space-x-2 border-l-4 ",
+            "w-full align-middle border-l-4 flex flex-auto items-center px-4 py-2 space-x-2",
             `border-${task.highlightColor}-500`, // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
           )}
         >
@@ -49,29 +47,47 @@ export const Task = observer(
             <DistanceLabel className="text-xs" date={task.nextAt} />
           )}
 
-          <TaskActionGroup task={task} />
+          {!isFocused && <TaskActionGroup task={task} />}
 
-          <CheckBox {...{ isFocused, task }} />
-        </div>
-      </div>
+          <input
+            type="checkbox"
+            className="inline-block"
+            checked={false}
+            onChange={onComplete}
+          />
+        </td>
+      </tr>
     )
   }),
 )
 
-const TaskWrapper = observer(({ task, ...props }) => {
+const Task = observer(({ task, ...props }) => {
+  const store = useStore()
   const ref = useRef(null)
   const inputRef = useRef(null)
   const isFocused = useFocus(inputRef)
-  const target = isFocused ? clone(task) : task
+  let target
+
+  if (isFocused) {
+    target = clone(task)
+    store.addEditingTask(target)
+  } else target = task
 
   const onSubmit = () => {
     // if (target.isValid && target.subject.trim()) {
-    applySnapshot(task, target)
+    applySnapshot(task, getSnapshot(target))
     inputRef.current?.blur()
+    store.removeEditingTask(target)
     // }
   }
 
-  const store = useStore()
+  const onComplete = () => {
+    if (isFocused) {
+      onSubmit()
+    }
+    task.complete()
+  }
+
   useEnterKey(inputRef, onSubmit, [target])
 
   useOnMouseOver(ref, () => {
@@ -86,22 +102,21 @@ const TaskWrapper = observer(({ task, ...props }) => {
       task.setExpression(task.simplifiedExpression)
     }
   })
-  // useOnBlur(inputRef, () => {
-  //   onSubmit()
-  // })
+
   useEscapeKey(inputRef, () => {
     inputRef.current?.blur()
   })
 
   return (
-    <Task
+    <TaskContent
       ref={ref}
       isFocused={isFocused}
       inputRef={inputRef}
       task={target}
+      onComplete={onComplete}
       {...props}
     />
   )
 })
 
-export default TaskWrapper
+export default Task

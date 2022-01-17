@@ -12,7 +12,7 @@ export const SubjectInput = observer(
         type="text"
         value={value || task.expression}
         className={classNames(
-          "flex-auto font-medium bg-transparent outline-none",
+          "font-medium flex-auto bg-transparent outline-none appearance-none fit-content",
           {
             "text-red-500": !task.isValid,
           },

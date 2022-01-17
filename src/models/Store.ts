@@ -1,12 +1,11 @@
 import _ from "lodash";
-import { Instance, types as t } from "mobx-state-tree";
+import { destroy, Instance, types as t } from "mobx-state-tree";
 import { DateTime, Settings } from "luxon";
 import { autorun } from "mobx";
 
 import Task, { ITask } from "./Task";
 import Input from "./Input";
 
-import "../schedule";
 import Agenda from "./Agenda";
 
 export const Colors = [
@@ -29,24 +28,111 @@ export const Colors = [
   "rose",
 ];
 
-interface VolatileProps {
+interface StoreVolatileProps {
   hoveredTask: ITask | null;
 }
+
+class Occurrence {
+  date: DateTime;
+  task: ITask;
+
+  constructor(date: DateTime, task: ITask) {
+    this.date = date;
+    this.task = task;
+  }
+}
+
+const TimeOfTheDay = t
+  .model("TimeOfTheDay", {
+    morning: t.optional(t.number, 9),
+    afternoon: t.optional(t.number, 15),
+    evening: t.optional(t.number, 18),
+    night: t.optional(t.number, 22),
+  })
+  .actions((self) => ({
+    set(name: string, hour: number) {
+      if (name in self) {
+        self[name] = hour;
+      }
+    },
+  }));
+
+export interface ITimeOfTheDay extends Instance<typeof TimeOfTheDay> {}
 
 const Store = t
   .model("Store", {
     tasks: t.array(Task),
+    editingTasks: t.array(Task),
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
     agenda: t.optional(Agenda, {}),
+    timeOfTheDay: t.optional(TimeOfTheDay, {}),
   })
-  .volatile(
-    (self) =>
-      ({
-        hoveredTask: null,
-      } as VolatileProps)
-  )
+  .volatile<StoreVolatileProps>((self) => ({
+    hoveredTask: null,
+  }))
+  .views((self) => ({
+    get sortedTasks() {
+      return _.orderBy(
+        self.tasks,
+        [({ nextAt }) => !!nextAt, "nextAt"],
+        ["asc", "asc"]
+      );
+    },
+    get calendarStart() {
+      return DateTime.now();
+    },
+
+    get calendarEnd() {
+      return this.calendarStart.plus({ months: 11 }).endOf("month");
+    },
+
+    get contexts() {
+      return _.uniq(self.tasks.map((task) => task.context)).filter(Boolean);
+    },
+    get asList() {
+      return this.sortedTasks.map((task) => task.simplifiedExpression);
+    },
+
+    get occurrencesByDay(): Map<string, Occurrence[]> {
+      const result = new Map();
+      this.sortedTasks.forEach((task) => {
+        const occurrences = task.getOccurrences({
+          start: this.calendarStart,
+          end: this.calendarEnd,
+        });
+
+        occurrences.forEach((occurrence) => {
+          const day = occurrence.startOf("day").toISODate();
+          const existing = result.get(day) ?? [];
+          result.set(
+            day,
+            _.uniqBy([...existing, new Occurrence(occurrence, task)], "task.id")
+          );
+        });
+      });
+      return result;
+    },
+
+    getOccurrencesAtDay(day: DateTime): Occurrence[] {
+      return this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [];
+    },
+
+    getContextsAtDay(day: DateTime): string[] {
+      return _.uniq(
+        this.getOccurrencesAtDay(day)
+          .map((o) => o.task.context!)
+          .filter(Boolean)
+      );
+    },
+
+    getContextColor(context: string | undefined) {
+      return (
+        Colors[this.contexts.indexOf(context) % Colors.length] ?? "neutral"
+      );
+    },
+  }))
   .actions((self) => ({
     afterCreate() {
       // autorun(() => {
@@ -72,61 +158,33 @@ const Store = t
     setHoveredTask(task: ITask) {
       self.hoveredTask = task;
     },
-  }))
-  .views((self) => ({
-    get sortedTasks() {
-      return _.orderBy(
-        self.tasks,
-        [({ nextAt }) => !!nextAt, "nextAt"],
-        ["asc", "asc"]
-      );
+    addEditingTask(task: ITask) {
+      self.editingTasks.push(task);
     },
-    get calendarStart() {
-      return DateTime.now();
+    removeEditingTask(task: ITask) {
+      destroy(task);
     },
-
-    get calendarEnd() {
-      return this.calendarStart.plus({ months: 11 }).endOf("month");
+    copyListToClipboard() {
+      navigator.clipboard.writeText(self.asList.join("\n"));
     },
-
-    get contexts() {
-      return _.uniq(self.tasks.map((task) => task.context)).filter(Boolean);
-    },
-
-    get occurrencesByDay() {
-      const result = new Map();
-      this.sortedTasks.forEach((task) => {
-        const occurrences = task.schedule
-          ? task.schedule
-              .occurrences({
-                start: this.calendarStart,
-                end: this.calendarEnd,
-              })
-              .toArray()
-          : [];
-
-        occurrences.forEach((occurrence) => {
-          const day = occurrence.date.startOf("day").toISODate();
-          const existing = result.get(day) ?? [];
-          result.set(day, _.uniq([...existing, task]));
+    importListFromClipboard() {
+      navigator.clipboard.readText().then((text) => {
+        text.split(/[\r\n]+/).forEach((expression) => {
+          if (expression.trim() !== "") {
+            const task = Task.create({ expression });
+            this.addEditingTask(task);
+            const { isValid } = task;
+            this.removeEditingTask(task);
+            if (isValid) {
+              this.addTask(task);
+            }
+          }
         });
       });
-      return result;
     },
-
-    getTasksAtDay(day: DateTime): ITask[] {
-      return this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [];
-    },
-
-    getContextsAtDay(day: DateTime): string[] {
-      return _.uniq(this.getTasksAtDay(day).map((task) => task.context)).filter(Boolean);
-    },
-
-    getContextColor(context: string) {
-      if (context) {
-        return Colors[this.contexts.indexOf(context) % Colors.length];
-      }
-      return "neutral";
+    clearAll() {
+      self.tasks.forEach(destroy);
+      self.editingTasks.forEach(destroy);
     },
   }));
 

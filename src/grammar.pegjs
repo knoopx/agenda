@@ -3,9 +3,7 @@
 	const { merge, mergeWith } = require('lodash')
 	const { DateTime, Duration, Interval } = require("luxon")
 
-	const MonthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
-
-	const { Frequency, Recurrency } = require("./types")
+	const { Frequency, Recurrence, MonthNames, WeekDayNames } = require("./types")
 
 	function mergeWithArray(initial, ...rest){
 		return mergeWith(initial, ...rest, (a, b) => {
@@ -33,9 +31,10 @@
 }
 
 Root
-	= _* NaturalTimeExpr _*
-	/ _* head:Subject _ tail:NaturalTimeExpr _ context:Context _* { return merge(head, tail, context) }
+	= _* head:Subject _ tail:NaturalTimeExpr _ context:Context _* { return merge(head, tail, context) }
 	/ _* head:Subject _ tail:NaturalTimeExpr _* { return merge(head, tail) }
+	/ _* NaturalTimeExpr _*
+	/ _* head:Subject _ context:Context _* {  return merge(head, context) }
 	/ _* head:Subject _*  { return head }
 	/ _* { return {} }
 
@@ -43,7 +42,7 @@ _ "space"
 	= [ ]+ { }
 
 Subject
-	= Word (_ ! NaturalTimeExpr Word)* { return { subject: text() } }
+	= Word (_ !(NaturalTimeExpr / Context) Word)* { return { subject: text() } }
 
 Context
 	= "@" expr:Word { return { context: expr } }
@@ -82,7 +81,8 @@ NumberExpr
 	= Number
 	/ NumberTextualExpr
 
-NumberOneExpr = (NumberOneTextual / "1") { return  1 }
+NumberOneExpr
+	= (NumberOneTextual / "1") { return  1 }
 
 Char "char"
 	= !(_) . { return text() }
@@ -117,17 +117,17 @@ NaturalTimeExpr
 	// every wednesday
 	= EveryExpr
 	// tomorrow at 10, 23/12/2022 at 10
-	/ start:DateExpr _ _for:ForExpr { return Recurrency.onceAt(start, _for) }
+	/ start:DateExpr _ _for:ForExpr { return Recurrence.onceAt(start, _for) }
 	// tomorrow, 23/12/2022
-	/ start:DateExpr { return Recurrency.onceAt(start) }
+	/ start:DateExpr { return Recurrence.onceAt(start) }
 	// after work, morning
-	/ at:TimeOfTheDayExpr { return Recurrency.onceAt(now.set(at)) }
+	/ at:TimeOfTheDayExpr { return Recurrence.onceAt(now.set(at)) }
 	// in 2 days
 	/ InExpr
 	// at 5h
-    / at:AtTimeExpr { return Recurrency.onceAt(now.set(at)) }
+    / at:AtTimeExpr { return Recurrence.onceAt(now.set(at)) }
 	// this
-	/ ThisExpr { return Recurrency.onceAt(now.set(at)) }
+	/ ThisExpr { return Recurrence.onceAt(now.set(at)) }
 	// for 4h
 	/ ForExpr
 
@@ -162,21 +162,43 @@ EveryAtTimeSubExprListExpr
 	= head:EveryAtTimeSubExpr tail:(_ "and"i _ EveryAtTimeSubExpr)* { return mergeWithArray(head, ...tail.map(t => t[3])) }
 	/ EveryAtTimeSubExpr
 
-EveryAfterTimeExpr = expr:AfterTimeExpr { return { byHourOfDay: [expr.hour], byMinuteOfHour: [expr.minute] } }
-EveryTimeOfTheDayExpr = expr:TimeOfTheDayExpr { return { byHourOfDay: [expr.hour], byMinuteOfHour: [expr.minute] } }
-EveryAtTimeSubExpr = expr:AtTimeSubExpr { return { byHourOfDay: [expr.hour], byMinuteOfHour: [expr.minute] } }
+EveryAfterTimeExpr
+	= expr:AfterTimeExpr {
+		return {
+			byHourOfDay: [expr.hour],
+			byMinuteOfHour: [expr.minute]
+		}
+	}
+
+EveryTimeOfTheDayExpr
+	= expr:TimeOfTheDayExpr {
+		return Recurrence.daily({
+			byHourOfDay: [expr.hour],
+			byMinuteOfHour: [expr.minute]
+		})
+	}
+
+EveryAtTimeSubExpr
+	= expr:AtTimeSubExpr {
+		return {
+			byHourOfDay: [expr.hour],
+			byMinuteOfHour: [expr.minute]
+		}
+	}
 
 EveryExprEndAtTimeOrForExpr
 	= a:EveryExprEndAtTimeExpr _ b:ForExpr { return { ...a, ...b } }
 	/ a:EveryExprEndAtTimeExpr
 
 EverySubExprExpr
-	// monday (and tuesday)
-	= EverySubExprListExpr
-	// monday, 10 july
-	/ EveryTimeExtendableSubExpr
+	// every morning and afternoon
+	= head:EveryTimeOfTheDayExpr tail:(_ "and"i _ EveryTimeOfTheDayExpr)* { return mergeWithArray(head, ...tail.map(t => t[3])) }
 	// every morning
 	/ EveryTimeOfTheDayExpr
+	// monday (and tuesday)
+	/ EverySubExprListExpr
+	// monday, 10 july
+	/ EveryTimeExtendableSubExpr
 	// every 5 minutes
 	/ Period
 
@@ -187,18 +209,18 @@ EveryTimeExtendableSubExpr
 	/ EveryDateSubExpr
 
 EveryWeekDaySubExpr
-	= expr:DayNameAsShort { return Recurrency.weekly({ byDayOfWeek: [expr] }) }
+	= expr:DayNameAsShort { return Recurrence.weekly({ byDayOfWeek: [expr] }) }
 
 EveryMonthSubExpr
 	= head:MonthNameAsNumber tail:(_ "and" _ MonthNameAsNumber)* {
-		return Recurrency.monthly({
+		return Recurrence.monthly({
 			byMonthOfYear: [head, ...tail.map(([,,,t]) => t)],
 			byDayOfMonth: [1],
 		})
 	}
 
 EveryDate
-	= expr:DateShort { return Recurrency.yearly({
+	= expr:DateShort { return Recurrence.yearly({
 			byMonthOfYear: [expr.month],
 			byDayOfMonth: [expr.day],
 			byHourOfDay: [0],
@@ -206,9 +228,9 @@ EveryDate
 		})
 	}
 
-EveryWeekend = "weekend"i { return Recurrency.weekly({ byDayOfWeek: ["SA"] }) }
-EveryInterval = interval:NumberExpr _ expr:DayNameAsShort "s" { return Recurrency.weekly({ interval, byDayOfWeek: [expr] }) }
-EveryTimeUnit = expr:TimeUnitExpr { return Recurrency.fromDurationLike({ unit: expr }) }
+EveryWeekend = "weekend"i { return Recurrence.weekly({ byDayOfWeek: ["SA"] }) }
+EveryInterval = interval:NumberExpr _ expr:DayNameAsShort "s" { return Recurrence.weekly({ interval, byDayOfWeek: [expr] }) }
+EveryTimeUnit = expr:TimeUnitExpr { return Recurrence.fromDurationLike({ unit: expr }) }
 
 EveryDateSubExpr
 	// every monday, every january and february
@@ -232,7 +254,6 @@ EverySubExprListSubExpr
 	/ EveryMonthSubExpr
 	// every monday
 	/ EveryWeekDaySubExpr
-
 
 InExpr
 	// in 5 minutes, in 1w
@@ -283,7 +304,6 @@ OnExpr "on..."
 NextExpr "next..."
 	// next monday
 	= "next"i _ expr:NextSubExpr { return expr }
-
 
 Season
 	= "winter"i  { return now.set({ month: months.winter }).startOf("month") }
@@ -350,7 +370,7 @@ DayNameAsShort
 	= number:DayNameAsNumber { return ["MO", "TU", "WE", "TH", "FR", "SA", "SU"][number - 1] }
 
 DayNameAsNumber
-	= name:DayName { return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(name) + 1 }
+	= name:DayName { return WeekDayNames.indexOf(name) + 1 }
 
 MonthNumber "0..12"
 	= ("1" [0-2] / "0"? [0-9]) {  return Number(text()) }
@@ -414,4 +434,4 @@ Duration
 	= duration:DurationLike  { return Duration.fromDurationLike({ [duration.unit]: duration.value }) }
 
 Period
-	= duration:DurationLike { return Recurrency.fromDurationLike(duration) }
+	= duration:DurationLike { return Recurrence.fromDurationLike(duration) }

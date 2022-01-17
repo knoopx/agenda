@@ -16,10 +16,10 @@ export const Agenda = observer(() => {
   }
 
   return (
-    <div className="space-y-4">
+    <table className="w-full">
       {store.agenda.groupEntries.map(([name, tasks]) => (
         <Group key={name} name={name} tasks={tasks} />
       ))}
-    </div>
+    </table>
   )
 })

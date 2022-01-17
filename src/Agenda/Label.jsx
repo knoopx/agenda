@@ -1,15 +1,18 @@
 import classNames from "classnames"
-import { MdTimer } from "react-icons/md"
-import { IoMdCalendar, IoMdTime } from "react-icons/io"
 import { observer } from "mobx-react"
 import { DateTime } from "luxon"
 
-import { now, formatDistance } from "../helpers"
+import { now, toDistanceExpr } from "../helpers"
 import { useStore } from "../hooks"
 
 function Label({ children, className, icon: Icon, position = "left" }) {
   return (
-    <span className={classNames("flex items-center space-x-1", className)}>
+    <span
+      className={classNames(
+        "inline-flex items-center space-x-1 whitespace-nowrap",
+        className,
+      )}
+    >
       {Icon && position === "left" && <Icon />}
       <span>{children}</span>
       {Icon && position !== "left" && <Icon />}
@@ -26,7 +29,7 @@ export const DistanceLabel = observer(({ className, date }) => {
         "text-red-500": isDue,
       })}
     >
-      {formatDistance(now(5 * 1000), date, timeZone)}
+      {toDistanceExpr(now(5 * 1000), date, timeZone)}
     </Label>
   )
 })
@@ -34,14 +37,14 @@ export const DistanceLabel = observer(({ className, date }) => {
 export const TimeLabel = observer(({ date, className }) => {
   const { locale } = useStore()
   return (
-    <Label position="right" icon={IoMdTime} className={className}>
+    <Label position="right" icon={IconMdiClockOutline} className={className}>
       {date.toLocaleString({ timeStyle: "short" }, { locale })}
     </Label>
   )
 })
 export const DateLabel = observer(({ date, className }) => {
   return (
-    <Label icon={IoMdCalendar} className={className}>
+    <Label icon={IconMdiCalendarBlank} className={className}>
       {date.toLocaleString({
         weekday: "short",
         month: "short",
@@ -60,7 +63,7 @@ const formatDuration = (duration) => {
 
 export const DurationLabel = observer(({ duration }) => {
   return (
-    <Label position="right" icon={MdTimer}>
+    <Label position="right" icon={IconMdiTimerOutline}>
       {formatDuration(duration)}
     </Label>
   )

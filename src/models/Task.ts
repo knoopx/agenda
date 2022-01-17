@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import Expression from "./Expression";
 import dateTime from "./DateTime";
 import { IStore } from ".";
-
+import { ITimeOfTheDay } from "./Store";
 
 const Task = Expression.named("Task")
   .props({
@@ -20,7 +20,7 @@ const Task = Expression.named("Task")
 
     complete() {
       if (self.isRecurring && self.nextAt) {
-        self.lastCompletedAt = DateTime.now();
+        self.lastCompletedAt = self.nextAt;
       } else {
         this.remove();
       }
@@ -42,16 +42,24 @@ const Task = Expression.named("Task")
       },
 
       get implicitStart(): DateTime {
+        if (self.start && self.start > self.lastCompletedAt) {
+          return self.start;
+        }
         return self.lastCompletedAt.toLocal();
       },
 
       get highlightColor(): string {
         try {
           const parent = getParent(self, 2) as IStore;
-          return parent.getContextColor(self.context)
+          return parent.getContextColor(self.context);
         } catch (e) {
-          return "neutral"
+          return "neutral";
         }
+      },
+
+      get timeOfTheDay(): ITimeOfTheDay {
+        const { timeOfTheDay } = getParent(self, 2);
+        return timeOfTheDay;
       },
     };
   });

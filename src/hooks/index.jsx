@@ -1,6 +1,7 @@
 export { useEnterKey } from "./useEnterKey"
 export { useEscapeKey } from "./useEscapeKey"
 export { useFocus } from "./useFocus"
+export { useHover } from "./useHover"
 export { useKeys } from "./useKeys"
 export { useOnBlur } from "./useOnBlur"
 export { useOnFocus } from "./useOnFocus"

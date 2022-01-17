@@ -1,2 +1,2 @@
 export { now } from "./now"
-export { formatDistance } from "./formatDistance"
+export { toDistanceExpr } from "./toDistanceExpr"
