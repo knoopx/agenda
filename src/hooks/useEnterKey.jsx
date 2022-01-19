@@ -1,5 +1,5 @@
-import { useKeys } from "./useKeys"
+import { useKey } from "./useKey"
 
 export function useEnterKey(inputRef, onSubmit, deps = []) {
-  return useKeys(inputRef, ["Enter", "NumpadEnter"], onSubmit, deps)
+  return useKey(inputRef, 13, onSubmit, deps)
 }

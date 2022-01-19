@@ -1,16 +1,15 @@
 import { useState } from "react"
 
-import { useOnMouseOut } from "./useOnMouseOut"
-import { useOnMouseOver } from "./useOnMouseOver"
+import { useEventListener } from "./useEventListener"
 
 export function useHover(ref) {
   const [state, setState] = useState()
 
-  useOnMouseOver(ref, () => {
+  useEventListener(ref, "mouseover", () => {
     setState(true)
   })
 
-  useOnMouseOut(ref, () => {
+  useEventListener(ref, "mouseout", () => {
     setState(false)
   })
 

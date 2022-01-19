@@ -1,5 +1,5 @@
-import { useKeys } from "./useKeys"
+import { useKey } from "./useKey"
 
 export function useEscapeKey(inputRef, onSubmit) {
-  return useKeys(inputRef, ["Escape"], onSubmit)
+  return useKey(inputRef, "Escape", onSubmit)
 }

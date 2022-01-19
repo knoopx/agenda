@@ -7,10 +7,8 @@ import {
   useEnterKey,
   useEscapeKey,
   useFocus,
-  useOnMouseOut,
-  useOnMouseOver,
   useStore,
-  useOnFocus,
+  useEventListener,
 } from "../../hooks"
 import { TimeLabel, DurationLabel, DistanceLabel } from "../Label"
 
@@ -89,22 +87,20 @@ const Task = observer(({ task, ...props }) => {
   }
 
   useEnterKey(inputRef, onSubmit, [target])
-
-  useOnMouseOver(ref, () => {
+  useEscapeKey(inputRef, () => {
+    inputRef.current?.blur()
+  })
+  useEventListener(ref, "mouseover", () => {
     store.setHoveredTask(task)
   })
-  useOnMouseOut(ref, () => {
+  useEventListener(ref, "mouseout", () => {
     if (store.hoveredTask === task) store.setHoveredTask(null)
   })
 
-  useOnFocus(inputRef, () => {
+  useEventListener(inputRef, "focus", () => {
     if (task.ast && !task.isRecurring && task.ast.start) {
       task.setExpression(task.simplifiedExpression)
     }
-  })
-
-  useEscapeKey(inputRef, () => {
-    inputRef.current?.blur()
   })
 
   return (

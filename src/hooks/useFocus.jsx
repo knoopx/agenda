@@ -1,16 +1,15 @@
 import { useState } from "react"
 
-import { useOnBlur } from "./useOnBlur"
-import { useOnFocus } from "./useOnFocus"
+import { useEventListener } from "./useEventListener"
 
 export function useFocus(ref) {
   const [state, setState] = useState()
 
-  useOnFocus(ref, () => {
+  useEventListener(ref, "focus", () => {
     setState(true)
   })
 
-  useOnBlur(ref, () => {
+  useEventListener(ref, "blur", () => {
     setState(false)
   })
 
