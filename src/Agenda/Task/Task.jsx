@@ -24,7 +24,7 @@ export const TaskContent = observer(
         ref={ref}
         className="align-middle hover:bg-neutral-50 border-b last-of-type:border-0 group"
       >
-        <td className="px-4 w-0 text-right text-xs align-middle">
+        <td className="hidden md:table-cell px-4 w-0 text-right text-xs align-middle">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
           {task.duration && <DurationLabel duration={task.duration} />}
         </td>
