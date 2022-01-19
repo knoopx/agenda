@@ -1,7 +1,7 @@
 import { useEventListener } from "./useEventListener"
 
 export function useKey(inputRef, keyCodes, callback, deps = []) {
-  keyCodes = Array.from(keyCodes)
+  keyCodes = [keyCodes].flat()
   const listener = (e) => {
     if (keyCodes.includes(e.keyCode) || keyCodes.includes(e.code)) {
       e.preventDefault()
