@@ -128,7 +128,7 @@ function toRecurrentExpression(
         if (ast.byDayOfMonth?.length) {
           const dayOfMonth = ast.byDayOfMonth[0];
           if (dayOfMonth > 1) {
-            parts.push(dayOfMonth, toMonthOfYearExpr(ast.byMonthOfYear));
+            parts.push(dayOfMonth.toString(), toMonthOfYearExpr(ast.byMonthOfYear));
           } else {
             parts.push(toMonthOfYearExpr(ast.byMonthOfYear));
           }
