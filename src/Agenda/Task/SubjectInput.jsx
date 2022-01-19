@@ -10,9 +10,10 @@ export const SubjectInput = observer(
       <input
         ref={ref}
         type="text"
+        size="1"
         value={value || task.expression}
         className={classNames(
-          "font-medium flex-auto bg-transparent outline-none appearance-none fit-content",
+          "font-medium flex-auto bg-transparent outline-none appearance-none",
           {
             "text-red-500": !task.isValid,
           },
