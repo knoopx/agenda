@@ -239,7 +239,10 @@ testRule("EveryExprEndAtTimeOrForExpr", (e) => {
     byMinuteOfHour: [0],
     duration: Duration.fromObject({ hours: 1 }),
   });
-  e("at 12 and 16").toMatchObject({ byHourOfDay: [12, 16], byMinuteOfHour: [0] });
+  e("at 12 and 16").toMatchObject({
+    byHourOfDay: [12, 16],
+    byMinuteOfHour: [0],
+  });
   e("after lunch and after diner").toMatchObject({
     byHourOfDay: [15, 22],
     byMinuteOfHour: [0],
@@ -247,7 +250,9 @@ testRule("EveryExprEndAtTimeOrForExpr", (e) => {
 });
 
 testRule("ForExpr", (e) => {
-  e("for 15 min").toMatchObject({ duration: Duration.fromObject({ minutes: 15 }) });
+  e("for 15 min").toMatchObject({
+    duration: Duration.fromObject({ minutes: 15 }),
+  });
   e("for 1h").toMatchObject({ duration: Duration.fromObject({ hours: 1 }) });
 });
 
@@ -283,7 +288,11 @@ testRule("Root", (e) => {
 
   e("something @personal").toMatchObject({
     subject: "something",
-    context: "personal"
+    context: "personal",
+  });
+
+  e("tomorrow").toMatchObject({
+    start: DateTime.local(2021, 1, 2),
   });
 
   e("task at 12").toMatchObject({
@@ -350,7 +359,7 @@ testRule("Root", (e) => {
     byHourOfDay: [10],
     byMinuteOfHour: [0],
     context: "work",
-  })
+  });
 
   e("buy battery 04/01 at 09:00 @personal").toMatchObject({
     context: "personal",
