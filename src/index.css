@@ -17,3 +17,12 @@
 ::selection {
   @apply bg-blue-700 text-white;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -33,7 +33,7 @@ export const TaskContent = observer(
       <tr
         {...props}
         ref={ref}
-        className="align-middle hover:bg-neutral-50 border-b last-of-type:border-0 group"
+        className="align-middle hover:bg-neutral-50 dark:hover:bg-[#222] border-b dark:border-b-[#333] last-of-type:border-0 group"
       >
         <td className="hidden md:table-cell px-4 w-0 text-right text-xs align-middle">
           {task.nextAt && <TimeLabel date={task.nextAt} />}

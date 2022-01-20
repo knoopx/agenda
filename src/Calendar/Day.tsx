@@ -36,9 +36,9 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           {
             "font-bold": isToday,
             "font-light": !shouldHighlight && !isToday,
-            "bg-neutral-50": isSameMonth,
+            "bg-neutral-50 dark:bg-[#292929]": isSameMonth,
             // "opacity-60": !isSameMonth || start < now(5000),
-            "border border-black": isSameMonth && shouldHighlight,
+            "border border-black dark:border-neutral-400": isSameMonth && shouldHighlight,
           }
         )}
       >

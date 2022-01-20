@@ -155,6 +155,14 @@ const Store = t
       autorun(() => {
         Settings.defaultZone = self.timeZone;
       });
+
+      autorun(() => {
+        if (self.useDarkMode) {
+          document.body.classList.add("dark");
+        } else {
+          document.body.classList.remove("dark");
+        }
+      });
     },
     toggleDarkMode() {
       self.useDarkMode = !self.useDarkMode;
