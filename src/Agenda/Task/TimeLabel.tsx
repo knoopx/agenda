@@ -12,6 +12,9 @@ export const TimeLabel = observer(
     className,
   }: { date: DateTime } & HTMLAttributes<HTMLSpanElement>) => {
     const { locale } = useStore();
+
+    if (date.hour === 0 && date.minute === 0) return null;
+
     return (
       <Label position="right" icon={IconMdiClockOutline} className={className}>
         {date.toLocaleString({ timeStyle: "short" }, { locale })}

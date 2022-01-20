@@ -37,8 +37,8 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
             "font-bold": isToday,
             "font-light": !shouldHighlight && !isToday,
             "bg-neutral-50 dark:bg-[#292929]": isSameMonth,
-            // "opacity-60": !isSameMonth || start < now(5000),
-            "border border-black dark:border-neutral-400": isSameMonth && shouldHighlight,
+            "border border-black dark:border-neutral-400":
+              isSameMonth && shouldHighlight,
           }
         )}
       >
@@ -56,6 +56,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           </div>
         )}
       </HoverCard.Trigger>
+
       {isSameMonth && occurrences.length > 0 && (
         <HoverCard.Content
           side="top"
@@ -65,11 +66,9 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           <div className="divide-y">
             {occurrences.map(({ date, task }) => (
               <div key={task.id} className="flex items-center py-1 space-x-2">
-                <div className="flex justify-end w-12">
-                  <TimeLabel date={date} />
-                </div>
                 <Indicator color={store.getContextColor(task.context)} />
                 <div className="font-medium">{task.subject}</div>
+                <TimeLabel date={date} />
               </div>
             ))}
           </div>
