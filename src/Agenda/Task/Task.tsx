@@ -2,7 +2,6 @@ import { observer } from "mobx-react";
 import { forwardRef, Ref, useRef } from "react";
 import { applySnapshot, clone, getSnapshot } from "mobx-state-tree";
 import classNames from "classnames";
-import emojiFromWord from "emoji-from-word";
 
 import {
   useEnterKey,
@@ -31,8 +30,6 @@ export const TaskContent = observer(
     }
   >(({ task, inputRef, isFocused, onComplete, ...props }, ref) => {
     const store = useStore();
-    const match = task.context && emojiFromWord(task.context);
-    const emoji = match?.emoji;
 
     return (
       <tr
@@ -51,12 +48,12 @@ export const TaskContent = observer(
             `border-${task.highlightColor}-500` // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
           )}
         >
-          {!isFocused && task.isRecurring && (
-            <RecurringIcon title={task.frequency} />
+          {store.displayEmoji && !isFocused && task.emoji && (
+            <span>{task.emoji.char}</span>
           )}
 
-          {store.displayEmoji && !isFocused && emoji && (
-            <span>{emoji.char}</span>
+          {!isFocused && task.isRecurring && (
+            <RecurringIcon title={task.frequency} />
           )}
 
           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />

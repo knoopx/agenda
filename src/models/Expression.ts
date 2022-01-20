@@ -1,3 +1,5 @@
+import emojiFromWord from "emoji-from-word";
+
 import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
 
@@ -173,6 +175,11 @@ const Expression = t
     get timeOfTheDay(): { [key: string]: number } {
       throw new Error("Not implemented");
     },
+
+    get emoji(){
+      const match = self.context && emojiFromWord(self.context);
+      return match?.emoji;
+    }
   }));
 
 export default Expression;
