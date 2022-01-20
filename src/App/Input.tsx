@@ -70,12 +70,6 @@ const Input = observer(() => {
         />
 
         {input.nextAt && <DateLabel className="text-xs" date={input.nextAt} />}
-
-        {input.expression && input.error && isFocused && (
-          <div className="absolute -ml-[1px]  px-2 py-1 text-white text-xs bg-red-500 rounded rounded-b shadow">
-            {input.error}
-          </div>
-        )}
       </div>
     </div>
   );
