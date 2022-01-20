@@ -35,6 +35,7 @@ Root
 	/ _* head:Subject _ tail:NaturalTimeExpr _* { return merge(head, tail) }
 	/ _* expr:NaturalTimeExpr _* { return expr }
 	/ _* head:Subject _ context:Context _* {  return merge(head, context) }
+	/ _* context:Context _* {  return context }
 	/ _* head:Subject _*  { return head }
 	/ _* { return {} }
 

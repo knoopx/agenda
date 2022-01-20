@@ -295,6 +295,10 @@ testRule("Root", (e) => {
     start: DateTime.local(2021, 1, 2),
   });
 
+  e("@home").toMatchObject({
+    context: "home"
+  });
+
   e("task at 12").toMatchObject({
     subject: "task",
     start: DateTime.local(2021, 1, 1, 12),
