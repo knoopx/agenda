@@ -33,22 +33,24 @@ const Input = observer(() => {
   };
 
   return (
-    <div>
+    <div className="flex">
+      <div className="md:flex justify-end w-16 hidden mr-4">
+        {input.nextAt || input.duration ? (
+          <div className="flex flex-col items-end justify-center text-xs">
+            {input.nextAt && <TimeLabel date={input.nextAt} />}
+            {input.duration && <DurationLabel duration={input.duration} />}
+          </div>
+        ) : null}
+      </div>
+
       <div
         className={classNames(
-          "flex items-center px-4 py-2 space-x-2 bg-neutral-100 dark:bg-[#292929] rounded",
+          "flex flex-auto items-center px-4 py-2 space-x-2 bg-neutral-100 dark:bg-[#333] rounded",
           {
             "outline outline-red-500": !input.isBlank && !input.isValid,
           }
         )}
       >
-        {(input.nextAt || input.duration) && (
-          <div className="flex flex-col items-end justify-center text-xs">
-            {input.nextAt && <TimeLabel date={input.nextAt} />}
-            {input.duration && <DurationLabel duration={input.duration} />}
-          </div>
-        )}
-
         {input.isRecurring && (
           <span className="flex items-center">
             <IconMdiUpdate />
@@ -68,12 +70,13 @@ const Input = observer(() => {
         />
 
         {input.nextAt && <DateLabel className="text-xs" date={input.nextAt} />}
+
+        {input.expression && input.error && isFocused && (
+          <div className="absolute -ml-[1px]  px-2 py-1 text-white text-xs bg-red-500 rounded rounded-b shadow">
+            {input.error}
+          </div>
+        )}
       </div>
-      {input.expression && input.error && isFocused && (
-        <div className="absolute -ml-[1px] px-2 py-1 text-white text-xs bg-red-500 rounded rounded-b shadow">
-          {input.error}
-        </div>
-      )}
     </div>
   );
 });
