@@ -1401,10 +1401,23 @@ electron-to-chromium@^1.4.17:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.48.tgz#1948b5227aa0ca1ed690945eae1adbe9e7904575"
   integrity sha512-RT3SEmpv7XUA+tKXrZGudAWLDpa7f8qmhjcLaM6OD/ERxjQ/zAojT8/Vvo0BSzbArkElFZ1WyZ9FuwAYbkdBNA==
 
+emoji-from-word@^1.2.12:
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/emoji-from-word/-/emoji-from-word-1.2.12.tgz#29c060f64e2fd70a1724be7562185d12268c362a"
+  integrity sha512-xNIl/NflPD46iqbGyVj8U56rYW4i021rNHDYxEE3PSrnMpGxp9NxxedRqGsL1ol8z8taHF27TB9+mRbSFHSx5Q==
+  dependencies:
+    emojilib "^1.1.0"
+    iterate-object "^1.3.0"
+
 emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
+
+emojilib@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/emojilib/-/emojilib-1.1.0.tgz#b17c8667c8f6e32448871ae57d05aa3b02563b8b"
+  integrity sha1-sXyGZ8j24yRIhxrlfQWqOwJWO4s=
 
 entities@^3.0.1:
   version "3.0.1"
@@ -2195,6 +2208,11 @@ istanbul-reports@^3.0.2:
   dependencies:
     html-escaper "^2.0.0"
     istanbul-lib-report "^3.0.0"
+
+iterate-object@^1.3.0:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/iterate-object/-/iterate-object-1.3.4.tgz#fa50b1d9e58e340a7dd6b4c98c8a5e182e790096"
+  integrity sha512-4dG1D1x/7g8PwHS9aK6QV5V94+ZvyP4+d19qDv43EzImmrndysIl4prmJ1hWWIGCqrZHyaHBm6BSEWHOLnpoNw==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

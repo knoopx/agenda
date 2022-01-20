@@ -92,6 +92,15 @@ const Settings = observer(() => {
           </Select>
         </label>
 
+        <label className="inline-flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={store.displayEmoji}
+            onChange={() => store.toggleDisplayEmoji()}
+          ></input>
+          <span className="font-medium">show emoji</span>
+        </label>
+
         <div className="flex justify-between space-x-4">
           <Button
             onClick={() => {

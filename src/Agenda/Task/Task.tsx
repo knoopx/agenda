@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import { forwardRef, Ref, useRef } from "react";
 import { applySnapshot, clone, getSnapshot } from "mobx-state-tree";
 import classNames from "classnames";
+import emojiFromWord from "emoji-from-word";
 
 import {
   useEnterKey,
@@ -29,6 +30,10 @@ export const TaskContent = observer(
       onComplete: () => void;
     }
   >(({ task, inputRef, isFocused, onComplete, ...props }, ref) => {
+    const store = useStore();
+    const match = task.context && emojiFromWord(task.context);
+    const emoji = match?.emoji;
+
     return (
       <tr
         {...props}
@@ -48,6 +53,10 @@ export const TaskContent = observer(
         >
           {!isFocused && task.isRecurring && (
             <RecurringIcon title={task.frequency} />
+          )}
+
+          {store.displayEmoji && !isFocused && emoji && (
+            <span>{emoji.char}</span>
           )}
 
           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
@@ -70,62 +79,60 @@ export const TaskContent = observer(
   })
 );
 
-const Task = observer(
-  ({ task, ...props }: { task: ITask }) => {
-    const store = useStore();
-    const ref = useRef<HTMLTableRowElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const isFocused = useFocus(inputRef);
-    let target: ITask;
+const Task = observer(({ task, ...props }: { task: ITask }) => {
+  const store = useStore();
+  const ref = useRef<HTMLTableRowElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isFocused = useFocus(inputRef);
+  let target: ITask;
 
+  if (isFocused) {
+    target = clone(task);
+    store.addEditingTask(target);
+  } else target = task;
+
+  const onSubmit = () => {
+    applySnapshot(task, getSnapshot(target));
+    inputRef.current?.blur();
+    store.removeEditingTask(target);
+  };
+
+  const onComplete = () => {
     if (isFocused) {
-      target = clone(task);
-      store.addEditingTask(target);
-    } else target = task;
+      onSubmit();
+    }
+    task.complete();
+  };
 
-    const onSubmit = () => {
-      applySnapshot(task, getSnapshot(target));
-      inputRef.current?.blur();
-      store.removeEditingTask(target);
-    };
+  useEnterKey(inputRef, onSubmit, [target]);
+  useEscapeKey(inputRef, () => {
+    inputRef.current?.blur();
+  });
 
-    const onComplete = () => {
-      if (isFocused) {
-        onSubmit();
-      }
-      task.complete();
-    };
+  useEventListener(ref, "mouseover", () => {
+    store.setHoveredTask(task);
+  });
 
-    useEnterKey(inputRef, onSubmit, [target]);
-    useEscapeKey(inputRef, () => {
-      inputRef.current?.blur();
-    });
+  useEventListener(ref, "mouseout", () => {
+    if (store.hoveredTask === task) store.setHoveredTask(null);
+  });
 
-    useEventListener(ref, "mouseover", () => {
-      store.setHoveredTask(task);
-    });
+  useEventListener(inputRef, "focus", () => {
+    if (task.ast && !task.isRecurring && task.ast.start) {
+      task.setExpression(task.simplifiedExpression);
+    }
+  });
 
-    useEventListener(ref, "mouseout", () => {
-      if (store.hoveredTask === task) store.setHoveredTask(null);
-    });
-
-    useEventListener(inputRef, "focus", () => {
-      if (task.ast && !task.isRecurring && task.ast.start) {
-        task.setExpression(task.simplifiedExpression);
-      }
-    });
-
-    return (
-      <TaskContent
-        ref={ref}
-        isFocused={isFocused}
-        inputRef={inputRef}
-        task={target}
-        onComplete={onComplete}
-        {...props}
-      />
-    );
-  }
-);
+  return (
+    <TaskContent
+      ref={ref}
+      isFocused={isFocused}
+      inputRef={inputRef}
+      task={target}
+      onComplete={onComplete}
+      {...props}
+    />
+  );
+});
 
 export default Task;

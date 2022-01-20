@@ -82,6 +82,7 @@ const Store = t
       t.boolean,
       () => window.matchMedia("(prefers-color-scheme: dark)").matches
     ),
+    displayEmoji: t.optional(t.boolean, true),
   })
   .volatile<StoreVolatileProps>((self) => ({
     hoveredTask: null,
@@ -166,6 +167,9 @@ const Store = t
     },
     toggleDarkMode() {
       self.useDarkMode = !self.useDarkMode;
+    },
+    toggleDisplayEmoji() {
+      self.displayEmoji = !self.displayEmoji;
     },
     addTask(task: ITaskSnapshotIn) {
       self.tasks.push(task);
