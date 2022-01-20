@@ -83,12 +83,17 @@ const Expression = t
       return this.ast?.start;
     },
 
-    // endAt(): DateTime | null {
-    //   if (this.nextAt && this.duration) {
-    //     return this.nextAt.plus(this.duration);
-    //   }
-    //   return null;
-    // },
+    get endAt(): DateTime | null {
+      if (this.ast?.end) {
+        return this.ast?.end;
+      }
+
+      if (this.nextAt && this.duration) {
+        return this.nextAt.plus(this.duration);
+      }
+
+      return null;
+    },
 
     get duration(): Duration | void {
       return this.ast?.duration;
@@ -177,7 +182,7 @@ const Expression = t
     },
 
     get emoji(){
-      const match = self.context && emojiFromWord(self.context);
+      const match = this.context && emojiFromWord(this.context);
       return match?.emoji;
     }
   }));

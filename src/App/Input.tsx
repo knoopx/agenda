@@ -47,7 +47,7 @@ const Input = observer(() => {
         className={classNames(
           "flex flex-auto items-center px-4 py-2 space-x-2 bg-neutral-100 dark:bg-[#333] rounded",
           {
-            "outline outline-red-500": !input.isBlank && !input.isValid,
+            "underline": !input.isBlank && !input.isValid,
           }
         )}
       >

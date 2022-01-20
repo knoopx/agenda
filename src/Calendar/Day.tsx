@@ -9,7 +9,7 @@ import { now } from "../helpers";
 import { TimeLabel } from "../Agenda/Task/TimeLabel";
 
 import Indicator from "./Indicator";
-import { DateTime } from "luxon";
+import { DateTime, Interval } from "luxon";
 import { IntervalBlockProps } from "./Interval";
 
 type DayProps = {
@@ -25,7 +25,13 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const occurrences = _.sortBy(store.getOccurrencesAtDay(start), "date");
   const isToday = now(5000).hasSame(start, "day");
 
-  const shouldHighlight = store.input.occurrencesAtDay(start) > 0;
+  const shouldHighlight =
+    store.input.occurrencesAtDay(start) > 0 ||
+    (store.input.implicitEndAt &&
+      Interval.fromDateTimes(
+        store.input.implicitStart,
+        store.input.implicitEndAt
+      ).contains(start));
 
   return (
     <HoverCard.Root openDelay={0} closeDelay={0}>

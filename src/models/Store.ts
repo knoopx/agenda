@@ -117,11 +117,25 @@ const Store = t
       });
     },
     get calendarStart() {
+      if (self.input.start) {
+        return self.input.start;
+      }
       return DateTime.now();
     },
 
     get calendarEnd() {
+      if (self.input.implicitEndAt) {
+        return self.input.implicitEndAt;
+      }
       return this.calendarStart.plus({ months: 11 }).endOf("month");
+    },
+
+    get calendarDuration() {
+      return this.calendarEnd.diff(this.calendarStart);
+    },
+
+    get isCalendarSingleMonth(){
+      return this.calendarDuration.as("months") < 1;
     },
 
     get contexts() {
@@ -133,7 +147,10 @@ const Store = t
 
     get occurrencesByDay(): Map<string, Occurrence[]> {
       const result = new Map();
-      this.sortedTasks.forEach((task) => {
+      const tasks = this.filteredTasks.length
+        ? this.filteredTasks
+        : this.sortedTasks;
+      tasks.forEach((task) => {
         const occurrences = task.getOccurrences({
           start: this.calendarStart,
           end: this.calendarEnd,
