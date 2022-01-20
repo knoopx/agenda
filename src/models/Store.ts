@@ -68,6 +68,10 @@ const Store = t
     timeZone: t.optional(t.string, "Europe/Madrid"),
     agenda: t.optional(Agenda, {}),
     timeOfTheDay: t.optional(TimeOfTheDay, {}),
+    useDarkMode: t.optional(
+      t.boolean,
+      () => window.matchMedia("(prefers-color-scheme: dark)").matches
+    ),
   })
   .volatile<StoreVolatileProps>((self) => ({
     hoveredTask: null,
@@ -141,6 +145,9 @@ const Store = t
       autorun(() => {
         Settings.defaultZone = self.timeZone;
       });
+    },
+    toggleDarkMode() {
+      self.useDarkMode = !self.useDarkMode;
     },
     addTask(task: ITask) {
       self.tasks.push(task);

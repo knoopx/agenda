@@ -8,6 +8,8 @@
     "IconMdiTimerOutline": true,
     "IconMdiTrashCan": true,
     "IconMdiTrashCanOutline": true,
-    "IconMdiUpdate": true
+    "IconMdiUpdate": true,
+    "IconMdiWeatherNight": true,
+    "IconMdiWeatherSunny": true
   }
 }

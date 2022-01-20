@@ -10,5 +10,7 @@ declare global {
   const IconMdiTrashCan: typeof import('~icons/mdi/trash-can.jsx')['default']
   const IconMdiTrashCanOutline: typeof import('~icons/mdi/trash-can-outline.jsx')['default']
   const IconMdiUpdate: typeof import('~icons/mdi/update.jsx')['default']
+  const IconMdiWeatherNight: typeof import('~icons/mdi/weather-night.jsx')['default']
+  const IconMdiWeatherSunny: typeof import('~icons/mdi/weather-sunny.jsx')['default']
 }
 export {}
