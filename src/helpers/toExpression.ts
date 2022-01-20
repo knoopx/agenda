@@ -96,7 +96,11 @@ function toRecurrentExpression(
           timeOfTheDay
         );
       } else {
-        parts.push("day");
+        if (ast.interval && ast.interval > 1) {
+          parts.push(ast.interval.toString(), "days");
+        } else {
+          parts.push("day");
+        }
       }
       break;
     case "WEEKLY":
