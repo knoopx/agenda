@@ -37,7 +37,7 @@ export const TaskContent = observer(
         ref={ref}
         className="align-middle hover:bg-neutral-50 dark:hover:bg-[#222] border-b dark:border-b-[#333] last-of-type:border-0 group"
       >
-        <td className="hidden md:table-cell px-4 w-0 text-right text-xs align-middle">
+        <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
           {task.duration && <DurationLabel duration={task.duration} />}
         </td>
