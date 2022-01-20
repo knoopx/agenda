@@ -16,12 +16,12 @@ it("works", () => {
 
   expect(store.tasks.length).toEqual(2);
   expect(store.contexts).toMatchObject(["work", "home"]);
-  expect(Array.from(store.getContextsAtDay(Now.plus({ days: 1 })))).toMatchObject([
-    "work",
-  ]);
+  expect(
+    Array.from(store.getContextsAtDay(Now.plus({ days: 1 })))
+  ).toMatchObject(["work"]);
 
   expect(Array.from(store.occurrencesByDay.values())[0][0]).toMatchObject({
-    date: Now.plus({ days: 1 }),
-    task: store.tasks[0],
+    date: Now.set({ hour: 5 }),
+    task: store.tasks[1],
   });
 });

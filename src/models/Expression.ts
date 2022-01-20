@@ -142,22 +142,16 @@ const Expression = t
         return [];
       }
 
-      let index = 1;
-      const matches = [] as DateTime[];
-      for (const { date } of target.occurrences()) {
-        if (take && index > take) break;
-        if (end && date > end) break;
-        if (date > start) {
-          matches.push(date as DateTime);
-        }
-        ++index;
-      }
-
-      return matches;
+      return target
+        .occurrences({ start, end, take })
+        .toArray()
+        .map((x) => x.date);
     },
 
-    nextAfter(start: DateTime): DateTime | null {
-      return this.getOccurrences({ start, take: 2 })[0];
+    nextAfter(start: DateTime, skipCurrent: boolean = false): DateTime | null {
+      let occ = this.getOccurrences({ start, take: 2 });
+      if (skipCurrent) occ = occ.filter((x) => x > start);
+      return occ[0];
     },
 
     get nextAt() {
@@ -176,7 +170,7 @@ const Expression = t
       return self.expression;
     },
 
-    get timeOfTheDay(): ITimeOfTheDay {
+    get timeOfTheDay(): { [key: string]: number } {
       throw new Error("Not implemented");
     },
   }));

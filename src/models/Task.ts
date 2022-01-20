@@ -1,4 +1,4 @@
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 import {
   getParent,
   Instance,
@@ -25,11 +25,14 @@ const Task = Expression.named("Task")
     },
 
     complete() {
-      if (self.isRecurring && self.nextAt) {
-        self.lastCompletedAt = self.nextAt;
-      } else {
-        this.remove();
+      if (self.isRecurring) {
+        const nextAt = self.nextAfter(self.implicitStart, true);
+        if (nextAt)  {
+          self.lastCompletedAt = nextAt;
+          return
+        }
       }
+      this.remove();
     },
 
     remove() {
