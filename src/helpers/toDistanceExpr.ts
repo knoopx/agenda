@@ -67,5 +67,9 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
     }
   }
 
+  if (duration.months > 1)  {
+    return monthAndDay
+  }
+
   return relative
 }
