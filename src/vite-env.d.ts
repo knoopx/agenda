@@ -1,4 +1,6 @@
 /// <reference types="vite/client" />
+/// <reference types="unplugin-icons/types/react" />
+/// <reference types="../auto-imports" />
 
 declare module '*.pegjs' {
     import { Parser } from 'peggy'

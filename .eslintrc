@@ -3,11 +3,10 @@
     "browser": true
   },
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "plugins": ["@typescript-eslint"],
   "extends": [
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "./.eslintrc-auto-import.json"
   ],
   "settings": {
     "import/parsers": {

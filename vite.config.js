@@ -1,3 +1,5 @@
+/* eslint-disable babel/new-cap */
+
 import Icons from "unplugin-icons/vite"
 import IconsResolver from "unplugin-icons/resolver"
 import AutoImport from "unplugin-auto-import/vite"
@@ -44,6 +46,9 @@ export default defineConfig({
   base: "/simply-do/",
   plugins: [
     AutoImport({
+      eslintrc: {
+        enabled: true,
+      },
       resolvers: [
         IconsResolver({
           prefix: "Icon",
