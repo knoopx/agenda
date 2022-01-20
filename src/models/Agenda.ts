@@ -36,16 +36,7 @@ export default t.model("Agenda", {}).views((self) => {
         return res;
       }, {} as { [key: string]: ITask[] });
 
-      store.sortedTasks
-        .filter((task) => {
-          if (store.input.start) {
-            if (task.nextAt?.hasSame(store.input.start, "day")) {
-              return true;
-            }
-            return false;
-          }
-          return true;
-        })
+      store.filteredTasks
         .forEach((task) => {
           groups[groupName(task.nextAt)].push(task);
         });

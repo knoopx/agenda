@@ -97,6 +97,25 @@ const Store = t
         ["asc", "asc"]
       );
     },
+    get filteredTasks() {
+      return this.sortedTasks.filter((task) => {
+        if (self.input.start) {
+          if (task.nextAt?.hasSame(self.input.start, "day")) {
+            return true;
+          }
+          return false;
+        }
+        if (self.input.subject) {
+          return task.subject
+            .toLowerCase()
+            .includes(self.input.subject.toLowerCase());
+        }
+        if (self.input.context && task.context) {
+          return task.context.toLowerCase() == self.input.context.toLowerCase();
+        }
+        return true;
+      });
+    },
     get calendarStart() {
       return DateTime.now();
     },
