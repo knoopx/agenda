@@ -44,7 +44,7 @@ const TopBar = observer(() => {
         <Popover.Root>
           <Settings />
           <Popover.PopoverTrigger>
-            <IconMdiCog className="flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer" />
+            <IconMdiCog className="flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white rounded cursor-pointer" />
           </Popover.PopoverTrigger>
         </Popover.Root>
       </div>

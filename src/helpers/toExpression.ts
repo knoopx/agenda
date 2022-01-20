@@ -212,6 +212,7 @@ export function toExpression(
     parts.push(toStartingExpression(ast));
   }
 
+  if (ast.tags) parts.push(ast.tags.map((tag) => `#${tag}`).join(" "));
   if (ast.context) parts.push("@" + ast.context);
 
   return parts.filter(Boolean).join(" ");

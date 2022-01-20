@@ -35,7 +35,7 @@ export const TaskContent = observer(
       <tr
         {...props}
         ref={ref}
-        className="align-middle hover:bg-neutral-50 dark:hover:bg-[#222] border-b dark:border-b-[#333] last-of-type:border-0 group"
+        className="align-middle hover:bg-neutral-50 dark:hover:bg-[#292929] border-b dark:border-b-[#333] last-of-type:border-0 group"
       >
         <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
@@ -48,9 +48,9 @@ export const TaskContent = observer(
             `border-${task.highlightColor}-500` // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
           )}
         >
-          {store.displayEmoji && !isFocused && task.emoji && (
-            <span>{task.emoji.char}</span>
-          )}
+          {store.displayEmoji &&
+            !isFocused &&
+            task.emojis.map((char) => <span key={char}>{char}</span>)}
 
           {!isFocused && task.isRecurring && (
             <RecurringIcon title={task.frequency} />

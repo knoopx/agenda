@@ -25,6 +25,9 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const occurrences = _.sortBy(store.getOccurrencesAtDay(start), "date");
   const isToday = now(5000).hasSame(start, "day");
 
+  const indicatorSize = store.isCalendarSingleMonth ? "0.5rem" : "0.25rem";
+  const indicatorClassName = store.isCalendarSingleMonth ? "m-[.1rem]" : "m-[.05rem]";
+
   const shouldHighlight =
     store.input.occurrencesAtDay(start) > 0 ||
     (store.input.implicitEndAt &&
@@ -43,7 +46,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
             "font-bold": isToday,
             "font-light": !shouldHighlight && !isToday,
             "bg-neutral-50 dark:bg-[#292929]": isSameMonth,
-            "border border-black dark:border-neutral-400":
+            "bg-[#eee] dark:bg-[#313131]":
               isSameMonth && shouldHighlight,
           }
         )}
@@ -55,6 +58,8 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
               {contexts.map((context) => (
                 <Indicator
                   key={context}
+                  size={indicatorSize}
+                  className={indicatorClassName}
                   color={store.getContextColor(context)}
                 />
               ))}
@@ -72,7 +77,11 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           <div className="divide-y">
             {occurrences.map(({ date, task }) => (
               <div key={task.id} className="flex items-center py-1 space-x-2">
-                <Indicator color={store.getContextColor(task.context)} />
+                <Indicator
+                  color={store.getContextColor(task.context)}
+                  size={indicatorSize}
+                  className={indicatorClassName}
+                />
                 <div className="font-medium">{task.subject}</div>
                 <TimeLabel date={date} />
               </div>

@@ -21,6 +21,7 @@ export type IExpressionResult = Omit<
   subject: string;
   start: DateTime;
   context: string;
+  tags: string[];
   duration: Duration;
 };
 
@@ -69,6 +70,10 @@ const Expression = t
 
     get context() {
       return this.ast?.context;
+    },
+
+    get tags() {
+      return this.ast?.tags ?? [];
     },
 
     get subject() {
@@ -181,10 +186,12 @@ const Expression = t
       throw new Error("Not implemented");
     },
 
-    get emoji(){
-      const match = this.context && emojiFromWord(this.context);
-      return match?.emoji;
-    }
+    get emojis() {
+      return this.tags
+        .map((x) => emojiFromWord(x))
+        .filter((x) => x.emoji)
+        .map((x) => x.emoji.char);
+    },
   }));
 
 export default Expression;

@@ -113,9 +113,17 @@ const Store = t
         if (self.input.context && task.context) {
           return task.context.toLowerCase() == self.input.context.toLowerCase();
         }
+
+        if (self.input.tags.length) {
+          const inputTags = self.input.tags.map((x) => x.toLowerCase());
+          const taskTags = task.tags.map((x) => x.toLowerCase());
+          return inputTags.every((t) => taskTags.includes(t));
+        }
+
         return true;
       });
     },
+
     get calendarStart() {
       if (self.input.start) {
         return self.input.start;
@@ -134,23 +142,22 @@ const Store = t
       return this.calendarEnd.diff(this.calendarStart);
     },
 
-    get isCalendarSingleMonth(){
+    get isCalendarSingleMonth() {
       return this.calendarDuration.as("months") < 1;
     },
 
     get contexts() {
       return _.uniq(self.tasks.map((task) => task.context)).filter(Boolean);
     },
+
     get asList() {
       return this.sortedTasks.map((task) => task.simplifiedExpression);
     },
 
     get occurrencesByDay(): Map<string, Occurrence[]> {
       const result = new Map();
-      const tasks = this.filteredTasks.length
-        ? this.filteredTasks
-        : this.sortedTasks;
-      tasks.forEach((task) => {
+
+      this.filteredTasks.forEach((task) => {
         const occurrences = task.getOccurrences({
           start: this.calendarStart,
           end: this.calendarEnd,

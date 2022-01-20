@@ -7,8 +7,10 @@ import { useStore, useEnterKey, useEscapeKey, useFocus } from "../hooks";
 import { TimeLabel } from "../Agenda/Task/TimeLabel";
 import { DurationLabel } from "../Agenda/Task/DurationLabel";
 import { DateLabel } from "../Agenda/Task/DateLabel";
+import Indicator from "../Calendar/Indicator";
 
 const Input = observer(() => {
+  const store = useStore();
   const inputRef = useRef(null);
   const { input, addTask } = useStore();
 
@@ -47,10 +49,17 @@ const Input = observer(() => {
         className={classNames(
           "flex flex-auto items-center px-4 py-2 space-x-2 bg-neutral-100 dark:bg-[#333] rounded",
           {
-            "underline": !input.isBlank && !input.isValid,
+            underline: !input.isBlank && !input.isValid,
           }
         )}
       >
+        {input.context && (
+          <Indicator size="0.5rem" color={store.getContextColor(input.context)} />
+        )}
+
+        {store.displayEmoji &&
+          input.emojis.map((char) => <span key={char}>{char}</span>)}
+
         {input.isRecurring && (
           <span className="flex items-center">
             <IconMdiUpdate />

@@ -36,6 +36,28 @@ function testRule(name: string, callback: (e: AssertFunction) => void) {
   });
 }
 
+testRule("Context", (e) => {
+  e("@work").toMatchObject({ context: "work" });
+});
+
+testRule("Tag", (e) => {
+  e("#coffee").toMatchObject({ tags: ["coffee"] });
+});
+
+testRule("TagExpr", (e) => {
+  e("#coffee #drinks").toMatchObject({ tags: ["coffee", "drinks"] });
+});
+
+testRule("ContextOrTagExpr", (e) => {
+  e("#tag").toMatchObject({ tags: ["tag"] });
+  e("@context").toMatchObject({ context: "context" });
+  e("#tag @context").toMatchObject({ context: "context", tags: ["tag"] });
+  e("@context #tag").toMatchObject({ context: "context", tags: ["tag"] });
+  e("#coffee #drinks @context").toMatchObject({ context: "context", tags: ["coffee", "drinks"] });
+  e("@context #coffee #drinks").toMatchObject({ context: "context", tags: ["coffee", "drinks"] });
+  e("#coffee @context #drinks").toMatchObject({ context: "context", tags: ["coffee", "drinks"] });
+});
+
 testRule("Date", (e) => {
   e("25/12/2020").toEqual(DateTime.local(2020, 12, 25));
   e("9/1/2022").toEqual(DateTime.local(2022, 1, 9));
@@ -295,8 +317,31 @@ testRule("Root", (e) => {
     start: DateTime.local(2021, 1, 2),
   });
 
+  e("#coffee").toMatchObject({
+    tags: ["coffee"],
+  });
+
+  e("#coffee #drinks").toMatchObject({
+    tags: ["coffee", "drinks"],
+  });
+
+  e("subject #coffee").toMatchObject({
+    subject: "subject",
+    tags: ["coffee"],
+  });
+
+  e("subject #coffee #drinks").toMatchObject({
+    subject: "subject",
+    tags: ["coffee"],
+  });
+
   e("@home").toMatchObject({
-    context: "home"
+    context: "home",
+  });
+
+  e("#holidays @planning").toMatchObject({
+    context: "planning",
+    tags: ["holidays"],
   });
 
   e("task at 12").toMatchObject({
@@ -369,5 +414,17 @@ testRule("Root", (e) => {
     context: "personal",
     start: DateTime.local(2021, 1, 4, 9),
     subject: "buy battery",
+  });
+
+  e("#call peter @work").toMatchObject({
+    tags: ["call"],
+    context: "work",
+    subject: "peter",
+  });
+
+  e("#call peter @work").toMatchObject({
+    tags: ["call"],
+    context: "work",
+    subject: "peter",
   });
 });

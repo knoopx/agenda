@@ -36,11 +36,7 @@ export default t.model("Agenda", {}).views((self) => {
         return res;
       }, {} as { [key: string]: ITask[] });
 
-      const tasks = store.filteredTasks.length
-        ? store.filteredTasks
-        : store.sortedTasks;
-
-      tasks.forEach((task) => {
+      store.filteredTasks.forEach((task) => {
         groups[groupName(task.nextAt)].push(task);
       });
 

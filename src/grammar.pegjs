@@ -30,12 +30,18 @@
 	} = options
 }
 
+// #call peter @work
+
 Root
-	= _* head:Subject _ tail:NaturalTimeExpr _ context:Context _* { return merge(head, tail, context) }
+	= _* tag:Tag _ subject:Subject _ time:NaturalTimeExpr _ context:Context _* { return merge(tag, subject, time, context) }
+	/ _* tag:Tag _ subject:Subject _ time:NaturalTimeExpr _* { return merge(tag, subject, time) }
+	/ _* tag:Tag _ subject:Subject _ context:Context _* { return merge(tag, subject, context) }
+	/ _* head:Subject _ tail:NaturalTimeExpr _ context:ContextOrTagExpr _* { return merge(head, tail, context) }
 	/ _* head:Subject _ tail:NaturalTimeExpr _* { return merge(head, tail) }
+	/ _* context:ContextOrTagExpr _ subject:Subject _* {  return { ...subject, ...context} }
 	/ _* expr:NaturalTimeExpr _* { return expr }
-	/ _* head:Subject _ context:Context _* {  return merge(head, context) }
-	/ _* context:Context _* {  return context }
+	/ _* expr:ContextOrTagExpr _* { return expr }
+	/ _* head:Subject _ context:ContextOrTagExpr _* {  return merge(head, context) }
 	/ _* head:Subject _*  { return head }
 	/ _* { return {} }
 
@@ -43,10 +49,25 @@ _ "space"
 	= [ ]+ { }
 
 Subject
-	= Word (_ !(NaturalTimeExpr / Context) Word)* { return { subject: text() } }
+	= Word (_ !(ContextOrTagExpr / NaturalTimeExpr) Word)* { return { subject: text() } }
+
+ContextOrTagExpr
+	= head:TagExpr _ context:Context _ tail:TagExpr  { return { ...context, ...mergeWithArray(head, tail) } }
+	/ head:Context _ tail:TagExpr { return { ...head, ...tail } }
+	/ head:TagExpr _ tail:Context { return { ...head, ...tail } }
+	/ Context
+	/ TagExpr
 
 Context
-	= "@" expr:Word { return { context: expr } }
+	= "@" tail:(!"@" Char)* { return { context: tail.map(x => x[1]).join("") } }
+
+Tag
+	= "#" tail:(!"#" Char)* { return { tags: [tail.map(x => x[1]).join("")] } }
+
+TagExpr
+	= head:Tag tail:(_ Tag)*  {
+		return { tags: [...head.tags, ...tail.flatMap(t => t[1].tags)] }
+	}
 
 Number "number"
 	= [0-9]+ { return Number(text()) }
@@ -89,7 +110,7 @@ Char "char"
 	= !(_) . { return text() }
 
 Word "word"
-	= (Char Char*) { return text() }
+	= Char Char* { return text() }
 
 Sentence "sentence"
 	= Word (_ Word)* { return text() }
