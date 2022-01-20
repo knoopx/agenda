@@ -80,7 +80,9 @@ const Store = t
     timeOfTheDay: t.optional(TimeOfTheDay, {}),
     useDarkMode: t.optional(
       t.boolean,
-      () => window.matchMedia("(prefers-color-scheme: dark)").matches
+      () =>
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
     ),
     displayEmoji: t.optional(t.boolean, true),
   })
@@ -158,10 +160,12 @@ const Store = t
       });
 
       autorun(() => {
-        if (self.useDarkMode) {
-          document.body.classList.add("dark");
-        } else {
-          document.body.classList.remove("dark");
+        if (typeof document !== "undefined") {
+          if (self.useDarkMode) {
+            document.body.classList.add("dark");
+          } else {
+            document.body.classList.remove("dark");
+          }
         }
       });
     },
