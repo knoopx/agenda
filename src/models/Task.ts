@@ -1,5 +1,11 @@
 import { DateTime } from "luxon";
-import { getParent, Instance, types as t } from "mobx-state-tree";
+import {
+  getParent,
+  Instance,
+  SnapshotIn,
+  SnapshotOut,
+  types as t,
+} from "mobx-state-tree";
 import { nanoid } from "nanoid";
 
 import Expression from "./Expression";
@@ -67,3 +73,5 @@ const Task = Expression.named("Task")
 export default Task;
 
 export interface ITask extends Instance<typeof Task> {}
+export interface ITaskSnapshotIn extends SnapshotIn<typeof Task> {}
+export interface ITaskSnapshotOut extends SnapshotOut<typeof Task> {}

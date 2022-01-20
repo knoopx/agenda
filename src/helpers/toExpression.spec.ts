@@ -28,7 +28,7 @@ describe("simplifiedExpression", () => {
         {
           subject: "task",
           frequency: "DAILY",
-          interval: 2
+          interval: 2,
         },
         {}
       )
@@ -106,7 +106,6 @@ describe("simplifiedExpression", () => {
     ).toEqual("task 31/12/2019 at 5 @personal");
   });
 
-
   test("task next month at 5 @personal", () => {
     expect(
       toExpression(
@@ -119,7 +118,6 @@ describe("simplifiedExpression", () => {
       )
     ).toEqual("task 1 february at 5 @personal");
   });
-
 
   test("task every 15 minutes", () => {
     expect(

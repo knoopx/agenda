@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { IExpressionResult as IExpressionAST } from "../models/Expression";
+import { ITimeOfTheDay } from "../models/Store";
 import { DateAdapter, RuleOption } from "../schedule";
 import { MonthNames, WeekDayNames } from "../types";
 
@@ -69,7 +70,7 @@ function toMonthOfYearExpr(byMonthOfYear: RuleOption.ByMonthOfYear[]) {
     return name;
   }
 
-  return toAndExpr(byMonthOfYear.map((month) => toMonthDay(month)))
+  return toAndExpr(byMonthOfYear.map((month) => toMonthDay(month)));
 }
 
 function toRecurrentExpression(
@@ -116,15 +117,15 @@ function toRecurrentExpression(
     case "MONTHLY":
       if (ast.byMonthOfYear?.length) {
         parts.push(toMonthOfYearExpr(ast.byMonthOfYear));
-
       } else {
-      // 5 months
-      if (ast.interval && ast.interval > 1) {
-        parts.push(ast.interval.toString(), "months");
-      } else {
-        // month
-        parts.push("month");
-      }}
+        // 5 months
+        if (ast.interval && ast.interval > 1) {
+          parts.push(ast.interval.toString(), "months");
+        } else {
+          // month
+          parts.push("month");
+        }
+      }
       break;
     case "YEARLY":
       if (ast.byMonthOfYear?.length) {
@@ -132,7 +133,10 @@ function toRecurrentExpression(
         if (ast.byDayOfMonth?.length) {
           const dayOfMonth = ast.byDayOfMonth[0];
           if (dayOfMonth > 1) {
-            parts.push(dayOfMonth.toString(), toMonthOfYearExpr(ast.byMonthOfYear));
+            parts.push(
+              dayOfMonth.toString(),
+              toMonthOfYearExpr(ast.byMonthOfYear)
+            );
           } else {
             parts.push(toMonthOfYearExpr(ast.byMonthOfYear));
           }

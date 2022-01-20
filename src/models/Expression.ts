@@ -2,19 +2,19 @@ import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
 
 import grammar from "../grammar.pegjs";
-import { Dates, IOccurrencesArgs, Rule } from "../schedule";
+import { Dates, Rule } from "../schedule";
 import { IRuleOptions } from "@rschedule/core";
-import type { parser } from "peggy";
 
 import {
   ICalRuleFrequency,
   INormRRuleOptions,
 } from "@rschedule/core/rules/ICAL_RULES";
 import { toExpression } from "../helpers/toExpression";
+import { ITimeOfTheDay } from "./Store";
 
 export type IExpressionResult = Omit<
-  Omit<INormRRuleOptions, "start">,
-  "duration"
+  INormRRuleOptions,
+  "start" | "duration"
 > & {
   subject: string;
   start: DateTime;
@@ -47,7 +47,7 @@ const Expression = t
         });
         self.setError("");
         return out;
-      } catch (e: any) {
+      } catch (e) {
         if (e instanceof grammar.SyntaxError) {
           if (e.message) self.setError(e.message);
           return null;
@@ -176,33 +176,8 @@ const Expression = t
       return self.expression;
     },
 
-    timeOfTheDay(): { [key: string]: number } {
+    get timeOfTheDay(): ITimeOfTheDay {
       throw new Error("Not implemented");
-    },
-
-    get completions() {
-      try {
-        grammar.parse(self.expression, {
-          grammarSource: "",
-        });
-      } catch (e) {
-        if (e instanceof grammar.SyntaxError) {
-          const completions = [] as string[];
-          if (e.expected) {
-            const start = self.expression.substring(0, e.location.start.offset);
-            e.expected.forEach((expected: parser.Expectation) => {
-              if (expected.type != "literal") return;
-              const completion = start + expected;
-              if (
-                completion.substr(0, self.expression.length) == self.expression
-              ) {
-                completions.push(completion);
-              }
-            });
-          }
-          return completions;
-        }
-      }
     },
   }));
 

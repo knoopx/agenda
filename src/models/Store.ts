@@ -1,9 +1,15 @@
 import _ from "lodash";
-import { destroy, Instance, types as t } from "mobx-state-tree";
+import {
+  destroy,
+  Instance,
+  SnapshotIn,
+  SnapshotOut,
+  types as t,
+} from "mobx-state-tree";
 import { DateTime, Settings } from "luxon";
 import { autorun } from "mobx";
 
-import Task, { ITask } from "./Task";
+import Task, { ITask, ITaskSnapshotIn } from "./Task";
 import Input from "./Input";
 
 import Agenda from "./Agenda";
@@ -52,12 +58,16 @@ const TimeOfTheDay = t
   .actions((self) => ({
     set(name: string, hour: number) {
       if (name in self) {
-        self[name] = hour;
+        self[name as keyof ITimeOfTheDaySnapshotIn] = hour;
       }
     },
   }));
 
 export interface ITimeOfTheDay extends Instance<typeof TimeOfTheDay> {}
+export interface ITimeOfTheDaySnapshotIn
+  extends SnapshotIn<typeof TimeOfTheDay> {}
+export interface ITimeOfTheDaySnapshotOut
+  extends SnapshotOut<typeof TimeOfTheDay> {}
 
 const Store = t
   .model("Store", {
@@ -149,7 +159,7 @@ const Store = t
     toggleDarkMode() {
       self.useDarkMode = !self.useDarkMode;
     },
-    addTask(task: ITask) {
+    addTask(task: ITaskSnapshotIn) {
       self.tasks.push(task);
       return task;
     },
@@ -162,7 +172,7 @@ const Store = t
     setTimeZone(timeZone: string) {
       self.timeZone = timeZone;
     },
-    setHoveredTask(task: ITask) {
+    setHoveredTask(task: ITask | null) {
       self.hoveredTask = task;
     },
     addEditingTask(task: ITask) {
