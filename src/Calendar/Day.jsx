@@ -11,7 +11,7 @@ import {
 } from "../components/HoverCard"
 import { useStore } from "../hooks"
 import { now } from "../helpers"
-import { TimeLabel } from "../Agenda/Label"
+import { TimeLabel } from "../Agenda/Task/TimeLabel"
 
 import Indicator from "./Indicator"
 

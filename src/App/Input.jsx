@@ -4,7 +4,9 @@ import { getSnapshot } from "mobx-state-tree"
 import { observer } from "mobx-react-lite"
 
 import { useStore, useEnterKey, useEscapeKey, useFocus } from "../hooks"
-import { TimeLabel, DurationLabel, DateLabel } from "../Agenda/Label"
+import { TimeLabel } from "../Agenda/Task/TimeLabel"
+import { DurationLabel } from "../Agenda/Task/DurationLabel"
+import { DateLabel } from "../Agenda/Task/DateLabel"
 
 const Input = observer(() => {
   const inputRef = useRef(null)

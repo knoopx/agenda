@@ -10,8 +10,10 @@ import {
   useStore,
   useEventListener,
 } from "../../hooks"
-import { TimeLabel, DurationLabel, DistanceLabel } from "../Label"
 
+import { TimeLabel } from "./TimeLabel"
+import { DurationLabel } from "./DurationLabel"
+import { DistanceLabel } from "./DistanceLabel"
 import { RecurringIcon } from "./RecurringIcon"
 import { SubjectInput } from "./SubjectInput"
 import { TaskActionGroup } from "./TaskActionGroup"
@@ -72,11 +74,9 @@ const Task = observer(({ task, ...props }) => {
   } else target = task
 
   const onSubmit = () => {
-    // if (target.isValid && target.subject.trim()) {
     applySnapshot(task, getSnapshot(target))
     inputRef.current?.blur()
     store.removeEditingTask(target)
-    // }
   }
 
   const onComplete = () => {
@@ -90,9 +90,11 @@ const Task = observer(({ task, ...props }) => {
   useEscapeKey(inputRef, () => {
     inputRef.current?.blur()
   })
+
   useEventListener(ref, "mouseover", () => {
     store.setHoveredTask(task)
   })
+
   useEventListener(ref, "mouseout", () => {
     if (store.hoveredTask === task) store.setHoveredTask(null)
   })
