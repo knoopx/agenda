@@ -66,7 +66,7 @@ const Input = observer(() => {
           type="text"
           value={input.expression}
           onChange={onChangeExpression}
-          placeholder="add a task..."
+          placeholder="filter or add a task..."
         />
 
         {input.nextAt && <DateLabel className="text-xs" date={input.nextAt} />}

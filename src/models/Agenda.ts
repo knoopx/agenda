@@ -21,12 +21,14 @@ function groupName(start: DateTime | null) {
 
   if (start.hasSame(now.plus({ days: 1 }), "day")) return "tomorrow";
   if (start.hasSame(now, "week")) return "later this week";
-  if (start.hasSame(now.plus({weeks: 1}).startOf("week"), "week")) return "next week";
+  if (start.hasSame(now.plus({ weeks: 1 }).startOf("week"), "week"))
+    return "next week";
 
   return "upcoming";
 }
 
 export default t.model("Agenda", {}).views((self) => {
+  const store = getParent(self) as IStore;
   return {
     get groupEntries(): [string, ITask[]][] {
       const groups = GroupNames.reduce((res, key) => {
@@ -34,10 +36,19 @@ export default t.model("Agenda", {}).views((self) => {
         return res;
       }, {} as { [key: string]: ITask[] });
 
-      const { sortedTasks } = getParent(self) as IStore;
-      sortedTasks.forEach((task) => {
-        groups[groupName(task.nextAt)].push(task);
-      });
+      store.sortedTasks
+        .filter((task) => {
+          if (store.input.start) {
+            if (task.nextAt?.hasSame(store.input.start, "day")) {
+              return true;
+            }
+            return false;
+          }
+          return true;
+        })
+        .forEach((task) => {
+          groups[groupName(task.nextAt)].push(task);
+        });
 
       return Object.keys(groups)
         .filter((key) => groups[key].length)
