@@ -219,9 +219,9 @@ const Store = t
     toggleDisplayEmoji() {
       self.displayEmoji = !self.displayEmoji;
     },
-    addTask(task: ITaskSnapshotIn) {
-      self.tasks.push(task);
-      return task;
+    addTask(task: ITaskSnapshotIn): ITask | null {
+      const index = self.tasks.push(task);
+      return self.tasks[index - 1];
     },
     removeTask(task: ITask) {
       self.tasks.remove(task);
