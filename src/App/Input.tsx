@@ -3,7 +3,7 @@ import { ChangeEvent, useRef } from "react";
 import { getSnapshot } from "mobx-state-tree";
 import { observer } from "mobx-react-lite";
 
-import { useStore, useEnterKey, useEscapeKey, useFocus } from "../hooks";
+import { useStore, useEnterKey, useEscapeKey } from "../hooks";
 import { TimeLabel } from "../Agenda/Task/TimeLabel";
 import { DurationLabel } from "../Agenda/Task/DurationLabel";
 import { DateLabel } from "../Agenda/Task/DateLabel";
@@ -13,8 +13,6 @@ const Input = observer(() => {
   const store = useStore();
   const inputRef = useRef(null);
   const { input, addTask } = useStore();
-
-  const isFocused = useFocus(inputRef);
 
   useEscapeKey(inputRef, () => {
     input.setExpression("");
@@ -54,7 +52,10 @@ const Input = observer(() => {
         )}
       >
         {input.context && (
-          <Indicator size="0.5rem" color={store.getContextColor(input.context)} />
+          <Indicator
+            size="0.5rem"
+            color={store.getContextColor(input.context)}
+          />
         )}
 
         {store.displayEmoji &&
