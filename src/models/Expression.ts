@@ -4,25 +4,28 @@ import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
 
 import grammar from "../grammar.pegjs";
-import { Dates, Rule } from "../schedule";
-import { IRuleOptions } from "@rschedule/core";
+import { Dates, Rule, IRuleOptions } from "../schedule";
 
-import {
-  ICalRuleFrequency,
-  INormRRuleOptions,
-} from "@rschedule/core/rules/ICAL_RULES";
+import { ICalRuleFrequency } from "@rschedule/core/rules/ICAL_RULES";
+
 import { toExpression } from "../helpers/toExpression";
-import { ITimeOfTheDay } from "./Store";
+import { DateAdapter, RuleOption } from "@rschedule/core";
+import { ByDayOfMonthRule } from "@rschedule/core/rules/ByDayOfMonth";
 
-export type IExpressionResult = Omit<
-  INormRRuleOptions,
-  "start" | "duration"
-> & {
-  subject: string;
-  start: DateTime;
-  context: string;
-  tags: string[];
-  duration: Duration;
+export type IExpressionAST = {
+  start?: DateTime;
+  end?: DateTime;
+  duration?: Duration;
+  subject?: string;
+  contexts?: string[];
+  tags?: string[];
+  interval?: number;
+  frequency?: "MINUTELY" | "HOURLY" | "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  byMinuteOfHour?: number[];
+  byHourOfDay?: number[];
+  byDayOfMonth?: number[];
+  byMonthOfYear?: number[];
+  byDayOfWeek?: string[];
 };
 
 const Expression = t
@@ -41,7 +44,7 @@ const Expression = t
     },
   }))
   .views((self) => ({
-    get ast(): IExpressionResult | null {
+    get ast(): IExpressionAST | null {
       try {
         const out = grammar.parse(self.expression, {
           grammarSource: "",
@@ -69,7 +72,11 @@ const Expression = t
     },
 
     get context() {
-      return this.ast?.context;
+      return this.contexts[0];
+    },
+
+    get contexts() {
+      return this.ast?.contexts ?? [];
     },
 
     get tags() {
@@ -100,16 +107,17 @@ const Expression = t
       return null;
     },
 
-    get duration(): Duration | void {
-      return this.ast?.duration;
+    get duration(): Duration | null {
+      return this.ast?.duration ?? null;
     },
 
     get frequency(): ICalRuleFrequency | undefined {
       return this.ast?.frequency;
     },
 
-    get asObject(): IRuleOptions | null {
+    get asRuleOptions(): IRuleOptions | null {
       if (!this.ast) return null;
+      if (!this.frequency) return null;
 
       const {
         subject,
@@ -124,11 +132,11 @@ const Expression = t
         ...rrule,
         ...(duration && { duration: duration.toMillis() }),
         start,
-      };
+      } as IRuleOptions;
     },
 
     get rrule() {
-      return this.asObject && new Rule(this.asObject);
+      return this.asRuleOptions && new Rule(this.asRuleOptions);
     },
 
     getOccurrences({
@@ -176,7 +184,21 @@ const Expression = t
 
     get simplifiedExpression(): string {
       if (this.ast) {
-        return toExpression(this.ast, this.timeOfTheDay);
+        return toExpression(this.ast, {
+          relative: true,
+          timeOfTheDay: this.timeOfTheDay,
+        });
+      }
+
+      return self.expression;
+    },
+
+    get rawExpression(): string {
+      if (this.ast) {
+        return toExpression(this.ast, {
+          relative: false,
+          timeOfTheDay: this.timeOfTheDay,
+        });
       }
 
       return self.expression;

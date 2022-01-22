@@ -93,8 +93,8 @@ const Store = t
     get sortedTasks() {
       return _.orderBy(
         self.tasks,
-        [({ nextAt }) => !!nextAt, "nextAt"],
-        ["asc", "asc"]
+        [({ nextAt }) => nextAt !== null, "nextAt", "lastCompletedAt"],
+        ["asc", "asc", "desc"]
       );
     },
     get filteredTasks() {
@@ -152,7 +152,7 @@ const Store = t
     },
 
     get asList() {
-      return this.sortedTasks.map((task) => task.simplifiedExpression);
+      return this.sortedTasks.map((task) => task.rawExpression);
     },
 
     get occurrencesByDay(): Map<string, Occurrence[]> {

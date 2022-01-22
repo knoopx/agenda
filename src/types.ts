@@ -31,6 +31,8 @@ export const WeekDayNames = [
   "sunday",
 ];
 
+export const WeekDayNamesShort = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+
 export class Frequency {
   public static MINUTELY: ICalRuleFrequency = "MINUTELY";
   public static HOURLY: ICalRuleFrequency = "HOURLY";
@@ -94,25 +96,18 @@ export class Recurrence {
 
   static hourly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.HOURLY, {
-      byHourOfDay: [0],
       byMinuteOfHour: [0],
       ...rest,
     });
   }
 
   static daily(rest: Partial<INormRRuleOptions> = {}) {
-    return this.make(Frequency.DAILY, {
-      byHourOfDay: [0],
-      byMinuteOfHour: [0],
-      ...rest,
-    });
+    return this.make(Frequency.DAILY, rest);
   }
 
   static weekly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.WEEKLY, {
       byDayOfWeek: ["MO"],
-      byHourOfDay: [0],
-      byMinuteOfHour: [0],
       ...rest,
     });
   }
@@ -120,8 +115,6 @@ export class Recurrence {
   static monthly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.MONTHLY, {
       byDayOfMonth: [1],
-      byHourOfDay: [0],
-      byMinuteOfHour: [0],
       ...rest,
     });
   }
@@ -129,8 +122,6 @@ export class Recurrence {
   static yearly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.YEARLY, {
       byMonthOfYear: [1],
-      byHourOfDay: [0],
-      byMinuteOfHour: [0],
       ...rest,
     });
   }

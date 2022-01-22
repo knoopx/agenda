@@ -5,5 +5,5 @@ test("Agenda", () => {
   const store = Store.create();
   const task = Task.create({ expression: "task every monday" });
   store.addTask(task);
-  expect(store.agenda.groupEntries).toMatchObject([["next week", [task]]]);
+  expect(store.agenda.groupEntries).toMatchObject([["tomorrow", [task]]]);
 });

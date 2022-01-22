@@ -5,7 +5,6 @@ import { ITask } from "./Task";
 
 const GroupNames = [
   "today",
-  "anytime",
   "tomorrow",
   "later this week",
   "next week",
@@ -15,9 +14,9 @@ const GroupNames = [
 function groupName(start: DateTime | null) {
   const now = DateTime.now().startOf("day");
 
-  if (!start) return "anytime";
+  if (!start) return "today";
 
-  if (start.hasSame(now, "day")) return "today";
+  if (start < now) return "today";
 
   if (start.hasSame(now.plus({ days: 1 }), "day")) return "tomorrow";
   if (start.hasSame(now, "week")) return "later this week";

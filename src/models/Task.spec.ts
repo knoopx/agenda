@@ -57,16 +57,12 @@ test("task every monday", (task) => {
     subject: "task",
     frequency: "WEEKLY",
     byDayOfWeek: ["MO"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
   });
 
-  expect(task.asObject).toMatchObject({
+  expect(task.asRuleOptions).toMatchObject({
     start: Now,
     frequency: "WEEKLY",
     byDayOfWeek: ["MO"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
   });
 
   const { createdAt, implicitStart, nextAt, lastCompletedAt } = task;
@@ -79,12 +75,10 @@ test("task every monday", (task) => {
 
   task.complete();
 
-  expect(task.asObject).toMatchObject({
+  expect(task.asRuleOptions).toMatchObject({
     start: nextAt,
     frequency: "WEEKLY",
     byDayOfWeek: ["MO"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
   });
 
   expect(task.implicitStart).toEqual(nextAt);
