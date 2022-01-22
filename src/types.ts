@@ -85,16 +85,6 @@ export class Recurrence {
   }
 
   static onceAt(start: DateTime, rest: Partial<INormRRuleOptions> = {}) {
-    // return this.make(Frequency.DAILY, {
-    //   start,
-    //   byMinuteOfHour: [start.minute],
-    //   byHourOfDay: [start.hour],
-    //   byDayOfMonth: [start.day],
-    //   byMonthOfYear: [start.month],
-    //   byYear: [start.year],
-    //   count: 1,
-    //   ...rest,
-    // })
     return { start, ...rest };
   }
 
