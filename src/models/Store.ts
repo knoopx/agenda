@@ -110,7 +110,8 @@ const Store = t
             .toLowerCase()
             .includes(self.input.subject.toLowerCase());
         }
-        if (self.input.context && task.context) {
+        if (self.input.context) {
+          if (!task.context) return false;
           return task.context.toLowerCase() == self.input.context.toLowerCase();
         }
 
