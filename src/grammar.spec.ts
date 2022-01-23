@@ -386,7 +386,7 @@ testRule("Root", (e) => {
 
   e("subject #coffee #drinks").toMatchObject({
     subject: "subject",
-    tags: ["coffee"],
+    tags: ["coffee", "drinks"],
   });
 
   e("@home").toMatchObject({
