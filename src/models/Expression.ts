@@ -9,8 +9,6 @@ import { Dates, Rule, IRuleOptions } from "../schedule";
 import { ICalRuleFrequency } from "@rschedule/core/rules/ICAL_RULES";
 
 import { toExpression } from "../helpers/toExpression";
-import { DateAdapter, RuleOption } from "@rschedule/core";
-import { ByDayOfMonthRule } from "@rschedule/core/rules/ByDayOfMonth";
 
 export type IExpressionAST = {
   start?: DateTime;
@@ -151,7 +149,7 @@ const Expression = t
       let target;
 
       if (!take && !end) {
-        throw new Error("Either take or end must be specified");
+        throw new Error("either take or end must be specified");
       }
 
       if (this.isRecurring && this.rrule) {
