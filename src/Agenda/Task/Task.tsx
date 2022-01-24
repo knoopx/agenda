@@ -1,7 +1,6 @@
 import { observer } from "mobx-react";
 import { forwardRef, Ref, useRef } from "react";
 import { applySnapshot, clone, getSnapshot } from "mobx-state-tree";
-import classNames from "classnames";
 
 import {
   useEnterKey,
@@ -43,10 +42,8 @@ export const TaskContent = observer(
         </td>
 
         <td
-          className={classNames(
-            "w-full align-middle border-l-4 flex flex-auto items-center px-4 py-2 space-x-2",
-            `border-${task.highlightColor}-500` // border-red-500 border-orange-500 border-amber-500 border-yellow-500 border-lime-500 border-green-500 border-emerald-500 border-teal-500 border-cyan-500 border-sky-500 border-blue-500 border-indigo-500 border-violet-500 border-purple-500 border-fuchsia-500 border-pink-500 border-rose-500
-          )}
+          style={{ borderColor: task.contextColor }}
+          className="w-full align-middle border-l-4 flex flex-auto items-center px-4 py-2 space-x-2"
         >
           {store.displayEmoji &&
             !isFocused &&

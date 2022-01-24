@@ -1,4 +1,4 @@
-import { DateTime, Duration } from "luxon";
+import { DateTime } from "luxon";
 import {
   getParent,
   Instance,
@@ -27,9 +27,9 @@ const Task = Expression.named("Task")
     complete() {
       if (self.isRecurring) {
         const nextAt = self.nextAfter(self.implicitStart, true);
-        if (nextAt)  {
+        if (nextAt) {
           self.lastCompletedAt = nextAt;
-          return
+          return;
         }
       }
       this.remove();
@@ -57,13 +57,9 @@ const Task = Expression.named("Task")
         return self.lastCompletedAt.toLocal();
       },
 
-      get highlightColor(): string {
-        try {
-          const parent = getParent(self, 2) as IStore;
-          return parent.getContextColor(self.context);
-        } catch (e) {
-          return "neutral";
-        }
+      get contextColor(): string {
+        const parent = getParent(self, 2) as IStore;
+        return parent.getContextColor(self.context);
       },
 
       get timeOfTheDay(): ITimeOfTheDay {

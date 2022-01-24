@@ -14,24 +14,21 @@ import Input from "./Input";
 
 import Agenda from "./Agenda";
 
+// export const Colors = ["#06b6d4", "#0ea5e9", "#10b981", "#14b8a6", "#22c55e", "#3b82f6", "#6366f1", "#84cc16", "#8b5cf6", "#a855f7", "#d946ef", "#eab308", "#ec4899", "#ef4444", "#f43f5e", "#f97316"]
+// export const Colors = ["#ffbe0b","#fd8a09","#fb5607","#fd2b3b","#ff006e","#c11cad","#8338ec","#5f5ff6","#3a86ff"]
+// export const Colors = ["#ff009a","#ff0000","#ff9100","#ffce32","#00c800","#00cccc","#3b78d8","#9900ff","#ec00ec"]
+// export const Colors = ["#e63989","#653d8b","#f4e508","#f3aa05","#81d0dc","#e4191f","#b0151d","#ea6c39","#5fb264"]
+// export const Colors = ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"]
 export const Colors = [
-  // "amber",
-  "yellow",
-  "green",
-  "orange",
-  "blue",
-  "red",
-  // "emerald",
-  // "teal",
-  // "cyan",
-  "violet",
-  "purple",
-  "sky",
-  "fuchsia",
-  "indigo",
-  "pink",
-  "lime",
-  "rose",
+  "#33a8c7",
+  "#52e3e1",
+  "#a0e426",
+  "#fdf148",
+  "#ffab00",
+  "#f77976",
+  "#f050ae",
+  "#d883ff",
+  "#9336fd",
 ];
 
 interface StoreVolatileProps {
@@ -148,7 +145,9 @@ const Store = t
     },
 
     get contexts() {
-      return _.uniq(self.tasks.map((task) => task.context)).filter(Boolean);
+      return _.uniq(self.tasks.flatMap((task) => task.contexts)).filter(
+        Boolean
+      );
     },
 
     get asList() {
@@ -180,25 +179,14 @@ const Store = t
       return this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [];
     },
 
-    getContextsAtDay(day: DateTime): string[] {
-      return _.uniq(
-        this.getOccurrencesAtDay(day)
-          .map((o) => o.task.context!)
-          .filter(Boolean)
-      );
-    },
-
-    getContextColor(context: string | undefined) {
-      return (
-        Colors[this.contexts.indexOf(context) % Colors.length] ?? "neutral"
-      );
+    getContextColor(context?: string) {
+      if (context)
+        return Colors[this.contexts.indexOf(context) % Colors.length];
+      return self.useDarkMode ? "#444" : "#ccc";
     },
   }))
   .actions((self) => ({
     afterCreate() {
-      // autorun(() => {
-      //   Settings.defaultLocale = self.locale
-      // })
       autorun(() => {
         Settings.defaultZone = self.timeZone;
       });

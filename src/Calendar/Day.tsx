@@ -21,12 +21,16 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const ref = useRef<HTMLAnchorElement>(null);
   const store = useStore();
 
-  const contexts = store.getContextsAtDay(start);
   const occurrences = _.sortBy(store.getOccurrencesAtDay(start), "date");
+  const contexts = _.uniq(
+    occurrences.map((occurrence) => occurrence.task.context)
+  );
   const isToday = now(5000).hasSame(start, "day");
 
   const indicatorSize = store.isCalendarSingleMonth ? "0.5rem" : "0.25rem";
-  const indicatorClassName = store.isCalendarSingleMonth ? "m-[.1rem]" : "m-[.05rem]";
+  const indicatorClassName = store.isCalendarSingleMonth
+    ? "m-[.1rem]"
+    : "m-[.05rem]";
 
   const shouldHighlight =
     store.input.occurrencesAtDay(start) > 0 ||
@@ -46,8 +50,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
             "font-bold": isToday,
             "font-light": !shouldHighlight && !isToday,
             "bg-neutral-50 dark:bg-[#292929]": isSameMonth,
-            "bg-[#eee] dark:bg-[#313131]":
-              isSameMonth && shouldHighlight,
+            "bg-[#eee] dark:bg-[#313131]": isSameMonth && shouldHighlight,
           }
         )}
       >
