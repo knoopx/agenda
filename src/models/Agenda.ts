@@ -4,6 +4,7 @@ import { IStore } from ".";
 import { ITask } from "./Task";
 
 const GroupNames = [
+  "due",
   "today",
   "tomorrow",
   "later this week",
@@ -16,7 +17,8 @@ function groupName(start: DateTime | null) {
 
   if (!start) return "today";
 
-  if (start < now || start.hasSame(now, "day")) return "today";
+  if (start < now)  return "due"
+  if (start.hasSame(now, "day")) return "today";
 
   if (start.hasSame(now.plus({ days: 1 }), "day")) return "tomorrow";
   if (start.hasSame(now, "week")) return "later this week";
