@@ -21,6 +21,21 @@ export const MonthNames = [
   "december",
 ];
 
+export const MonthNamesShort = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+];
+
 export const WeekDayNames = [
   "monday",
   "tuesday",

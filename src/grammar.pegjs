@@ -3,7 +3,7 @@
 	const { merge, mergeWith } = require('lodash')
 	const { DateTime, Duration, Interval } = require("luxon")
 
-	const { Frequency, Recurrence, MonthNames, WeekDayNames, WeekDayNamesShort } = require("./types")
+	const { Frequency, Recurrence, MonthNames, MonthNamesShort, WeekDayNames, WeekDayNamesShort } = require("./types")
 
 	function mergeWithArray(initial, ...rest){
 		return mergeWith(initial, ...rest, (a, b) => {
@@ -341,26 +341,28 @@ NextWeekDayExpr
 DateShort
 	// 25/12
 	= day:DayNumber "/" month:MonthNumber { return now.set({ month, day }).startOf("day") }
+	// december 25
+	/ month:MonthNameAsNumber _ day:DayNumber { return now.set({ month, day }).startOf("day") }
 	// 25 december
 	/ day:DayNumber _ month:MonthNameAsNumber { return now.set({ month, day }).startOf("day") }
 
 Date
 	// 25/12/2020
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day).startOf("day")  }
-	/ day:DayNumber "/" month:MonthExpr { return DateTime.local(now.year, month, day).startOf("day")  }
-  / "today"i { return now.startOf("day") }
-	/ "tomorrow"i { return now.startOf("day").plus({ days: 1 }) }
-	/ "this"i _ "weekend"i { return now.startOf("week").set({ weekday: 6 }) }
+	/ day:DayNumber _ month:MonthExpr _ year:Number4Digit  { return DateTime.local(year, month, day).startOf("day")  }
 
-DateTimeExpr
-	= left:DateExprLeft _ right:AtTimeExpr { return left.set(right) }
-	/ expr:DateExprLeft
-
-DateExprLeft
+DateExpr
 	= NextExpr
 	/ OnExpr
+	/ "today"i { return now.startOf("day") }
+	/ "tomorrow"i { return now.startOf("day").plus({ days: 1 }) }
+	/ "this"i _ "weekend"i { return now.startOf("week").set({ weekday: 6 }) }
 	/ Date
 	/ DateShort
+
+DateTimeExpr
+	= left:DateExpr _ right:AtTimeExpr { return left.set(right) }
+	/ expr:DateExpr
 
 DayNumber "0..31"
 	= ("3" [0-1] / [0-2] [0-9] / [0-9]) { return Number(text()) }
@@ -374,11 +376,15 @@ DayOfTheWeekAsNumber
 MonthNumber "0..12"
 	= ("1" [0-2] / "0"? [0-9]) {  return Number(text()) }
 
+MonthNameShort "feb..dec"
+	= name:("jan"i / "feb"i / "mar"i / "apr"i / "may"i / "jun"i / "jul"i / "aug"i / "sep"i / "oct"i / "nov"i / "dec"i) { return name }
+
 MonthName "february..december"
 	= name:("january"i / "february"i / "march"i / "april"i / "may"i / "june"i / "july"i / "august"i / "september"i / "october"i / "november"i / "december"i) { return name }
 
 MonthNameAsNumber
 	= name:MonthName { return MonthNames.indexOf(name.toLowerCase()) + 1 }
+	/ name:MonthNameShort { return MonthNamesShort.indexOf(name.toLowerCase()) + 1 }
 
 MonthExpr
 	= MonthNameAsNumber

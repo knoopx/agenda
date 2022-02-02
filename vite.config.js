@@ -66,6 +66,7 @@ export default defineConfig({
           "Context",
           "ContextOrTagExpr",
           "Date",
+          "DateExpr",
           "DateTimeExpr",
           "EveryExpr",
           "RecurringExprSpecifierExpr",

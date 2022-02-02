@@ -69,10 +69,6 @@ testRule("ContextOrTagExpr", (e) => {
   });
 });
 
-testRule("Date", (e) => {
-  e("25/12/2020").toEqual(DateTime.local(2020, 12, 25));
-  e("9/1/2022").toEqual(DateTime.local(2022, 1, 9));
-});
 
 testRule("ForExpr", (e) => {
   e("for 1h").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
@@ -88,6 +84,13 @@ testRule("NextExpr", (e) => {
   e("next monday").toEqual(DateTime.local(2021, 1, 4));
   e("next month").toEqual(DateTime.local(2021, 2, 1));
   e("next winter").toEqual(DateTime.local(2021, 9, 1));
+});
+
+testRule("DateExpr", (e) => {
+  e("25/12/2020").toEqual(DateTime.local(2020, 12, 25));
+  e("25 dec 2020").toEqual(DateTime.local(2020, 12, 25));
+  e("25 dec").toEqual(DateTime.local(2021, 12, 25));
+  e("dec 25").toEqual(DateTime.local(2021, 12, 25));
 });
 
 testRule("DateTimeExpr", (e) => {
