@@ -102,12 +102,18 @@ export class Recurrence {
   }
 
   static daily(rest: Partial<INormRRuleOptions> = {}) {
-    return this.make(Frequency.DAILY, rest);
+    return this.make(Frequency.DAILY, {
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
+      ...rest,
+    });
   }
 
   static weekly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.WEEKLY, {
       byDayOfWeek: ["MO"],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     });
   }
@@ -115,6 +121,8 @@ export class Recurrence {
   static monthly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.MONTHLY, {
       byDayOfMonth: [1],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     });
   }
@@ -122,6 +130,8 @@ export class Recurrence {
   static yearly(rest: Partial<INormRRuleOptions> = {}) {
     return this.make(Frequency.YEARLY, {
       byMonthOfYear: [1],
+      byHourOfDay: [0],
+      byMinuteOfHour: [0],
       ...rest,
     });
   }

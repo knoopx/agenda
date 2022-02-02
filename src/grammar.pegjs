@@ -251,8 +251,6 @@ RecurringDate
 	= expr:DateShort { return Recurrence.yearly({
 			byMonthOfYear: [expr.month],
 			byDayOfMonth: [expr.day],
-			byHourOfDay: [0],
-			byMinuteOfHour: [0],
 		})
 	}
 
