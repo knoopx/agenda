@@ -21,7 +21,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const ref = useRef<HTMLAnchorElement>(null);
   const store = useStore();
 
-  const occurrences = _.sortBy(store.getOccurrencesAtDay(start), "date");
+  const occurrences = store.getOccurrencesAtDay(start);
   const contexts = _.uniq(
     occurrences.map((occurrence) => occurrence.task.context)
   );

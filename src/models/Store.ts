@@ -172,11 +172,15 @@ const Store = t
           );
         });
       });
+
       return result;
     },
 
     getOccurrencesAtDay(day: DateTime): Occurrence[] {
-      return this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [];
+      return _.sortBy(
+        this.occurrencesByDay.get(day.startOf("day").toISODate()) ?? [],
+        "date"
+      );
     },
 
     getContextColor(context?: string) {

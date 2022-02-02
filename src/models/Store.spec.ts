@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { DateTime, Settings } from "luxon";
 import { expect, it } from "vitest";
 
@@ -14,10 +15,15 @@ it("works", () => {
     ],
   });
 
+  const occurrences = store.getOccurrencesAtDay(Now.plus({ days: 1 }));
+
   expect(store.tasks.length).toEqual(2);
   expect(store.contexts).toMatchObject(["work", "home"]);
   expect(
-    Array.from(store.getContextsAtDay(Now.plus({ days: 1 })))
+    _.uniq(
+      occurrences.map((occurrence) => occurrence.task.context)
+    )
+
   ).toMatchObject(["work"]);
 
   expect(Array.from(store.occurrencesByDay.values())[0][0]).toMatchObject({
