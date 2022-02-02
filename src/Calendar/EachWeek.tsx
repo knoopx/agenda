@@ -13,7 +13,7 @@ export default function EachWeek({
         aspectRatio: "1",
       }}
       start={start.startOf("month")}
-      end={start.endOf("month")}
+      end={start.endOf("month").endOf("week")}
       splitBy={{ weeks: 1 }}
     />
   );
