@@ -25,6 +25,10 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const contexts = _.uniq(
     occurrences.map((occurrence) => occurrence.task.context)
   );
+  const contextColors = _.uniq(
+    contexts.map((context) => store.getContextColor(context))
+  );
+
   const isToday = now(5000).hasSame(start, "day");
 
   const indicatorSize = store.isCalendarSingleMonth ? "0.5rem" : "0.25rem";
@@ -58,12 +62,12 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           <div className="flex flex-col items-between space-y-1">
             <h6>{start.day}</h6>
             <div className="flex flex-auto flex-wrap">
-              {contexts.map((context) => (
+              {contextColors.map((color) => (
                 <Indicator
-                  key={context}
+                  key={color}
+                  color={color}
                   size={indicatorSize}
                   className={indicatorClassName}
-                  color={store.getContextColor(context)}
                 />
               ))}
             </div>
