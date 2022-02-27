@@ -73,16 +73,25 @@ test("task every monday", (task) => {
 
   expect(nextAt).toEqual(DateTime.local(2020, 1, 6));
 
+  expect(task.asRuleOptions).toMatchObject({
+    start: DateTime.local(2020, 1, 1),
+    frequency: "WEEKLY",
+    byDayOfWeek: ["MO"],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
+  });
+
+  Now = implicitStart.plus({ days: 1 });
+
   task.complete();
 
   expect(task.asRuleOptions).toMatchObject({
-    start: nextAt,
+    start: DateTime.local(2020, 1, 13),
     frequency: "WEEKLY",
     byDayOfWeek: ["MO"],
+    byHourOfDay: [0],
+    byMinuteOfHour: [0],
   });
 
-  expect(task.implicitStart).toEqual(nextAt);
-  expect(task.lastCompletedAt).toEqual(nextAt);
-
-  // expect(task.nextAt).toEqual(DateTime.local(2020, 1, 13));
+  expect(task.nextAt).toEqual(DateTime.local(2020, 1, 13));
 });

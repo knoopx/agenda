@@ -26,9 +26,17 @@ const Task = Expression.named("Task")
 
     complete() {
       if (self.isRecurring) {
-        const nextAt = self.nextAfter(self.implicitStart, true);
+        const now = DateTime.now();
+        let nextAt = self.nextAfter(now);
         if (nextAt) {
-          self.lastCompletedAt = nextAt;
+          if (now < nextAt) {
+            nextAt = self.nextAfter(nextAt, true);
+            if (nextAt) {
+              self.lastCompletedAt = nextAt;
+            }
+          } else {
+            self.lastCompletedAt = now;
+          }
           return;
         }
       }
@@ -51,9 +59,9 @@ const Task = Expression.named("Task")
       },
 
       get implicitStart(): DateTime {
-        if (self.start && self.start > self.lastCompletedAt) {
-          return self.start;
-        }
+        // if (self.start && self.start > self.lastCompletedAt) {
+        //   return self.start;
+        // }
         return self.lastCompletedAt.toLocal();
       },
 
