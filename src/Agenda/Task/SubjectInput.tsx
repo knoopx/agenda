@@ -26,6 +26,7 @@ export const SubjectInput = observer(
           {
             "text-base-08": !task.isValid,
             "text-base-0D": isSelected,
+            "line-through": task.isCompleted,
           }
         )}
          onChange={(e) => {
