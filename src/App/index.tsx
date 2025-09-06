@@ -17,7 +17,7 @@ const App = observer(() => {
           <div className="flex flex-col overflow-y-auto">
             <Agenda />
           </div>
-          <Calendar className="hidden flex-auto lg:flex w-full" />
+          <Calendar className="hidden flex-auto lg:flex w-full overflow-y-auto" />
         </div>
       </div>
     </div>
