@@ -316,6 +316,11 @@ const Store = t
       if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
         const task = self.filteredTasks[self.selectedTaskIndex];
         task.complete();
+        // Update selectedTaskIndex to the new position of the completed task
+        const newIndex = self.filteredTasks.findIndex(t => t.id === task.id);
+        if (newIndex !== -1) {
+          this.setSelectedTaskIndex(newIndex);
+        }
       }
     },
     editSelectedTask() {
