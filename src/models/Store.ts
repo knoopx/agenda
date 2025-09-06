@@ -156,7 +156,7 @@ const Store = t
       if (self.input.implicitEndAt) {
         return self.input.implicitEndAt;
       }
-      return this.calendarStart.plus({ months: 11 }).endOf("month");
+      return this.calendarStart.plus({ months: 3 }).endOf("month");
     },
 
     get calendarDuration() {
