@@ -7,6 +7,7 @@ import { useStore } from "../hooks";
 import { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
 import { ITimeOfTheDay } from "../models/Store";
 
+
 export const Button = ({
   className,
   ...props
@@ -52,12 +53,12 @@ const Settings = observer(() => {
             {Object.keys(store.timeOfTheDay).map((key) => (
               <label key={key} className="flex space-x-4">
                 <span className="flex-auto">{key}</span>
-                <Select
-                  className="text-right"
-                  value={store.timeOfTheDay[key as keyof ITimeOfTheDay]}
-                  onChange={(e) =>
-                    store.timeOfTheDay.set(key, Number(e.target.value))
-                  }
+                 <Select
+                   className="text-right"
+                    value={(store.timeOfTheDay as ITimeOfTheDay & Record<string, number>)[key]}
+                   onChange={(e) =>
+                     store.timeOfTheDay.set(key, Number(e.target.value))
+                   }
                 >
                   {range(0, 24).map((hour) => (
                     <option key={hour} value={hour}>

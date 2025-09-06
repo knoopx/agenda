@@ -55,7 +55,7 @@ const TimeOfTheDay = t
   })
   .actions((self) => ({
     set(name: string, hour: number) {
-      (self as any)[name] = hour;
+      (self as unknown as ITimeOfTheDay & Record<string, number>)[name] = hour;
     },
   }));
 
@@ -81,6 +81,22 @@ const Store = t
         window.matchMedia("(prefers-color-scheme: dark)").matches
     ),
     displayEmoji: t.optional(t.boolean, true),
+  })
+  .preProcessSnapshot((snapshot) => {
+    // Handle legacy snapshots where editingTask might be a full Task object
+    const processed = { ...snapshot };
+    if (processed.editingTask && typeof processed.editingTask === 'object' && processed.editingTask.id) {
+      processed.editingTask = processed.editingTask.id;
+    }
+    return processed;
+  })
+  .postProcessSnapshot((snapshot) => {
+    // Convert editingTask reference to just the ID for serialization
+    const processed = { ...snapshot };
+    if (processed.editingTask && typeof processed.editingTask === 'object') {
+      processed.editingTask = (processed.editingTask as any).id;
+    }
+    return processed;
   })
   .volatile<StoreVolatileProps>(() => ({
     hoveredTask: null,
@@ -349,11 +365,11 @@ const Store = t
         text.split(/[\r\n]+/).forEach((expression) => {
           if (expression.trim() !== "") {
             const task = Task.create({ expression });
-            this.setEditingTask(task);
             const { isValid } = task;
-            this.clearEditingTask();
             if (isValid) {
               this.addTask(task);
+              this.setEditingTask(task);
+              this.clearEditingTask();
             }
           }
         });

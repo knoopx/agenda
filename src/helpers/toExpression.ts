@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { IExpressionAST } from "../models/Expression";
-import { DateAdapter } from "../schedule";
+import { DateAdapter } from "@rschedule/core/DateAdapter";
 import { MonthNames, WeekDayNames } from "../types";
 
 const ShortWeekDays: DateAdapter.Weekday[] = [
@@ -13,7 +13,7 @@ const ShortWeekDays: DateAdapter.Weekday[] = [
   "SU",
 ];
 
-function toAndExpr(parts: any[]): string {
+function toAndExpr(parts: string[]): string {
   return parts.join(" and ");
 }
 

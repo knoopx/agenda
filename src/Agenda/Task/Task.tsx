@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { forwardRef, Ref, useRef, useEffect } from "react";
+import { forwardRef, Ref, useRef, useEffect, useCallback } from "react";
 import { applySnapshot, getSnapshot } from "mobx-state-tree";
 
 import {
@@ -113,13 +113,13 @@ const Task = observer(({ task, index, ...props }: { task: ITask; index?: number 
     target = task;
   } else target = task;
 
-  const onSubmit = (_e?: Event) => {
+  const onSubmit = useCallback((_e?: Event) => {
     originalSnapshot.current = null;
     inputRef.current?.blur();
     store.clearEditingTask();
-  };
+  }, [store]);
 
-  const onCancel = (_e: Event) => {
+  const onCancel = useCallback((_e: Event) => {
     // Restore original task values if we have a stored snapshot
     if (originalSnapshot.current) {
       applySnapshot(task, originalSnapshot.current);
@@ -127,7 +127,7 @@ const Task = observer(({ task, index, ...props }: { task: ITask; index?: number 
     }
     inputRef.current?.blur();
     store.clearEditingTask();
-  };
+  }, [store]);
 
   const onComplete = () => {
     if (isFocused) {

@@ -113,34 +113,36 @@ it("works", () => {
     expect(store.filteredTasks.length).toBe(0);
   });
 
-  it("should sort tasks with today before tomorrow", () => {
-    const store = Store.create();
+   it("should sort tasks with today before tomorrow", () => {
+     const store = Store.create();
 
-    // Create tasks for today and tomorrow
-    const todayTask = Task.create({ expression: "task today" });
-    const tomorrowTask = Task.create({ expression: "task tomorrow" });
+     // Create tasks for today and tomorrow
+     const todayTask = Task.create({ expression: "task today" });
+     const tomorrowTask = Task.create({ expression: "task tomorrow" });
 
-    store.addTask(tomorrowTask);
-    store.addTask(todayTask);
+     store.addTask(tomorrowTask);
+     store.addTask(todayTask);
 
-    // Verify that today task comes before tomorrow task
-    const sortedTasks = store.sortedTasks;
-    expect(sortedTasks.length).toBe(2);
+     // Verify that today task comes before tomorrow task
+     const sortedTasks = store.sortedTasks;
+     expect(sortedTasks.length).toBe(2);
 
-    // Today task should be first (index 0)
-    expect(sortedTasks[0].subject).toBe("task");
-    expect(sortedTasks[1].subject).toBe("task");
+     // Today task should be first (index 0)
+     expect(sortedTasks[0].subject).toBe("task");
+     expect(sortedTasks[1].subject).toBe("task");
 
-    // But the key is that today task should come before tomorrow task
-    // Let's check the nextAt dates to verify ordering
-    expect(sortedTasks[0].nextAt).toBeDefined();
-    expect(sortedTasks[1].nextAt).toBeDefined();
+     // But the key is that today task should come before tomorrow task
+     // Let's check the nextAt dates to verify ordering
+     expect(sortedTasks[0].nextAt).toBeDefined();
+     expect(sortedTasks[1].nextAt).toBeDefined();
 
-    // Today task should have earlier date than tomorrow task
-    if (sortedTasks[0].nextAt && sortedTasks[1].nextAt) {
-      expect(sortedTasks[0].nextAt.valueOf()).toBeLessThan(sortedTasks[1].nextAt.valueOf());
-    }
+     // Today task should have earlier date than tomorrow task
+     if (sortedTasks[0].nextAt && sortedTasks[1].nextAt) {
+       expect(sortedTasks[0].nextAt.valueOf()).toBeLessThan(sortedTasks[1].nextAt.valueOf());
+     }
 
-    // Auto-selection should select the today task (first in sorted order)
-    expect(store.selectedTaskIndex).toBe(0);
-  });
+     // Auto-selection should select the today task (first in sorted order)
+     expect(store.selectedTaskIndex).toBe(0);
+   });
+
+

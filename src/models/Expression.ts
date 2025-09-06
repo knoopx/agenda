@@ -4,7 +4,9 @@ import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
 
 import grammar from "../grammar.pegjs";
-import { Dates, Rule, IRuleOptions } from "../schedule";
+import { Dates, Rule } from "../schedule";
+import { IRRuleOptions } from "@rschedule/core/rules/ICAL_RULES";
+import { LuxonDateAdapter } from "@rschedule/luxon-date-adapter/v2";
 
 import { ICalRuleFrequency } from "@rschedule/core/rules/ICAL_RULES";
 
@@ -113,7 +115,7 @@ const Expression = t
       return this.ast?.frequency;
     },
 
-    get asRuleOptions(): IRuleOptions | null {
+    get asRuleOptions(): IRRuleOptions | null {
       if (!this.ast) return null;
       if (!this.frequency) return null;
 
@@ -130,7 +132,7 @@ const Expression = t
         ...rrule,
         ...(duration && { duration: duration.toMillis() }),
         start,
-      } as IRuleOptions;
+      } as IRRuleOptions;
     },
 
     get rrule() {
@@ -171,7 +173,7 @@ const Expression = t
       return target
         .occurrences({ start, end: normalizedEnd, take })
         .toArray()
-        .map((x) => x.date);
+        .map((x) => (x as unknown as LuxonDateAdapter).date);
     },
 
     nextAfter(start: DateTime, skipCurrent: boolean = false): DateTime | null {

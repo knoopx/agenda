@@ -18,7 +18,7 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
   const interval = Interval.fromDateTimes(start, end)
   const duration = interval.toDuration(unit)
 
-  const concat = (...args: any[]) => args.filter(Boolean).join(" ")
+  const concat = (...args: (string | number | undefined | null | false)[]) => args.filter(Boolean).join(" ")
   const nextOrPast = (text?: string) => concat(isFuture ? `next` : `past`, text)
   const tomorrowOrYesterday = (text?: string) => concat(isFuture ? `tomorrow` : `yesterday`, text)
 

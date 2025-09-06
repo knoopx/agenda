@@ -1,10 +1,22 @@
-/* eslint-disable max-classes-per-file */
-
 import {
   ICalRuleFrequency,
   INormRRuleOptions,
 } from "@rschedule/core/rules/ICAL_RULES";
 import { DateTime, DateTimeUnit } from "luxon";
+
+// Custom interface that includes all rrule properties
+export interface IRecurrenceOptions extends Partial<INormRRuleOptions> {
+  interval?: number;
+  byMinuteOfHour?: number[];
+  byHourOfDay?: number[];
+  byDayOfWeek?: string[];
+  byDayOfMonth?: number[];
+  byMonthOfYear?: number[];
+  frequency?: ICalRuleFrequency;
+  start?: DateTime;
+  end?: DateTime;
+  count?: number;
+}
 
 export const MonthNames = [
   "january",
@@ -77,7 +89,7 @@ export class Recurrence {
   static fromDurationLike({
     value: interval,
     unit,
-  }: IDurationLike): Partial<INormRRuleOptions> {
+  }: IDurationLike): IRecurrenceOptions {
     return (
       {
         minutes: this.minutely({ interval }),
@@ -92,8 +104,8 @@ export class Recurrence {
 
   static make(
     frequency: ICalRuleFrequency,
-    { interval, ...rest }: Partial<INormRRuleOptions>
-  ): Partial<INormRRuleOptions> {
+    { interval, ...rest }: IRecurrenceOptions
+  ): IRecurrenceOptions {
     return {
       frequency,
       ...(interval && { interval }),
@@ -101,22 +113,22 @@ export class Recurrence {
     };
   }
 
-  static onceAt(start: DateTime, rest: Partial<INormRRuleOptions> = {}) {
+  static onceAt(start: DateTime, rest: IRecurrenceOptions = {}) {
     return { start, ...rest };
   }
 
-  static minutely(rest: Partial<INormRRuleOptions> = {}) {
+  static minutely(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.MINUTELY, rest);
   }
 
-  static hourly(rest: Partial<INormRRuleOptions> = {}) {
+  static hourly(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.HOURLY, {
       byMinuteOfHour: [0],
       ...rest,
     });
   }
 
-  static daily(rest: Partial<INormRRuleOptions> = {}) {
+  static daily(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.DAILY, {
       byHourOfDay: [0],
       byMinuteOfHour: [0],
@@ -124,7 +136,7 @@ export class Recurrence {
     });
   }
 
-  static weekly(rest: Partial<INormRRuleOptions> = {}) {
+  static weekly(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.WEEKLY, {
       byDayOfWeek: ["MO"],
       byHourOfDay: [0],
@@ -133,7 +145,7 @@ export class Recurrence {
     });
   }
 
-  static monthly(rest: Partial<INormRRuleOptions> = {}) {
+  static monthly(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.MONTHLY, {
       byDayOfMonth: [1],
       byHourOfDay: [0],
@@ -142,7 +154,7 @@ export class Recurrence {
     });
   }
 
-  static yearly(rest: Partial<INormRRuleOptions> = {}) {
+  static yearly(rest: IRecurrenceOptions = {}) {
     return this.make(Frequency.YEARLY, {
       byMonthOfYear: [1],
       byHourOfDay: [0],

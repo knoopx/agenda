@@ -7,7 +7,7 @@ export function useEventListener<
   ref: RefObject<T | null>,
   eventName: K,
   listener: (event: HTMLElementEventMap[K]) => void,
-  deps : any[] = []
+  deps: unknown[] = []
 ) {
   return useEffect(() => {
     const node = ref.current;

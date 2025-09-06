@@ -7,7 +7,7 @@ const DateTimeType = types.custom<string, DateTime>({
   isTargetType(value) {
     return !!(value instanceof DateTime || (value && typeof value === 'object' && 'ts' in value && 'zone' in value))
   },
-  getValidationMessage(value: any) : string {
+  getValidationMessage(value: unknown) : string {
     if (value instanceof DateTime) {
       return value.isValid ? "" : "Invalid DateTime"
     }

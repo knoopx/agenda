@@ -1,9 +1,11 @@
 {
 	const path = require("path")
 	const { merge, mergeWith } = require('lodash')
-	const { DateTime, Duration, Interval } = require("luxon")
+	const luxon = require("luxon")
+	const { DateTime, Duration, Interval } = luxon
 
-	const { Frequency, Recurrence, MonthNames, MonthNamesShort, WeekDayNames, WeekDayNamesShort } = require("./types")
+	const types = require("./types")
+	const { Frequency, Recurrence, MonthNames, MonthNamesShort, WeekDayNames, WeekDayNamesShort } = types
 
 	function mergeWithArray(initial, ...rest){
 		return mergeWith(initial, ...rest, (a, b) => {

@@ -7,7 +7,7 @@ export type IntervalBlockProps = {
   end: DateTime;
   splitBy: DurationLike;
   children: (interval: Interval) => React.ReactNode;
-} & HTMLAttributes<HTMLDivElement>;
+} & Omit<HTMLAttributes<HTMLDivElement>, 'children'>;
 
 const IntervalBlock = observer(
   ({ start, end, splitBy, children, ...props }: IntervalBlockProps) => {

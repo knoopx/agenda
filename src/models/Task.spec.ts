@@ -85,7 +85,7 @@ test("task every monday", (task) => {
 
   task.complete();
 
-  const ruleOptions = task.asRuleOptions!;
+  const ruleOptions = task.asRuleOptions! as any;
   expect(ruleOptions.frequency).toEqual("WEEKLY");
   expect(ruleOptions.byDayOfWeek).toEqual(["MO"]);
   expect(ruleOptions.byHourOfDay).toEqual([0]);
