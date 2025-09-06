@@ -7,7 +7,7 @@ export default function EachDay({
   return (
     <Interval
       {...props}
-      className="table-row"
+      className="contents"
       start={start.startOf("week")}
       end={start.endOf("week")}
       splitBy={{ days: 1 }}

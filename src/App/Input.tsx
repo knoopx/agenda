@@ -45,9 +45,9 @@ const Input = observer(() => {
 
       <div
         className={classNames(
-          "flex flex-auto items-center px-4 py-2 space-x-2 bg-neutral-100 dark:bg-[#333] rounded",
+          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01/80 dark:bg-base-02/80 rounded-lg border border-base-02/50 dark:border-base-03/50 backdrop-blur-sm transition-all duration-200 focus-within:border-base-0D/50 focus-within:bg-base-01 dark:focus-within:bg-base-02 focus-within:ring-2 focus-within:ring-base-0D/20",
           {
-            underline: !input.isBlank && !input.isValid,
+            "border-base-08/50 ring-2 ring-base-08/20": !input.isBlank && !input.isValid,
           }
         )}
       >
@@ -72,7 +72,7 @@ const Input = observer(() => {
           autoComplete="off"
           autoFocus
           name="expression"
-          className="flex-auto font-medium placeholder:italic placeholder-neutral-400 bg-transparent outline-none"
+          className="flex-auto font-medium placeholder:italic placeholder-base-04 bg-transparent outline-none"
           type="text"
           value={input.expression}
           onChange={onChangeExpression}

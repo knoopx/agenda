@@ -34,16 +34,16 @@ export const TaskContent = observer(
       <tr
         {...props}
         ref={ref}
-        className="align-middle hover:bg-neutral-50 dark:hover:bg-[#292929] border-b dark:border-b-[#333] last-of-type:border-0 group"
+        className="align-middle hover:bg-base-01/60 dark:hover:bg-base-01/60 border-b dark:border-b-base-02/50 last-of-type:border-0 group transition-colors duration-200 ease-in-out"
       >
-        <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20">
+        <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 text-base-04">
           {task.nextAt && <TimeLabel date={task.nextAt} />}
           {task.duration && <DurationLabel duration={task.duration} />}
         </td>
 
         <td
           style={{ borderColor: task.contextColor }}
-          className="w-full align-middle border-l-4 flex flex-auto items-center px-4 py-2 space-x-2"
+          className="w-full align-middle border-l-4 flex flex-auto items-center px-4 py-3 space-x-3"
         >
           {store.displayEmoji &&
             !isFocused &&
@@ -56,17 +56,17 @@ export const TaskContent = observer(
           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} />
 
           {task.nextAt && (
-            <DistanceLabel className="text-xs" date={task.nextAt} />
+            <DistanceLabel className="text-xs text-base-04" date={task.nextAt} />
           )}
 
           {!isFocused && <TaskActionGroup task={task} />}
 
-          <input
-            type="checkbox"
-            className="inline-block"
-            checked={false}
-            onChange={onComplete}
-          />
+           <input
+             type="checkbox"
+             className="w-5 h-5 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 hover:border-base-0D/70 transition-all duration-200 cursor-pointer appearance-none"
+             checked={false}
+             onChange={onComplete}
+           />
         </td>
       </tr>
     );

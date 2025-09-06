@@ -44,8 +44,8 @@ const Task = Expression.named("Task")
     },
 
     remove() {
-      const { removeTask } = getParent(self, 2);
-      removeTask(self);
+      const parent = getParent(self, 2) as IStore;
+      parent.removeTask(self as ITask);
     },
 
     reset() {
@@ -71,8 +71,8 @@ const Task = Expression.named("Task")
       },
 
       get timeOfTheDay(): ITimeOfTheDay {
-        const { timeOfTheDay } = getParent(self, 2);
-        return timeOfTheDay;
+        const parent = getParent(self, 2) as IStore;
+        return parent.timeOfTheDay;
       },
     };
   });

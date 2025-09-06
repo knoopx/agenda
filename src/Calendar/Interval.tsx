@@ -1,6 +1,6 @@
 import { DateTime, DurationLike, Interval } from "luxon";
 import { observer } from "mobx-react-lite";
-import { HTMLAttributes, useMemo } from "react";
+import React, { HTMLAttributes, useMemo } from "react";
 
 export type IntervalBlockProps = {
   start: DateTime;
@@ -15,7 +15,9 @@ const IntervalBlock = observer(
       return Interval.fromDateTimes(start, end).splitBy(splitBy);
     }, [start, end, splitBy]);
 
-    return <div {...props}>{items.map(children)}</div>;
+    return <div {...props}>{items.map((interval, index) => (
+      <React.Fragment key={index}>{children(interval)}</React.Fragment>
+    ))}</div>;
   }
 );
 

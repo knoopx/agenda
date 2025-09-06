@@ -1,5 +1,5 @@
 import React from "react"
-import ReactDOM from "react-dom"
+import { createRoot } from "react-dom/client"
 
 import "./index.css"
 
@@ -11,13 +11,13 @@ import { StoreContext } from "./hooks/useStore"
 
 const store = Store.create(JSON.parse(localStorage.data ?? "{}"))
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root")!)
+root.render(
   <React.StrictMode>
     <StoreContext.Provider value={store}>
       <App />
     </StoreContext.Provider>
-  </React.StrictMode>,
-  document.getElementById("root"),
+  </React.StrictMode>
 )
 
 onSnapshot(store, () => {

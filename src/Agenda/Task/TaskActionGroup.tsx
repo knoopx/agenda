@@ -16,7 +16,7 @@ export const TaskActionGroup = observer(
       >
         {task.isRecurring && (
           <TaskActionButton
-            className="hover:text-red-500"
+            className="hover:text-base-08"
             onClick={() => {
               task.remove();
             }}
@@ -27,7 +27,7 @@ export const TaskActionGroup = observer(
 
         {task.isRecurring && (
           <TaskActionButton
-            className="hover:text-blue-500"
+            className="hover:text-base-0D"
             onClick={() => {
               task.reset();
             }}

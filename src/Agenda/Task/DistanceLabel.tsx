@@ -17,7 +17,7 @@ export const DistanceLabel = observer(
     return (
       <Label
         className={classNames(className, {
-          "text-red-500": isDue,
+          "text-base-08": isDue,
         })}
       >
         {toDistanceExpr(now(5 * 1000), date)}

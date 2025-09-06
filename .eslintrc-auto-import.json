@@ -1,15 +1,3 @@
 {
-  "globals": {
-    "IconMdiCalendarBlank": true,
-    "IconMdiClockOutline": true,
-    "IconMdiCog": true,
-    "IconMdiContentCopy": true,
-    "IconMdiContentPaste": true,
-    "IconMdiTimerOutline": true,
-    "IconMdiTrashCan": true,
-    "IconMdiTrashCanOutline": true,
-    "IconMdiUpdate": true,
-    "IconMdiWeatherNight": true,
-    "IconMdiWeatherSunny": true
-  }
+  "globals": {}
 }

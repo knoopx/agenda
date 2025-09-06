@@ -11,7 +11,7 @@ const GroupTaskList = observer(
           <th className="hidden md:table-cell" />
           <th className="pb-4 pt-6 px-4 group-first:pt-0 space-x-2 text-left align-middle">
             <span>{name}</span>
-            <span className="font-normal text-neutral-500 text-sm">
+            <span className="font-normal text-base-04 text-sm">
               {tasks.length}
             </span>
           </th>

@@ -1,5 +1,3 @@
-import classNames from "classnames";
-import { DateTime } from "luxon";
 import { observer } from "mobx-react";
 import { HTMLAttributes } from "react";
 
@@ -14,22 +12,19 @@ const Calendar = observer(({ className }: HTMLAttributes<HTMLDivElement>) => {
   let prevYear: number | undefined;
 
   return (
-    <div
-      className={classNames("flex flex-col overflow-y-auto -m-2", className)}
-    >
-      <EachMonth start={store.calendarStart} end={store.calendarEnd}>
-        {({ start: monthStart }) => {
-          const shouldDisplayYear = monthStart.year !== prevYear;
-          prevYear = monthStart.year;
-          return (
-            <Month
-              key={monthStart.toISODate()}
-              start={monthStart}
-            />
-          );
-        }}
-      </EachMonth>
-    </div>
+    <EachMonth start={store.calendarStart} end={store.calendarEnd}>
+      {(interval) => {
+        const monthStart = interval.start;
+        const shouldDisplayYear = monthStart?.year !== prevYear;
+        prevYear = monthStart?.year;
+        return monthStart ? (
+          <Month
+            key={monthStart.toISODate()}
+            start={monthStart}
+          />
+        ) : null;
+      }}
+    </EachMonth>
   );
 });
 

@@ -25,9 +25,6 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
   const contexts = _.uniq(
     occurrences.map((occurrence) => occurrence.task.context)
   );
-  const contextColors = _.uniq(
-    contexts.map((context) => store.getContextColor(context))
-  );
 
   const isToday = now(5000).hasSame(start, "day");
 
@@ -49,28 +46,41 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
       <HoverCard.Trigger
         ref={ref}
         className={classNames(
-          "table-cell text-right text-xs p-1 leading-none rounded-[2px] w-[calc(100%/7)] h-[calc(100%/5)]",
+          "aspect-square flex flex-col justify-between text-xs p-2 leading-none rounded-lg cursor-pointer min-h-[3rem]",
           {
-            "font-bold": isToday,
-            "font-light": !shouldHighlight && !isToday,
-            "bg-neutral-50 dark:bg-[#292929]": isSameMonth,
-            "bg-[#eee] dark:bg-[#313131]": isSameMonth && shouldHighlight,
+            "font-bold text-base-0D ring-2 ring-base-0D/30 bg-base-0D/10": isToday,
+            "font-medium text-base-05": !isToday && isSameMonth,
+            "font-light text-base-04/50": !isSameMonth,
+            "bg-base-01/50 dark:bg-base-01/50 hover:bg-base-01/80 dark:hover:bg-base-01/80": isSameMonth && !isToday,
+            "bg-base-02/30 dark:bg-base-02/30 hover:bg-base-02/50 dark:hover:bg-base-02/50": isSameMonth && shouldHighlight && !isToday,
           }
         )}
       >
         {isSameMonth && (
-          <div className="flex flex-col items-between space-y-1">
-            <h6>{start.day}</h6>
-            <div className="flex flex-auto flex-wrap">
-              {contextColors.map((color) => (
+          <div className="flex flex-col h-full justify-between">
+            <div className="text-left font-medium">
+              {start.day}
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {contexts.slice(0, 6).map((context, index) => (
                 <Indicator
-                  key={color}
-                  color={color}
+                  key={`${context}-${index}`}
+                  color={store.getContextColor(context)}
                   size={indicatorSize}
-                  className={indicatorClassName}
+                  className={classNames(indicatorClassName, "shadow-sm")}
                 />
               ))}
+              {contexts.length > 6 && (
+                <div className="text-xs text-base-04 ml-1">
+                  +{contexts.length - 6}
+                </div>
+              )}
             </div>
+          </div>
+        )}
+        {!isSameMonth && (
+          <div className="text-center opacity-30">
+            {start.day}
           </div>
         )}
       </HoverCard.Trigger>
@@ -78,21 +88,31 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
       {isSameMonth && occurrences.length > 0 && (
         <HoverCard.Content
           side="top"
-          className="table px-4 py-2 text-xs bg-white rounded border border-neutral-300 shadow"
+          className="max-w-xs px-4 py-3 text-xs bg-base-01/95 dark:bg-base-01/95 backdrop-blur-sm rounded-lg shadow-lg shadow-base-00/20"
         >
-          <HoverCard.Arrow className="fill-neutral-300" />
-          <div className="divide-y">
-            {occurrences.map(({ date, task }) => (
-              <div key={task.id} className="flex items-center py-1 space-x-2">
-                <Indicator
-                  color={store.getContextColor(task.context)}
-                  size={indicatorSize}
-                  className={indicatorClassName}
-                />
-                <div className="font-medium">{task.subject}</div>
-                <TimeLabel date={date} />
-              </div>
-            ))}
+          <HoverCard.Arrow className="fill-base-01 dark:fill-base-01" />
+          <div className="space-y-2">
+            <h4 className="font-medium text-base-05 mb-2">
+              {occurrences.length} task{occurrences.length > 1 ? 's' : ''} on {start.toLocaleString({ month: 'short', day: 'numeric' })}
+            </h4>
+            <div className="space-y-1">
+              {occurrences.slice(0, 5).map(({ date, task }) => (
+                <div key={task.id} className="flex items-center py-1 px-2 space-x-2 rounded bg-base-02/30 dark:bg-base-02/30">
+                  <Indicator
+                    color={store.getContextColor(task.context)}
+                    size="0.375rem"
+                    className="flex-shrink-0"
+                  />
+                  <div className="font-medium text-base-05 flex-1 truncate">{task.subject}</div>
+                  <TimeLabel className="text-base-04" date={date} />
+                </div>
+              ))}
+              {occurrences.length > 5 && (
+                <div className="text-center text-base-04 py-1">
+                  +{occurrences.length - 5} more task{occurrences.length - 5 > 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
           </div>
         </HoverCard.Content>
       )}

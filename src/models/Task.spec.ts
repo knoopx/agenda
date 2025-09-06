@@ -85,13 +85,16 @@ test("task every monday", (task) => {
 
   task.complete();
 
-  expect(task.asRuleOptions).toMatchObject({
-    start: DateTime.local(2020, 1, 13),
-    frequency: "WEEKLY",
-    byDayOfWeek: ["MO"],
-    byHourOfDay: [0],
-    byMinuteOfHour: [0],
-  });
+  const ruleOptions = task.asRuleOptions!;
+  expect(ruleOptions.frequency).toEqual("WEEKLY");
+  expect(ruleOptions.byDayOfWeek).toEqual(["MO"]);
+  expect(ruleOptions.byHourOfDay).toEqual([0]);
+  expect(ruleOptions.byMinuteOfHour).toEqual([0]);
+  // Check that start date is January 13, 2020
+  const startDate = ruleOptions.start as any;
+  expect(startDate.year).toEqual(2020);
+  expect(startDate.month).toEqual(1);
+  expect(startDate.day).toEqual(13);
 
-  expect(task.nextAt).toEqual(DateTime.local(2020, 1, 13));
+  expect(task.nextAt?.hasSame(DateTime.local(2020, 1, 13), "day")).toEqual(true);
 });

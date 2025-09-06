@@ -9,7 +9,7 @@ export const TaskActionButton = ({
     <button
       type="button"
       className={classNames(
-        "flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white rounded cursor-pointer",
+        "flex items-center justify-center w-8 h-8 text-base-04 hover:text-base-05 hover:bg-base-02/50 dark:hover:bg-base-03/50 rounded-lg cursor-pointer",
         className
       )}
       {...props}

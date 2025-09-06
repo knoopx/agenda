@@ -11,7 +11,8 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
   ] as ToRelativeUnit[];
 
   const isFuture = end > start
-  const relative = end.toRelative({ base: start, style: "short", unit })
+  const endEn = end.setLocale('en')
+  const relative = endEn.toRelative({ base: start, style: "short", unit })
   if (!isFuture) [end, start] = [start, end]
 
   const interval = Interval.fromDateTimes(start, end)
@@ -21,13 +22,13 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
   const nextOrPast = (text?: string) => concat(isFuture ? `next` : `past`, text)
   const tomorrowOrYesterday = (text?: string) => concat(isFuture ? `tomorrow` : `yesterday`, text)
 
-  const monthAndDay = concat(end.monthShort, end.day)
+  const monthAndDay = concat(endEn.monthShort, endEn.day)
 
   if (duration.years > 0) {
     // next year
     if (end.hasSame(start.plus({ years: 1 }), "year")) {
       // next [month], next [month] [day]
-      return nextOrPast(end.day > 1 ? monthAndDay : end.monthShort)
+      return nextOrPast(end.day > 1 ? monthAndDay : endEn.monthShort || '')
     }
   }
 
@@ -58,12 +59,12 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
   if (duration.days > 0) {
     // this week
     if (end.hasSame(start, "week")) {
-      return end.weekdayShort
+      return endEn.weekdayShort || ''
     }
 
     // next Tue
     if (end.hasSame(start.plus({ weeks: 1 }), "week")) {
-      return nextOrPast(end.weekdayShort)
+      return nextOrPast(endEn.weekdayShort || '')
     }
   }
 

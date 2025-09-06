@@ -155,13 +155,21 @@ const Expression = t
       if (this.isRecurring && this.rrule) {
         target = this.rrule;
       } else if (this.start) {
-        target = new Dates({ dates: [this.start] });
+        // Ensure consistent timezone handling by converting to the same zone as start
+        const normalizedStart = this.start.setZone(start.zone);
+        target = new Dates({ 
+          dates: [normalizedStart],
+          timezone: start.zoneName 
+        });
       } else {
         return [];
       }
 
+      // Ensure all parameters have consistent timezone
+      const normalizedEnd = end?.setZone(start.zone);
+      
       return target
-        .occurrences({ start, end, take })
+        .occurrences({ start, end: normalizedEnd, take })
         .toArray()
         .map((x) => x.date);
     },

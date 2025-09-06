@@ -22,7 +22,7 @@ export const SubjectInput = observer(
         className={classNames(
           "font-medium flex-auto bg-transparent outline-none appearance-none",
           {
-            "text-red-500": !task.isValid,
+            "text-base-08": !task.isValid,
           }
         )}
         onChange={(e) => {

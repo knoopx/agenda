@@ -15,7 +15,7 @@ export const Button = ({
     <button
       type="button"
       className={classNames(
-        "flex items-center justify-center text-neutral-500 hover:text-black rounded cursor-pointer",
+        "flex items-center justify-center text-base-04 hover:text-base-05 rounded cursor-pointer",
         className
       )}
       {...props}
@@ -30,7 +30,7 @@ export const Select = ({
   return (
     <select
       className={classNames(
-        "bg-neutral-100 rounded px-2 py-1 border-none appearance-none outline-none",
+        "bg-base-01 rounded px-2 py-1 border-none appearance-none outline-none",
         className
       )}
       {...props}
@@ -42,8 +42,8 @@ const Settings = observer(() => {
   const store = useStore();
 
   return (
-    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-white rounded border border-neutral-300 shadow">
-      <Popover.Arrow className="fill-neutral-300" />
+    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-base-05 dark:bg-base-01 rounded border border-base-03 dark:border-base-02 shadow">
+      <Popover.Arrow className="fill-base-03 dark:fill-base-02" />
 
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
@@ -92,12 +92,13 @@ const Settings = observer(() => {
           </Select>
         </label>
 
-        <label className="inline-flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={store.displayEmoji}
-            onChange={() => store.toggleDisplayEmoji()}
-          ></input>
+        <label className="inline-flex items-center space-x-2 cursor-pointer">
+           <input
+             type="checkbox"
+             className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 hover:border-base-0D/70 transition-all duration-200 appearance-none"
+             checked={store.displayEmoji}
+             onChange={() => store.toggleDisplayEmoji()}
+           />
           <span className="font-medium">show emoji</span>
         </label>
 

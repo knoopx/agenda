@@ -36,7 +36,7 @@ const Time = observer(() => {
 
 const TopBar = observer(() => {
   return (
-    <div className="container grid lg:grid-cols-2 lg:gap-4 xl:gap-8 mb-2 mx-auto p-2">
+    <div className="w-full grid lg:grid-cols-2 lg:gap-4 xl:gap-8 mb-2 mx-auto p-2">
       <Input />
       <div className="hidden flex-auto lg:flex items-center justify-between">
         <Time />
@@ -44,7 +44,7 @@ const TopBar = observer(() => {
         <Popover.Root>
           <Settings />
           <Popover.PopoverTrigger>
-            <IconMdiCog className="flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white rounded cursor-pointer" />
+            <IconMdiCog className="flex items-center justify-center text-base-04 hover:text-base-05 dark:hover:text-base-05 rounded cursor-pointer" />
           </Popover.PopoverTrigger>
         </Popover.Root>
       </div>

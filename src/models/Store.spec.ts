@@ -18,7 +18,7 @@ it("works", () => {
   const occurrences = store.getOccurrencesAtDay(Now.plus({ days: 1 }));
 
   expect(store.tasks.length).toEqual(2);
-  expect(store.contexts).toMatchObject(["work", "home"]);
+  expect(store.contexts).toMatchObject(["home", "work"]);
   expect(
     _.uniq(
       occurrences.map((occurrence) => occurrence.task.context)

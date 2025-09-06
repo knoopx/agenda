@@ -2,7 +2,7 @@ import Tracer from "pegjs-backtrace";
 
 import { inspect } from "util";
 
-import { expect, it } from "vitest";
+import { expect, it, describe } from "vitest";
 import { DateTime, Duration } from "luxon";
 
 import grammar from "./grammar.pegjs?trace";
@@ -19,12 +19,12 @@ function parse(input: string, startRule = "Root") {
       now: Now,
       tracer,
     });
-  } catch (e) {
+  } catch (e: any) {
     throw new Error([e.message, tracer.getBacktraceString()].join("\n"));
   }
 }
 
-type AssertFunction = (input: string) => Chai.VitestAssertion;
+type AssertFunction = (input: string) => any;
 
 function testRule(name: string, callback: (e: AssertFunction) => void) {
   const makeAssertion = (input: string) => {
@@ -38,14 +38,27 @@ function testRule(name: string, callback: (e: AssertFunction) => void) {
 
 testRule("Context", (e) => {
   e("@work").toMatchObject({ contexts: ["work"] });
+  e("@home-office").toMatchObject({ contexts: ["home-office"] });
+  e("@personal_tasks").toMatchObject({ contexts: ["personal_tasks"] });
+  e("@123").toMatchObject({ contexts: ["123"] });
+  e("@urgent").toMatchObject({ contexts: ["urgent"] });
+  e("@project-alpha").toMatchObject({ contexts: ["project-alpha"] });
 });
 
 testRule("Tag", (e) => {
   e("#coffee").toMatchObject({ tags: ["coffee"] });
+  e("#urgent-task").toMatchObject({ tags: ["urgent-task"] });
+  e("#work_project").toMatchObject({ tags: ["work_project"] });
+  e("#1on1").toMatchObject({ tags: ["1on1"] });
+  e("#meeting").toMatchObject({ tags: ["meeting"] });
+  e("#bug-fix").toMatchObject({ tags: ["bug-fix"] });
 });
 
 testRule("TagExpr", (e) => {
   e("#coffee #drinks").toMatchObject({ tags: ["coffee", "drinks"] });
+  e("#urgent #important").toMatchObject({ tags: ["urgent", "important"] });
+  e("#meeting #standup #daily").toMatchObject({ tags: ["meeting", "standup", "daily"] });
+  e("#work #project #frontend").toMatchObject({ tags: ["work", "project", "frontend"] });
 });
 
 testRule("ContextOrTagExpr", (e) => {
@@ -67,6 +80,14 @@ testRule("ContextOrTagExpr", (e) => {
     contexts: ["context"],
     tags: ["coffee", "drinks"],
   });
+  e("@work @personal #urgent #meeting").toMatchObject({
+    contexts: ["work", "personal"],
+    tags: ["urgent", "meeting"],
+  });
+  e("#project-alpha @work #backend #api").toMatchObject({
+    contexts: ["work"],
+    tags: ["project-alpha", "backend", "api"],
+  });
 });
 
 
@@ -78,12 +99,29 @@ testRule("ForExpr", (e) => {
   e("for 3 months").toEqual({
     duration: Duration.fromObject({ months: 3 }),
   });
+  e("for 2 weeks").toEqual({
+    duration: Duration.fromObject({ weeks: 2 }),
+  });
+  e("for 1 year").toEqual({
+    duration: Duration.fromObject({ years: 1 }),
+  });
+  e("for 45 min").toEqual({
+    duration: Duration.fromObject({ minutes: 45 }),
+  });
+  e("for 6 hours").toEqual({
+    duration: Duration.fromObject({ hours: 6 }),
+  });
 });
 
 testRule("NextExpr", (e) => {
   e("next monday").toEqual(DateTime.local(2021, 1, 4));
   e("next month").toEqual(DateTime.local(2021, 2, 1));
   e("next winter").toEqual(DateTime.local(2021, 9, 1));
+  e("next week").toEqual(DateTime.local(2021, 1, 4));
+  e("next year").toEqual(DateTime.local(2022, 1, 1));
+  e("next friday").toEqual(DateTime.local(2021, 1, 1));  // Jan 1, 2021 is a Friday
+  e("next tuesday").toEqual(DateTime.local(2021, 1, 5));
+  e("next thursday").toEqual(DateTime.local(2021, 1, 7));
 });
 
 testRule("DateExpr", (e) => {
@@ -495,5 +533,80 @@ testRule("Root", (e) => {
 
   e("next monday").toMatchObject({
     start: DateTime.local(2021, 1, 4),
+  });
+
+  // Additional comprehensive test cases
+  e("@work #standup daily meeting every monday at 09:00 for 30 min").toMatchObject({
+    subject: "daily meeting",
+    contexts: ["work"],
+    tags: ["standup"],
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["MO"],
+    byHourOfDay: [9],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ minutes: 30 }),
+  });
+
+  e("@personal #health doctor appointment tomorrow at 15:30").toMatchObject({
+    subject: "doctor appointment",
+    contexts: ["personal"],
+    tags: ["health"],
+    start: DateTime.local(2021, 1, 2, 15, 30),
+  });
+
+  e("@home #cleaning vacuum living room every saturday morning for 1h").toMatchObject({
+    subject: "vacuum living room",
+    contexts: ["home"],
+    tags: ["cleaning"],
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["SA"],
+    byHourOfDay: [9],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ hours: 1 }),
+  });
+
+  e("review code @work #urgent #bug").toMatchObject({
+    subject: "review code",
+    contexts: ["work"],
+    tags: ["urgent", "bug"],
+  });
+
+  e("call mom about vacation plans").toMatchObject({
+    subject: "call mom about vacation plans",
+  });
+
+  e("task with numbers 123 and symbols !@#").toMatchObject({
+    subject: "task with numbers 123 and symbols !@#",
+  });
+
+  e("@multi-word-context task").toMatchObject({
+    subject: "task",
+    contexts: ["multi-word-context"],
+  });
+
+  e("#multi_word_tag task").toMatchObject({
+    subject: "task",
+    tags: ["multi_word_tag"],
+  });
+
+  e("every friday at 17:00 for 2h").toMatchObject({
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["FR"],
+    byHourOfDay: [17],
+    byMinuteOfHour: [0],
+    duration: Duration.fromObject({ hours: 2 }),
+  });
+
+  e("meeting tomorrow at 09:30").toMatchObject({
+    subject: "meeting",
+    start: DateTime.local(2021, 1, 2, 9, 30),
+  });
+
+  e("@work #1on1 catch up with team lead every 2 weeks").toMatchObject({
+    subject: "catch up with team lead",
+    contexts: ["work"],
+    tags: ["1on1"],
+    frequency: Frequency.WEEKLY,
+    interval: 2,
   });
 });

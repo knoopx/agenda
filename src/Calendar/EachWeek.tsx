@@ -7,11 +7,7 @@ export default function EachWeek({
   return (
     <Interval
       {...props}
-      className="table flex-auto overflow-hidden rounded-[4px]"
-      style={{
-        borderSpacing: "4px",
-        aspectRatio: "1",
-      }}
+      className="contents"
       start={start.startOf("month")}
       end={start.endOf("month").endOf("week")}
       splitBy={{ weeks: 1 }}

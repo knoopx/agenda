@@ -11,7 +11,7 @@ export default function EachMonth({
     <Interval
       {...props}
       className={classNames("flex-none w-full", {
-        "grid lg:grid-cols-2 xl:grid-cols-3":
+        "grid grid-cols-2 gap-4":
           !store.isCalendarSingleMonth,
       })}
       splitBy={{ months: 1 }}
