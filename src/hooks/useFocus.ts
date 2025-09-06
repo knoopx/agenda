@@ -2,7 +2,7 @@ import { RefObject, useState } from "react";
 
 import { useEventListener } from "./useEventListener";
 
-export function useFocus(ref: RefObject<HTMLElement>, deps = []) {
+export function useFocus(ref: RefObject<HTMLElement | null>, deps = []) {
   const [state, setState] = useState<boolean>(false);
 
   useEventListener(

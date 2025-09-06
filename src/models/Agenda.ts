@@ -41,9 +41,18 @@ export default t.model("Agenda", {}).views((self) => {
         groups[groupName(task.nextAt)].push(task);
       });
 
-      return Object.keys(groups)
+      // Sort tasks within each group by their global index
+      Object.keys(groups).forEach((key) => {
+        groups[key].sort((a, b) => {
+          const indexA = store.filteredTasks.findIndex((t: ITask) => t.id === a.id);
+          const indexB = store.filteredTasks.findIndex((t: ITask) => t.id === b.id);
+          return indexA - indexB;
+        });
+      });
+
+      return GroupNames
         .filter((key) => groups[key].length)
-        .map((key) => [key, groups[key]]);
+        .map((key) => [key, groups[key]] as [string, ITask[]]);
     },
   };
 });

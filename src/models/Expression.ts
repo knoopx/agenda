@@ -218,7 +218,7 @@ const Expression = t
       return this.tags
         .map((x) => emojiFromWord(x))
         .filter((x) => x.emoji)
-        .map((x) => x.emoji.char);
+        .map((x) => x.char);
     },
   }));
 

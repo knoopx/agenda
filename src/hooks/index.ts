@@ -6,3 +6,4 @@ export { useHover } from "./useHover";
 export { useKey } from "./useKey";
 export { usePromise } from "./usePromise";
 export { useStore } from "./useStore";
+export { useGlobalKeyboard } from "./useGlobalKeyboard";

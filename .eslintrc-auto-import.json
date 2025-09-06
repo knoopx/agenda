@@ -1,3 +1,8 @@
 {
-  "globals": {}
+  "globals": {
+    "IconMdiClockOutline": true,
+    "IconMdiTimerOutline": true,
+    "IconMdiTrashCan": true,
+    "IconMdiUpdate": true
+  }
 }

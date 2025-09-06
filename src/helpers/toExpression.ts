@@ -92,7 +92,7 @@ export function toEveryMonthOfYearExpr(
 export function toEveryIntervalExpr(
   interval: number = 1,
   frequency: string
-): string | null {
+): string[] | null {
   const map: {
     [key: string]: [string, string];
   } = {
@@ -109,7 +109,7 @@ export function toEveryIntervalExpr(
   if (!match) return null;
 
   if (interval === 1) return toEveryExpr(match[0]);
-  return toEveryExpr([interval, match[1]]);
+  return toEveryExpr([interval.toString(), match[1]]);
 }
 
 export function toEveryDateExpr(

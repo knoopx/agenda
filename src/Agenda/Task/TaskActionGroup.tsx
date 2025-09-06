@@ -6,7 +6,7 @@ import { ITask } from "../../models/Task";
 import { TaskActionButton } from "./TaskActionButton";
 
 export const TaskActionGroup = observer(
-  ({ className, task }: { task: ITask } & HTMLAttributes<HTMLDivElement>) => {
+  ({ className, task, isSelected }: { task: ITask; isSelected?: boolean } & HTMLAttributes<HTMLDivElement>) => {
     return (
       <div
         className={classNames(
@@ -16,7 +16,7 @@ export const TaskActionGroup = observer(
       >
         {task.isRecurring && (
           <TaskActionButton
-            className="hover:text-base-08"
+            className={`${isSelected ? 'text-base-0D' : ''} hover:text-base-08`}
             onClick={() => {
               task.remove();
             }}
@@ -27,7 +27,7 @@ export const TaskActionGroup = observer(
 
         {task.isRecurring && (
           <TaskActionButton
-            className="hover:text-base-0D"
+            className={`${isSelected ? 'text-base-0D' : ''} hover:text-base-0D`}
             onClick={() => {
               task.reset();
             }}

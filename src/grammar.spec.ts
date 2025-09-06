@@ -1,26 +1,20 @@
-import Tracer from "pegjs-backtrace";
-
-import { inspect } from "util";
-
-import { expect, it, describe } from "vitest";
+import { expect, it } from "vitest";
 import { DateTime, Duration } from "luxon";
 
-import grammar from "./grammar.pegjs?trace";
+import grammar from "./grammar.pegjs";
 import { Frequency } from "./types";
 
 const Now = DateTime.local(2021, 1, 1);
 
 function parse(input: string, startRule = "Root") {
-  const tracer = new Tracer(input); // input text is required.
   try {
     return grammar.parse(input, {
       grammarSource: "",
       startRule,
       now: Now,
-      tracer,
     });
   } catch (e: any) {
-    throw new Error([e.message, tracer.getBacktraceString()].join("\n"));
+    throw new Error(e.message);
   }
 }
 
@@ -28,7 +22,7 @@ type AssertFunction = (input: string) => any;
 
 function testRule(name: string, callback: (e: AssertFunction) => void) {
   const makeAssertion = (input: string) => {
-    return expect(parse(input, name), `parses ${inspect(input)}`);
+    return expect(parse(input, name), `parses ${JSON.stringify(input)}`);
   };
 
   it(name, () => {

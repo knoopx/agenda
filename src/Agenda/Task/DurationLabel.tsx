@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Duration, DurationObjectUnits } from "luxon";
 import { observer } from "mobx-react";
 
@@ -13,10 +14,16 @@ export const formatDuration = (duration: Duration): string => {
 };
 
 export const DurationLabel = observer(
-  ({ duration }: { duration: Duration }) => {
+  ({ duration, isSelected, className }: { duration: Duration; isSelected?: boolean; className?: string }) => {
     if (duration.toMillis() === 0) return null;
     return (
-      <Label position="right" icon={IconMdiTimerOutline}>
+      <Label
+        position="right"
+        icon={IconMdiTimerOutline}
+        className={classNames(className, {
+          "text-base-0D": isSelected,
+        })}
+      >
         {formatDuration(duration)}
       </Label>
     );

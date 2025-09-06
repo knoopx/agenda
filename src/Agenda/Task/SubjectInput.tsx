@@ -9,8 +9,10 @@ export const SubjectInput = observer(
     {
       isFocused: boolean;
       task: ITask;
+      isSelected?: boolean;
+      onSubmit?: () => void;
     }
-  >(({ isFocused, task }, ref) => {
+  >(({ isFocused, task, isSelected, onSubmit }, ref) => {
     const value = isFocused ? task.expression : task.subject;
 
     return (
@@ -20,14 +22,21 @@ export const SubjectInput = observer(
         size={1}
         value={value || task.expression}
         className={classNames(
-          "font-medium flex-auto bg-transparent outline-none appearance-none",
+          "font-medium flex-auto bg-transparent outline-none appearance-none truncate",
           {
             "text-base-08": !task.isValid,
+            "text-base-0D": isSelected,
           }
         )}
-        onChange={(e) => {
-          task.update({ expression: e.target.value });
-        }}
+         onChange={(e) => {
+           task.update({ expression: e.target.value });
+         }}
+         onBlur={() => {
+           // Call onSubmit when input loses focus
+           if (isFocused && onSubmit) {
+             onSubmit();
+           }
+         }}
       />
     );
   })

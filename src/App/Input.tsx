@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useRef, useEffect } from "react";
 import { getSnapshot } from "mobx-state-tree";
 import { observer } from "mobx-react-lite";
 
@@ -11,8 +11,12 @@ import Indicator from "../Calendar/Indicator";
 
 const Input = observer(() => {
   const store = useStore();
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { input, addTask } = useStore();
+
+  useEffect(() => {
+    store.setMainInputRef(inputRef.current);
+  }, [store]);
 
   useEscapeKey(inputRef, () => {
     input.setExpression("");
@@ -45,7 +49,7 @@ const Input = observer(() => {
 
       <div
         className={classNames(
-          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01/80 dark:bg-base-02/80 rounded-lg border border-base-02/50 dark:border-base-03/50 backdrop-blur-sm transition-all duration-200 focus-within:border-base-0D/50 focus-within:bg-base-01 dark:focus-within:bg-base-02 focus-within:ring-2 focus-within:ring-base-0D/20",
+          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01/80 dark:bg-base-02/80 rounded-lg border border-base-02/50 dark:border-base-03/50 backdrop-blur-sm",
           {
             "border-base-08/50 ring-2 ring-base-08/20": !input.isBlank && !input.isValid,
           }

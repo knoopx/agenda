@@ -31,6 +31,9 @@ export const Colors = colorPalettes.base16;
 
 interface StoreVolatileProps {
   hoveredTask: ITask | null;
+  selectedTaskIndex: number;
+  mainInputRef: HTMLInputElement | null;
+  taskInputRefs: Map<number, HTMLInputElement>;
 }
 
 class Occurrence {
@@ -65,7 +68,7 @@ export interface ITimeOfTheDaySnapshotOut
 const Store = t
   .model("Store", {
     tasks: t.array(Task),
-    editingTasks: t.array(Task),
+     editingTask: t.maybe(t.reference(Task)),
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
@@ -79,15 +82,23 @@ const Store = t
     ),
     displayEmoji: t.optional(t.boolean, true),
   })
-  .volatile<StoreVolatileProps>((self) => ({
+  .volatile<StoreVolatileProps>(() => ({
     hoveredTask: null,
+    selectedTaskIndex: -1,
+    mainInputRef: null,
+    taskInputRefs: new Map(),
   }))
   .views((self) => ({
     get sortedTasks() {
       return _.orderBy(
         self.tasks,
-        [({ nextAt }) => nextAt !== null, "nextAt", "lastCompletedAt"],
-        ["asc", "asc", "desc"]
+        [
+          "isCompleted",
+          ({ nextAt }) => nextAt === null, // Tasks with dates first (null dates last)
+          "nextAt", // Sort by date for tasks with dates
+          "lastCompletedAt" // Sort by completion date for tasks without dates
+        ],
+        ["asc", "asc", "asc", "desc"]
       );
     },
     get filteredTasks() {
@@ -206,6 +217,24 @@ const Store = t
           }
         }
       });
+
+      // Auto-select first task of first group when tasks are loaded and none is selected
+      autorun(() => {
+        if (self.filteredTasks.length > 0 && self.selectedTaskIndex === -1) {
+          // Get agenda groups and find the first task from the first non-empty group
+          const groups = self.agenda.groupEntries;
+
+          if (groups.length > 0 && groups[0][1].length > 0) {
+            // Find the global index of the first task in the first group
+            const firstTaskInFirstGroup = groups[0][1][0];
+            const firstTaskIndex = self.filteredTasks.findIndex(task => task.id === firstTaskInFirstGroup.id);
+
+            if (firstTaskIndex !== -1) {
+              this.setSelectedTaskIndex(firstTaskIndex);
+            }
+          }
+        }
+      });
     },
     toggleDarkMode() {
       self.useDarkMode = !self.useDarkMode;
@@ -229,11 +258,88 @@ const Store = t
     setHoveredTask(task: ITask | null) {
       self.hoveredTask = task;
     },
-    addEditingTask(task: ITask) {
-      self.editingTasks.push(task);
+    setMainInputRef(ref: HTMLInputElement | null) {
+      self.mainInputRef = ref;
     },
-    removeEditingTask(task: ITask) {
-      destroy(task);
+    setTaskInputRef(index: number, ref: HTMLInputElement | null) {
+      if (ref) {
+        self.taskInputRefs.set(index, ref);
+      } else {
+        self.taskInputRefs.delete(index);
+      }
+    },
+    setSelectedTaskIndex(index: number) {
+      self.selectedTaskIndex = Math.max(-1, Math.min(index, self.filteredTasks.length - 1));
+    },
+    navigateUp() {
+      if (self.filteredTasks.length === 0) return;
+
+      if (self.selectedTaskIndex <= 0) {
+        // Cycle to last task
+        this.setSelectedTaskIndex(self.filteredTasks.length - 1);
+      } else {
+        this.setSelectedTaskIndex(self.selectedTaskIndex - 1);
+      }
+    },
+    navigateDown() {
+      if (self.filteredTasks.length === 0) return;
+
+      if (self.selectedTaskIndex < 0) {
+        this.setSelectedTaskIndex(0);
+      } else if (self.selectedTaskIndex >= self.filteredTasks.length - 1) {
+        // Cycle to first task
+        this.setSelectedTaskIndex(0);
+      } else {
+        this.setSelectedTaskIndex(self.selectedTaskIndex + 1);
+      }
+    },
+    focusMainInput() {
+      this.setSelectedTaskIndex(-1);
+    },
+    completeSelectedTask() {
+      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+        const task = self.filteredTasks[self.selectedTaskIndex];
+        task.complete();
+      }
+    },
+    editSelectedTask() {
+      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+        // Clear any existing editing task to ensure only one task can be edited at a time
+        this.clearEditingTask();
+
+        // Use the ref-based approach instead of DOM querying
+        const inputRef = self.taskInputRefs.get(self.selectedTaskIndex);
+        if (inputRef) {
+          inputRef.focus();
+        }
+      }
+    },
+    toggleEditSelectedTask() {
+      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+        const selectedTask = self.filteredTasks[self.selectedTaskIndex];
+        
+        // If the selected task is currently being edited, exit edit mode
+        if (self.editingTask === selectedTask) {
+          const inputRef = self.taskInputRefs.get(self.selectedTaskIndex);
+          if (inputRef) {
+            inputRef.blur(); // This will trigger the existing blur logic to exit edit mode
+          }
+        } else {
+          // Otherwise, enter edit mode
+          this.editSelectedTask();
+        }
+      }
+    },
+    setEditingTask(task: ITask) {
+      // Clear any existing editing task to ensure only one task can be edited at a time
+      this.clearEditingTask();
+      self.editingTask = task;
+    },
+
+    clearEditingTask() {
+      // Don't destroy the task immediately to avoid MobX detached object errors
+      // The task will be garbage collected when no longer referenced
+      self.editingTask = undefined;
     },
     copyListToClipboard() {
       navigator.clipboard.writeText(self.asList.join("\n"));
@@ -243,9 +349,9 @@ const Store = t
         text.split(/[\r\n]+/).forEach((expression) => {
           if (expression.trim() !== "") {
             const task = Task.create({ expression });
-            this.addEditingTask(task);
+            this.setEditingTask(task);
             const { isValid } = task;
-            this.removeEditingTask(task);
+            this.clearEditingTask();
             if (isValid) {
               this.addTask(task);
             }
@@ -255,7 +361,7 @@ const Store = t
     },
     clearAll() {
       self.tasks.forEach(destroy);
-      self.editingTasks.forEach(destroy);
+      this.clearEditingTask();
     },
   }));
 

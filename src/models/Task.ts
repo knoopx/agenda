@@ -18,6 +18,8 @@ const Task = Expression.named("Task")
     id: t.optional(t.identifier, () => nanoid()),
     createdAt: t.optional(dateTime, () => DateTime.now()),
     lastCompletedAt: t.optional(dateTime, () => DateTime.now()),
+    isCompleted: t.optional(t.boolean, false),
+    completionCount: t.optional(t.number, 0),
   })
   .actions((self) => ({
     update(props: Partial<ITask>) {
@@ -25,8 +27,21 @@ const Task = Expression.named("Task")
     },
 
     complete() {
+      const now = DateTime.now();
+      
+      if (self.isCompleted) {
+        // Uncomplete the task - decrement count if > 0
+        self.isCompleted = false;
+        if (self.completionCount > 0) {
+          self.completionCount--;
+        }
+        return;
+      }
+      
+      // Add completion
+      self.completionCount++;
+      
       if (self.isRecurring) {
-        const now = DateTime.now();
         let nextAt = self.nextAfter(now);
         if (nextAt) {
           if (now < nextAt) {
@@ -40,7 +55,7 @@ const Task = Expression.named("Task")
           return;
         }
       }
-      this.remove();
+      self.isCompleted = true;
     },
 
     remove() {
@@ -50,6 +65,7 @@ const Task = Expression.named("Task")
 
     reset() {
       self.lastCompletedAt = self.createdAt;
+      self.completionCount = 0;
     },
   }))
   .views((self) => {
@@ -66,13 +82,37 @@ const Task = Expression.named("Task")
       },
 
       get contextColor(): string {
-        const parent = getParent(self, 2) as IStore;
-        return parent.getContextColor(self.context);
+        try {
+          const parent = getParent(self, 2) as IStore;
+          return parent.getContextColor(self.context);
+        } catch {
+          // Fallback for detached tasks (e.g., during editing)
+          return "var(--base03)";
+        }
       },
 
       get timeOfTheDay(): ITimeOfTheDay {
-        const parent = getParent(self, 2) as IStore;
-        return parent.timeOfTheDay;
+        try {
+          const parent = getParent(self, 2) as IStore;
+          return parent.timeOfTheDay;
+        } catch {
+          // Fallback for detached tasks (e.g., during editing)
+          return {
+            morning: 9,
+            afternoon: 15,
+            evening: 18,
+            night: 22,
+            set: () => {}, // Add set method to satisfy ITimeOfTheDay interface
+          };
+        }
+      },
+
+      get completionStats() {
+        if (!self.isRecurring) return null;
+        
+        return {
+          total: self.completionCount
+        };
       },
     };
   });

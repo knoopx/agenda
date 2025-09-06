@@ -85,4 +85,9 @@ export default defineConfig({
       fastRefresh: process.env.NODE_ENV !== "test",
     }),
   ],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test-setup.ts'],
+  },
 })

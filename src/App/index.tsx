@@ -2,10 +2,13 @@ import { observer } from "mobx-react";
 
 import { Agenda } from "../Agenda";
 import Calendar from "../Calendar";
+import { useGlobalKeyboard } from "../hooks";
 
 import TopBar from "./TopBar";
 
 const App = observer(() => {
+  useGlobalKeyboard();
+
   return (
     <div className="flex flex-col overflow-hidden min-h-screen max-h-screen font-sans-serif dark:bg-base-00 dark:text-base-05">
       <TopBar />

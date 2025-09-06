@@ -105,27 +105,28 @@ testSimplifiedExpression(
 );
 
 test("task every 15 min", () => {
-  const { ast } = make("task every 15 min");
+  const task = make("task every 15 min");
+  const { ast } = task;
   expect(ast).toMatchObject({
     interval: 15,
     frequency: "MINUTELY",
   });
 
-  expect(toEveryDayOfWeekExpr(ast.byDayOfWeek, ast.interval)).toBeNull();
-  expect(toEveryDateExpr(ast.byDayOfMonth, ast.byMonthOfYear)).toBeNull();
-  expect(toEveryIntervalExpr(ast.interval, ast.frequency)).toEqual([
+  expect(toEveryDayOfWeekExpr(ast?.byDayOfWeek, ast?.interval)).toBeNull();
+  expect(toEveryDateExpr(ast?.byDayOfMonth, ast?.byMonthOfYear)).toBeNull();
+  expect(toEveryIntervalExpr(ast!.interval, ast!.frequency!)).toEqual([
     "every",
-    15,
+    "15",
     "min",
   ]);
   expect(
-    toRecurringExpression(ast, {
+    toRecurringExpression(ast!, {
       relative: false,
-      timeOfTheDay: store.timeOfTheDay,
+      timeOfTheDay: store.timeOfTheDay as unknown as { [key: string]: number },
     })
   ).toEqual([
     "every",
-    15,
+    "15",
     "min",
   ]);
 });

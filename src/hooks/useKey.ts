@@ -2,14 +2,14 @@ import { RefObject } from "react";
 import { useEventListener } from "./useEventListener";
 
 export function useKey(
-  inputRef: RefObject<HTMLElement>,
+  inputRef: RefObject<HTMLElement | null>,
   codes: string[] | number[] | number | string,
   callback: EventListener,
   deps: any[] = []
 ) {
   const choices = [codes].flat();
   const listener = (e: KeyboardEvent) => {
-    if (choices.includes(e.keyCode) || choices.includes(e.code)) {
+    if (choices.includes(e.code) || choices.includes(e.key)) {
       e.preventDefault();
       callback(e);
     }

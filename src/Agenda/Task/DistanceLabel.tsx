@@ -11,13 +11,15 @@ export const DistanceLabel = observer(
   ({
     className,
     date,
-  }: { date: DateTime } & HTMLAttributes<HTMLSpanElement>) => {
+    isSelected,
+  }: { date: DateTime; isSelected?: boolean } & HTMLAttributes<HTMLSpanElement>) => {
     const isDue = date.toMillis() - DateTime.now().toMillis() < 0;
 
     return (
       <Label
         className={classNames(className, {
-          "text-base-08": isDue,
+          "text-base-08": isDue && !isSelected,
+          "text-base-0D": isSelected,
         })}
       >
         {toDistanceExpr(now(5 * 1000), date)}
