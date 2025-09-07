@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",
+    "@svgr/plugin-jsx": "^8.1.0",
     "emoji-from-word": "^1.2.13",
     "webdav": "^5.8.0"
   }

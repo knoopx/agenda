@@ -7,19 +7,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
-      - uses: actions/cache@v1
-        id: yarn-cache
+      - uses: actions/cache@v4
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-bun-
+
       - name: prepare
         run: |
           git config --local user.email "action@github.com"
@@ -27,11 +26,12 @@ jobs:
           git fetch --no-tags --prune --depth=1 origin gh-pages
           rm -rf dist
           git worktree add -B gh-pages dist origin/gh-pages
-          yarn install
+          bun install
+
       - name: dist
         run: |
           rm -rf dist/**/*
-          yarn build
+          bun run build
           git --work-tree dist add --all
           git --work-tree dist commit -m "$(date +%Y%m%d)"
           git push origin HEAD:gh-pages --force
