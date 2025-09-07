@@ -217,12 +217,12 @@ describe("Settings Component", () => {
     renderSettings();
     // Find the main content div by its classes
     const content = document.querySelector(
-      ".flex.flex-auto.flex-col.p-4.text-xs",
+      ".flex.flex-auto.flex-col.p-3.text-xs",
     );
     expect(content).toHaveClass("flex");
     expect(content).toHaveClass("flex-auto");
     expect(content).toHaveClass("flex-col");
-    expect(content).toHaveClass("p-4");
+    expect(content).toHaveClass("p-3");
     expect(content).toHaveClass("text-xs");
   });
 

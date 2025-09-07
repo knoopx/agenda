@@ -57,29 +57,29 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           },
         )}
       >
-         {(isSameMonth || isToday) && (
-           <div className="flex flex-col h-full justify-between">
-             <div className="text-left font-medium">{start.day}</div>
-             <div className="flex flex-wrap gap-1 mt-1">
-               {contexts.slice(0, 6).map((context, index) => (
-                 <Indicator
-                   key={`${context}-${index}`}
-                   color={store.getContextColor(context)}
-                   size={indicatorSize}
-                   className={classNames(indicatorClassName, "shadow-sm")}
-                 />
-               ))}
-               {contexts.length > 6 && (
-                 <div className="text-xs text-base-04 ml-1">
-                   +{contexts.length - 6}
-                 </div>
-               )}
-             </div>
-           </div>
-         )}
-         {!isSameMonth && !isToday && (
-           <div className="text-center opacity-30">{start.day}</div>
-         )}
+        {(isSameMonth || isToday) && (
+          <div className="flex flex-col h-full justify-between">
+            <div className="text-left font-medium">{start.day}</div>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {contexts.slice(0, 6).map((context, index) => (
+                <Indicator
+                  key={`${context}-${index}`}
+                  color={store.getContextColor(context)}
+                  size={indicatorSize}
+                  className={classNames(indicatorClassName, "shadow-sm")}
+                />
+              ))}
+              {contexts.length > 6 && (
+                <div className="text-xs text-base-04 ml-1">
+                  +{contexts.length - 6}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {!isSameMonth && !isToday && (
+          <div className="text-center opacity-30">{start.day}</div>
+        )}
       </HoverCard.Trigger>
 
       {isSameMonth && occurrences.length > 0 && (

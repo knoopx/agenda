@@ -77,10 +77,13 @@ describe("CompletionDropdown Component", () => {
       />,
     );
 
-    const selectedItem = screen.getByText("home").closest("div");
-    const unselectedItem = screen.getByText("work").closest("div");
+    const items = document.querySelectorAll(".completion-dropdown-item");
+    const selectedItem = items[1] as HTMLElement; // selectedIndex={1}
+    const unselectedItem = items[0] as HTMLElement;
 
+    expect(selectedItem).toHaveClass("completion-dropdown-item");
     expect(selectedItem).toHaveClass("bg-base-03");
+    expect(unselectedItem).toHaveClass("completion-dropdown-item");
     expect(unselectedItem).not.toHaveClass("bg-base-03");
   });
 
@@ -117,9 +120,10 @@ describe("CompletionDropdown Component", () => {
       />,
     );
 
-    const dropdown = screen
-      .getByText("work")
-      .closest(".absolute") as HTMLElement;
+    const dropdown = document.querySelector(
+      ".completion-dropdown",
+    ) as HTMLElement;
+    expect(dropdown).toHaveClass("completion-dropdown");
     expect(dropdown).toHaveStyle({
       top: `${position.top}px`,
       left: `${position.left}px`,
@@ -138,9 +142,10 @@ describe("CompletionDropdown Component", () => {
       />,
     );
 
-    const dropdown = screen
-      .getByText("work")
-      .closest(".absolute") as HTMLElement;
+    const dropdown = document.querySelector(
+      ".completion-dropdown",
+    ) as HTMLElement;
+    expect(dropdown).toHaveClass("completion-dropdown");
     expect(dropdown).toHaveStyle({ minWidth: "120px" });
   });
 
@@ -157,12 +162,15 @@ describe("CompletionDropdown Component", () => {
     );
 
     // Check that @ symbols have the correct styling class
-    const atSymbols = screen.getAllByText("@");
+    const atSymbols = document.querySelectorAll(
+      ".completion-dropdown-item-type",
+    );
+    expect(atSymbols[0]).toHaveClass("completion-dropdown-item-type");
     expect(atSymbols[0]).toHaveClass("text-base-04", "font-medium", "mr-0.5");
 
     // Check that # symbols have the correct styling class
-    const hashSymbols = screen.getAllByText("#");
-    expect(hashSymbols[0]).toHaveClass("text-base-04", "font-medium", "mr-0.5");
+    expect(atSymbols[1]).toHaveClass("completion-dropdown-item-type");
+    expect(atSymbols[1]).toHaveClass("text-base-04", "font-medium", "mr-0.5");
   });
 
   it("closes when Escape is pressed", () => {
@@ -213,16 +221,11 @@ describe("CompletionDropdown Component", () => {
       />,
     );
 
-    // Get all div elements that contain the completion items
-    const items = screen.getAllByText(/work|home|urgent|personal/);
+    // Get all completion items
+    const items = document.querySelectorAll(".completion-dropdown-item");
     items.forEach((item) => {
-      const container = item.closest("div");
-      expect(container).toHaveClass(
-        "px-3",
-        "py-2",
-        "cursor-pointer",
-        "text-sm",
-      );
+      expect(item).toHaveClass("completion-dropdown-item");
+      expect(item).toHaveClass("px-3", "py-2", "cursor-pointer", "text-sm");
     });
   });
 
@@ -238,9 +241,10 @@ describe("CompletionDropdown Component", () => {
       />,
     );
 
-    const dropdown = screen
-      .getByText("work")
-      .closest(".absolute") as HTMLElement;
+    const dropdown = document.querySelector(
+      ".completion-dropdown",
+    ) as HTMLElement;
+    expect(dropdown).toHaveClass("completion-dropdown");
     expect(dropdown).toHaveClass(
       "z-50",
       "bg-base-01",

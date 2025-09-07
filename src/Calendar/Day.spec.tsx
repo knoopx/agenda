@@ -215,10 +215,7 @@ describe("Day Component", () => {
       displayEmoji: true,
       useDarkMode: false,
       input: {
-        subject: "test",
-        expression: "test",
-        implicitEndAt: DateTime.local(2024, 3, 31), // Multiple months
-        implicitStart: DateTime.local(2024, 1, 1),
+        expression: "task from 2024-01-01 to 2024-03-31",
       },
     });
 

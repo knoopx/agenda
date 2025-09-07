@@ -45,6 +45,9 @@ describe("EachMonth Component", () => {
       displayEmoji: true,
       useDarkMode: false,
       locale: "en-US",
+      input: {
+        expression: "task from 2024-01-01 to 2024-02-28",
+      },
     });
 
     const start = DateTime.local(2024, 1, 1);

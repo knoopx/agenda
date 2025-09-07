@@ -340,7 +340,9 @@ describe("toExpression", () => {
       urls: ["https://example.com", "https://github.com/user/repo"],
     };
     const result = toExpression(ast, { timeOfTheDay });
-    expect(result).toBe("test task https://example.com https://github.com/user/repo");
+    expect(result).toBe(
+      "test task https://example.com https://github.com/user/repo",
+    );
   });
 
   test("should handle task with contexts, tags, and URLs", () => {

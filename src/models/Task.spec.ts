@@ -182,9 +182,12 @@ it("reset task", () => {
 
 it("completionStats for recurring task", () => {
   const task = make("task every monday");
-  expect(task.completionStats).toEqual({ total: 0 });
+  expect(task.completionStats).toEqual({ total: 0, totalTimeSpent: null });
   task.complete();
-  expect(task.completionStats).toEqual({ total: 1 });
+  expect(task.completionStats).toEqual({
+    total: 1,
+    totalTimeSpent: expect.any(Object),
+  });
 });
 
 it("completionStats for non-recurring task", () => {

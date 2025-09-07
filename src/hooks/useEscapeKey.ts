@@ -6,5 +6,9 @@ export function useEscapeKey(
   onSubmit: EventListener,
   deps = [],
 ) {
-  return useKey(inputRef, "Escape", onSubmit, deps);
+  const deferredOnSubmit = (e: KeyboardEvent) => {
+    // Defer the callback to avoid setState during render
+    setTimeout(() => onSubmit(e), 0);
+  };
+  return useKey(inputRef, "Escape", deferredOnSubmit, deps);
 }

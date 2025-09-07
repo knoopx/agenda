@@ -5,6 +5,7 @@ import {
   cleanup,
   waitFor,
   fireEvent,
+  act,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DateTime, Settings } from "luxon";
@@ -192,8 +193,15 @@ describe("Task Editing Functionality", () => {
       await user.clear(input);
       await user.type(input, "Updated task tomorrow");
 
-      // Press Escape to cancel
-      await user.keyboard("{Escape}");
+      // Wait a bit for the input to settle
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Press Escape to cancel using fireEvent wrapped in act
+      await act(async () => {
+        fireEvent.keyDown(input, { key: "Escape" });
+        // Wait for the async setTimeout to complete
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
 
       // Input should show original expression (not focused anymore)
       await waitFor(() => {

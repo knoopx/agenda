@@ -229,8 +229,14 @@ export function toExpression(
     timeOfTheDay?: { [key: string]: number };
   } = { relative: false, timeOfTheDay: {} },
 ): string {
-  const contexts = ast?.contexts?.filter(Boolean).map((tag) => `@${tag}`).join(" ");
-  const tags = ast?.tags?.filter(Boolean).map((tag) => `#${tag}`).join(" ");
+  const contexts = ast?.contexts
+    ?.filter(Boolean)
+    .map((tag) => `@${tag}`)
+    .join(" ");
+  const tags = ast?.tags
+    ?.filter(Boolean)
+    .map((tag) => `#${tag}`)
+    .join(" ");
   const urls = ast?.urls?.join(" ");
 
   return [

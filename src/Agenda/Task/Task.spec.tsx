@@ -4,6 +4,7 @@ import {
   screen,
   cleanup,
   fireEvent,
+  act,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DateTime, Settings } from "luxon";
@@ -61,8 +62,11 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
       expect(checkbox).toBeInTheDocument();
+      expect(checkbox).toHaveClass("task-checkbox");
       expect(checkbox).not.toBeChecked();
     });
 
@@ -73,7 +77,8 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      const taskRow = document.querySelector(".task");
+      expect(taskRow).toHaveClass("task");
       expect(taskRow).toHaveClass("align-middle");
       expect(taskRow).not.toHaveClass("opacity-50");
     });
@@ -99,7 +104,9 @@ describe("Task Component", () => {
     });
 
     it("displays completion count for recurring completed tasks", () => {
-      const recurringTask = store.addTask({ expression: "Daily task every day" })!;
+      const recurringTask = store.addTask({
+        expression: "Daily task every day",
+      })!;
       const createdAt = DateTime.local(2024, 1, 15, 8, 0, 0);
       const completedAt = DateTime.local(2024, 1, 15, 10, 30, 0);
 
@@ -130,7 +137,10 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(checkbox).toHaveClass("task-checkbox");
       expect(checkbox).toBeChecked();
     });
 
@@ -143,7 +153,8 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      const taskRow = document.querySelector(".task");
+      expect(taskRow).toHaveClass("task");
       expect(taskRow).toHaveClass("text-base-03");
     });
 
@@ -156,7 +167,10 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(checkbox).toHaveClass("task-checkbox");
       expect(mockTask.isCompleted).toBe(false);
 
       await user.click(checkbox);
@@ -174,7 +188,10 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(checkbox).toHaveClass("task-checkbox");
       expect(mockTask.isCompleted).toBe(true);
 
       await user.click(checkbox);
@@ -222,7 +239,11 @@ describe("Task Component", () => {
           <Task task={incompleteTask} />
         </MockWrapper>,
       );
-      expect(screen.getByRole("checkbox")).not.toBeChecked();
+      const incompleteCheckbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(incompleteCheckbox).toHaveClass("task-checkbox");
+      expect(incompleteCheckbox).not.toBeChecked();
 
       // Clean up and test complete task
       cleanup();
@@ -231,7 +252,11 @@ describe("Task Component", () => {
           <Task task={completeTask} />
         </MockWrapper>,
       );
-      expect(screen.getByRole("checkbox")).toBeChecked();
+      const completeCheckbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(completeCheckbox).toHaveClass("task-checkbox");
+      expect(completeCheckbox).toBeChecked();
     });
 
     it("maintains task state correctly", () => {
@@ -249,8 +274,9 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      const taskRow = document.querySelector(".task");
       expect(taskRow).toBeInTheDocument();
+      expect(taskRow).toHaveClass("task");
 
       const cells = taskRow?.querySelectorAll("td");
       expect(cells).toHaveLength(2); // Time cell and content cell
@@ -264,7 +290,11 @@ describe("Task Component", () => {
       );
 
       expect(screen.getByDisplayValue("Test task")).toBeInTheDocument();
-      expect(screen.getByRole("checkbox")).toBeInTheDocument();
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(checkbox).toHaveClass("task-checkbox");
+      expect(checkbox).toBeInTheDocument();
     });
   });
 
@@ -341,7 +371,18 @@ describe("Task Component", () => {
       await user.click(input);
       expect(store.editingTask).toBe(mockTask);
 
-      await user.type(input, " updated{escape}");
+      // Type the update
+      await user.type(input, " updated");
+
+      // Wait a bit for the input to settle
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Then press Escape using fireEvent wrapped in act
+      await act(async () => {
+        fireEvent.keyDown(input, { key: "Escape" });
+        // Wait for the async setTimeout to complete
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
 
       // Check that changes were reverted
       expect(mockTask.subject).toBe("Test task");
@@ -351,7 +392,7 @@ describe("Task Component", () => {
       expect(store.editingTask).toBeUndefined();
     });
 
-    it("maintains focus after submitting task edit with Enter", async () => {
+    it("blurs input after submitting task edit with Enter", async () => {
       const user = userEvent.setup();
 
       render(
@@ -365,7 +406,7 @@ describe("Task Component", () => {
       expect(input).toHaveFocus();
 
       await user.type(input, " updated{enter}");
-      expect(input).toHaveFocus(); // Focus should be maintained
+      expect(input).not.toHaveFocus(); // Input should be blurred
       expect(mockTask.subject).toBe("Test task updated");
     });
 
@@ -419,7 +460,8 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr")!;
+      const taskRow = document.querySelector(".task") as HTMLElement;
+      expect(taskRow).toHaveClass("task");
       expect(store.hoveredTask).toBeNull();
 
       await user.hover(taskRow);
@@ -435,7 +477,7 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr")!;
+      const taskRow = document.querySelector(".task") as HTMLElement;
 
       await user.hover(taskRow);
       expect(store.hoveredTask).toBe(mockTask);
@@ -528,7 +570,9 @@ describe("Task Component", () => {
       );
 
       const input = screen.getByDisplayValue("Test task");
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
 
       // Focus the input
       await user.click(input);
@@ -551,7 +595,9 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
 
       // Click checkbox without focusing input first
       await user.click(checkbox);
@@ -782,7 +828,8 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      const taskRow = document.querySelector(".task");
+      expect(taskRow).toHaveClass("task");
       expect(taskRow).toHaveAttribute("data-task-index", "5");
     });
 
@@ -796,8 +843,11 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const contentCell = screen.getByDisplayValue("Task").closest("td");
+      const contentCell = document.querySelector(
+        ".task-content",
+      ) as HTMLElement;
       // The context color should be applied via the style attribute
+      expect(contentCell).toHaveClass("task-content");
       expect(contentCell?.style.borderColor).toBeDefined();
     });
 
@@ -810,7 +860,8 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      const taskRow = document.querySelector(".task");
+      expect(taskRow).toHaveClass("task");
       expect(taskRow).toHaveClass("text-base-03");
     });
 
@@ -825,7 +876,8 @@ describe("Task Component", () => {
       // Focus the input to trigger selected state
       await userEvent.click(input);
 
-      const taskRow = input.closest("tr");
+      const taskRow = input.closest(".task");
+      expect(taskRow).toHaveClass("task");
       expect(taskRow).toHaveClass("focus-within:bg-base-02");
     });
 
@@ -838,7 +890,10 @@ describe("Task Component", () => {
         </MockWrapper>,
       );
 
-      const checkbox = screen.getByRole("checkbox");
+      const checkbox = document.querySelector(
+        ".task-checkbox",
+      ) as HTMLInputElement;
+      expect(checkbox).toHaveClass("task-checkbox");
       expect(checkbox).toHaveClass("checked:after:content-['✓']");
     });
 
@@ -850,6 +905,7 @@ describe("Task Component", () => {
       );
 
       const input = screen.getByDisplayValue("Test task");
+      expect(input).toHaveClass("task-input");
       expect(input).toHaveAttribute("tabIndex", "2"); // index 0 + 2 = 2
     });
 
@@ -861,6 +917,7 @@ describe("Task Component", () => {
       );
 
       const input = screen.getByDisplayValue("Test task");
+      expect(input).toHaveClass("task-input");
       expect(input).toHaveAttribute("tabIndex", "7"); // index 5 + 2 = 7
     });
   });

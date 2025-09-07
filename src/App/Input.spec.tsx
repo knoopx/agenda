@@ -125,7 +125,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
         expect(dropdown?.textContent).not.toContain("@home");
@@ -167,7 +167,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
       });
@@ -176,7 +176,7 @@ describe("Input Component - Completion Functionality", () => {
 
       expect(input).toHaveValue("@work ");
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -190,7 +190,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "#u");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("#urgent");
       });
@@ -199,7 +199,7 @@ describe("Input Component - Completion Functionality", () => {
 
       expect(input).toHaveValue("#urgent ");
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -213,12 +213,14 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
       });
 
       // First item should be selected by default
-      const dropdown = document.querySelector(".absolute.z-50") as HTMLElement;
+      const dropdown = document.querySelector(
+        ".absolute.z-50.shadow-lg",
+      ) as HTMLElement;
       const firstItem = dropdown.querySelector("div");
       expect(firstItem?.classList.contains("bg-base-03")).toBe(true);
 
@@ -241,14 +243,14 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
       });
 
       await user.keyboard("{Escape}");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -262,14 +264,14 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
       });
 
       await user.click(document.body);
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -307,7 +309,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "New task @w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
       });
@@ -326,7 +328,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
       });
@@ -347,7 +349,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "Task @w more text");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
       });
@@ -392,7 +394,7 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "rk");
 
       await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
+        const dropdown = document.querySelector(".absolute.z-50.shadow-lg");
         expect(dropdown).toBeInTheDocument();
         expect(dropdown?.textContent).toContain("@work");
       });

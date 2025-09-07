@@ -51,35 +51,37 @@ export const TaskContent = observer(
           {...props}
           ref={ref}
           data-task-index={index}
-          className={`h-14 align-middle border-b dark:border-b-base-03 last-of-type:border-0 group ${
+          className={`task h-14 align-middle border-b dark:border-b-base-03 last-of-type:border-0 group ${
             task.isCompleted ? "text-base-03" : ""
           } focus-within:bg-base-02 dark:focus-within:bg-base-02`}
         >
-           <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
-             {task.nextAt && (
-               <TimeLabel date={task.nextAt} className="text-xs" />
-             )}
-             {task.duration && (
-               <DurationLabel duration={task.duration} className="text-xs" />
-             )}
-             {task.isCompleted && task.createdAt && task.lastCompletedAt && (
-               <div className="flex flex-col items-end space-y-1">
-                 <DurationLabel
-                   duration={task.lastCompletedAt.diff(task.createdAt)}
-                   className="text-xs text-base-0B font-medium"
-                 />
-                 {task.isRecurring && task.completionStats && task.completionStats.total > 1 && (
-                   <span className="text-xs text-base-04">
-                     {task.completionStats.total} completions
-                   </span>
-                 )}
-               </div>
-             )}
-           </td>
+          <td className="task-time-info hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
+            {task.nextAt && (
+              <TimeLabel date={task.nextAt} className="text-xs" />
+            )}
+            {task.duration && (
+              <DurationLabel duration={task.duration} className="text-xs" />
+            )}
+            {task.isCompleted && task.createdAt && task.lastCompletedAt && (
+              <div className="flex flex-col items-end space-y-1">
+                <DurationLabel
+                  duration={task.lastCompletedAt.diff(task.createdAt)}
+                  className="text-xs text-base-0B font-medium"
+                />
+                {task.isRecurring &&
+                  task.completionStats &&
+                  task.completionStats.total > 1 && (
+                    <span className="text-xs text-base-04">
+                      {task.completionStats.total} completions
+                    </span>
+                  )}
+              </div>
+            )}
+          </td>
 
           <td
             style={{ borderColor: task.contextColor }}
-            className="w-full align-middle border-l-4 flex flex-auto items-center px-4 h-14 space-x-3"
+            className="task-content w-full align-middle border-l-4 flex flex-auto items-center px-4 h-14 space-x-3"
           >
             {store.displayEmoji &&
               !isFocused &&
@@ -103,7 +105,7 @@ export const TaskContent = observer(
                     target="_blank"
                     rel="noopener noreferrer"
                     tabIndex={-1}
-                    className="flex items-center space-x-1 text-xs text-base-04 hover:text-base-0D ml-1"
+                    className="task-link flex items-center space-x-1 text-xs text-base-04 hover:text-base-0D ml-1"
                     title={url}
                   >
                     <IconMdiLink className="w-4 h-4" />
@@ -130,7 +132,7 @@ export const TaskContent = observer(
             <input
               type="checkbox"
               tabIndex={-1}
-              className="w-5 h-5 rounded border-2 border-base-04 bg-base-01 dark:bg-base-01 group-focus-within:border-base-0D group-focus-within:bg-base-01 dark:group-focus-within:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold"
+              className="task-checkbox w-5 h-5 rounded border-2 border-base-04 bg-base-01 dark:bg-base-01 group-focus-within:border-base-0D group-focus-within:bg-base-01 dark:group-focus-within:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold"
               checked={task.isCompleted}
               onChange={onComplete}
             />
@@ -174,13 +176,22 @@ const Task = observer(
       };
     }, [store, index]);
 
-    if (isFocused) {
-      // Only allow editing if no other task is currently being edited
-      if (!store.editingTask) {
-        store.setEditingTask(task);
+    // Set editing task when focus changes
+    useEffect(() => {
+      if (isFocused) {
+        // Only allow editing if no other task is currently being edited
+        if (!store.editingTask) {
+          store.setEditingTask(task);
+        }
+      } else {
+        // Clear editing task when losing focus
+        if (store.editingTask === task) {
+          store.clearEditingTask();
+        }
       }
-      target = task;
-    } else target = task;
+    }, [isFocused, store, task]);
+
+    target = isFocused ? task : task;
 
     const onSubmit = useCallback(
       (_e?: Event) => {

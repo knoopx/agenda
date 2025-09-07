@@ -15,15 +15,9 @@ describe("Task Context Colors", () => {
     const tasks = store.tasks;
 
     // Check that tasks have the expected contexts
-    console.log(
-      "Task contexts:",
-      tasks.map((t) => t.context),
-    );
-    console.log("Store contexts:", store.contexts);
 
     // Get colors for each task
     const colors = tasks.map((task) => task.contextColor);
-    console.log("Task colors:", colors);
 
     // Tasks with same context should have same color
     expect(colors[0]).toBe(colors[3]); // both @home
@@ -46,9 +40,6 @@ describe("Task Context Colors", () => {
 
     const colorWithoutContext = tasks[0].contextColor;
     const colorWithContext = tasks[1].contextColor;
-
-    console.log("Without context:", tasks[0].context, colorWithoutContext);
-    console.log("With context:", tasks[1].context, colorWithContext);
 
     // Task without context should get default color
     expect(colorWithoutContext).toBe("var(--base03)");
