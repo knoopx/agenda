@@ -11,9 +11,6 @@
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
-    "@radix-ui/react-hover-card": "^1.1.15",
-    "@radix-ui/react-popover": "^1.1.15",
-    "@radix-ui/react-tooltip": "^1.2.8",
     "@rschedule/core": "^1.5.0",
     "@rschedule/luxon-date-adapter": "^1.5.0",
     "@svgr/core": "^8.1.0",
@@ -72,9 +69,10 @@
     ]
   },
   "dependencies": {
-    "@radix-ui/themes": "^3.2.1",
+    "@radix-ui/react-hover-card": "^1.1.15",
+    "@radix-ui/react-popover": "^1.1.15",
     "@svgr/plugin-jsx": "^8.1.0",
-    "emoji-from-word": "^1.2.13",
+    "emojilib": "^4.0.2",
     "webdav": "^5.8.0"
   }
 }

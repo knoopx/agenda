@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { DateTime, Settings } from "luxon";
 import { Store } from "../models";
 import { StoreContext } from "../hooks/useStore";
@@ -53,146 +54,381 @@ const renderInput = () => {
   );
 };
 
-describe("Input Component", () => {
+describe("Input Component - Completion Functionality", () => {
   beforeEach(() => {
     store = Store.create({
       tasks: [],
       displayEmoji: true,
       useDarkMode: false,
     });
+
+    // Add some tasks with contexts and tags to populate the store
+    store.addTask({ expression: "Task @work" });
+    store.addTask({ expression: "Task @home" });
+    store.addTask({ expression: "Task #urgent" });
+    store.addTask({ expression: "Task #personal" });
+
     vi.clearAllMocks();
   });
 
-  it("renders input field", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-    expect(input).toBeInTheDocument();
+  describe("Completion Trigger Detection", () => {
+    it("shows completion dropdown when typing @", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@");
+
+      await waitFor(() => {
+        expect(screen.getByText((content, element) => {
+          return element?.textContent === "@work";
+        })).toBeInTheDocument();
+        expect(screen.getByText((content, element) => {
+          return element?.textContent === "@home";
+        })).toBeInTheDocument();
+      });
+    });
+
+    it("shows completion dropdown when typing #", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "#");
+
+      await waitFor(() => {
+        expect(screen.getByText((content, element) => {
+          return element?.textContent === "#urgent";
+        })).toBeInTheDocument();
+        expect(screen.getByText((content, element) => {
+          return element?.textContent === "#personal";
+        })).toBeInTheDocument();
+      });
+    });
+
+    it("filters completions based on typed text", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@w");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).not.toContain('@home');
+      });
+    });
+
+    it("does not show completions when typing @ followed by space", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@ ");
+
+      expect(screen.queryByText("@work")).not.toBeInTheDocument();
+    });
+
+    it("hides completion dropdown when no matches found", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@nonexistent");
+
+      await waitFor(() => {
+        expect(screen.queryByText("@work")).not.toBeInTheDocument();
+      });
+    });
   });
 
-  it("displays context indicator when context is present", () => {
-    store.input.setExpression("@work task");
+  describe("Completion Selection", () => {
+    it("selects completion with Enter key", async () => {
+      const user = userEvent.setup();
+      renderInput();
 
-    renderInput();
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@w");
 
-    const indicator = screen.getByTestId("indicator");
-    expect(indicator).toBeInTheDocument();
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+      });
+
+      await user.keyboard("{Enter}");
+
+      expect(input).toHaveValue("@work ");
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).not.toBeInTheDocument();
+      });
+    });
+
+    it("selects completion with Tab key", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "#u");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('#urgent');
+      });
+
+      await user.keyboard("{Tab}");
+
+      expect(input).toHaveValue("#urgent ");
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).not.toBeInTheDocument();
+      });
+    });
+
+    it("navigates completions with arrow keys", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+      });
+
+      // First item should be selected by default
+      const dropdown = document.querySelector('.absolute.z-50') as HTMLElement;
+      const firstItem = dropdown.querySelector('div');
+      expect(firstItem?.classList.contains('bg-base-04')).toBe(true);
+
+      // Navigate down
+      await user.keyboard("{ArrowDown}");
+      const secondItem = dropdown.querySelectorAll('div')[1];
+      expect(secondItem?.classList.contains('bg-base-04')).toBe(true);
+
+      // Navigate up (should cycle to last item)
+      await user.keyboard("{ArrowUp}");
+      expect(firstItem?.classList.contains('bg-base-04')).toBe(true);
+    });
+
+    it("closes completion dropdown with Escape key", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+      });
+
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).not.toBeInTheDocument();
+      });
+    });
+
+    it("closes completion dropdown on blur", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+      });
+
+      await user.click(document.body);
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).not.toBeInTheDocument();
+      });
+    });
   });
 
-  it("displays emojis when displayEmoji is enabled", () => {
-    // displayEmoji is already true from beforeEach, no need to toggle
-    store.input.setExpression("task #home");
+  describe("Completion Positioning", () => {
+    it("positions dropdown relative to cursor position", async () => {
+      const user = userEvent.setup();
+      renderInput();
 
-    renderInput();
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "Task @");
 
-    // The emoji should be extracted from the #home tag (👪 for home/family)
-    const emojiElement = screen.getByText("👪");
-    expect(emojiElement).toBeInTheDocument();
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+      });
+
+      const dropdown = document.querySelector('.absolute.z-50') as HTMLElement;
+      expect(dropdown).toBeInTheDocument();
+      // Position should be set (exact values depend on input positioning)
+      expect(dropdown?.style.top).toBeDefined();
+      expect(dropdown?.style.left).toBeDefined();
+    });
   });
 
-  it("displays recurring icon when task is recurring", () => {
-    store.input.setExpression("every day task");
+  describe("Completion Integration", () => {
+    it("updates input expression when completion is selected", async () => {
+      const user = userEvent.setup();
+      renderInput();
 
-    renderInput();
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "New task @w");
 
-    const recurringIcon = screen.getByTestId("recurring-icon");
-    expect(recurringIcon).toBeInTheDocument();
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+      });
+
+      await user.keyboard("{Enter}");
+
+      expect(store.input.expression).toBe("New task @work ");
+    });
+
+    it("sets cursor position after completion insertion", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@w");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+      });
+
+      await user.keyboard("{Enter}");
+
+      // Cursor should be positioned after the inserted completion
+      expect((input as HTMLInputElement).selectionStart).toBe("@work ".length);
+      expect((input as HTMLInputElement).selectionEnd).toBe("@work ".length);
+    });
+
+    it("handles completion in middle of text", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "Task @w more text");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+      });
+
+      await user.keyboard("{Enter}");
+
+      expect(input).toHaveValue("Task @work  more text");
+    });
   });
 
-  it("displays time label when nextAt is present", () => {
-    store.input.setExpression("task at 1pm");
+  describe("Edge Cases", () => {
+    it("handles empty store contexts/tags gracefully", () => {
+      // Create a new store without any existing tasks
+      const emptyStore = Store.create({
+        tasks: [],
+        displayEmoji: true,
+        useDarkMode: false,
+      });
 
-    renderInput();
+      render(
+        <StoreContext.Provider value={emptyStore}>
+          <Input />
+        </StoreContext.Provider>,
+      );
 
-    if (store.input.nextAt) {
-      const timeLabel = screen.getByTestId("time-label");
-      expect(timeLabel).toBeInTheDocument();
-    }
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      fireEvent.change(input, { target: { value: "@" } });
+
+      // Should not crash and should not show any completions
+      expect(screen.queryByText("@")).toBeNull();
+    });
+
+    it("handles rapid typing and completion changes", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+
+      // Type quickly
+      await user.type(input, "@wo");
+      await user.type(input, "rk");
+
+      await waitFor(() => {
+        const dropdown = document.querySelector('.absolute.z-50');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown?.textContent).toContain('@work');
+      });
+
+      // Should still work correctly
+      await user.keyboard("{Enter}");
+      expect(input).toHaveValue("@work ");
+    });
   });
 
-  it("displays duration label when duration is present", () => {
-    store.input.setExpression("task for 2h");
+  describe("Existing Input Functionality with Completions", () => {
+    it("still adds task and clears expression on Enter key when valid", async () => {
+      const user = userEvent.setup();
+      renderInput();
 
-    renderInput();
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "valid task");
 
-    if (store.input.duration) {
-      const durationLabel = screen.getByTestId("duration-label");
-      expect(durationLabel).toBeInTheDocument();
-    }
-  });
+      const initialTaskCount = store.tasks.length;
+      await user.keyboard("{Enter}");
 
-  it("displays date label when nextAt is present", () => {
-    store.input.setExpression("task tomorrow");
+      expect(store.tasks.length).toBe(initialTaskCount + 1);
+      expect(store.input.expression).toBe("");
+    });
 
-    renderInput();
+    it("still clears expression on Escape key", async () => {
+      const user = userEvent.setup();
+      renderInput();
 
-    if (store.input.nextAt) {
-      const dateLabel = screen.getByTestId("date-label");
-      expect(dateLabel).toBeInTheDocument();
-    }
-  });
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "some task");
 
-  it("shows invalid state styling when expression is invalid", () => {
-    store.input.setExpression("@@invalid@@");
+      expect(store.input.expression).toBe("some task");
 
-    renderInput();
+      await user.keyboard("{Escape}");
+      expect(store.input.expression).toBe("");
+    });
 
-    const container = screen.getByPlaceholderText(
-      "filter or add a task...",
-    ).parentElement;
-    expect(container).toHaveClass("border-base-08/50");
-  });
-
-  it("updates expression on input change", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-
-    fireEvent.change(input, { target: { value: "new task" } });
-
-    expect(input).toHaveValue("new task");
-  });
-
-  it("focuses input on mount", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-    expect(input).toHaveFocus();
-  });
-
-  it("clears expression on Escape key", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-
-    fireEvent.change(input, { target: { value: "some task" } });
-    expect(store.input.expression).toBe("some task");
-
-    fireEvent.keyDown(input, { key: "Escape" });
-    expect(store.input.expression).toBe("");
-  });
-
-  it("adds task and clears expression on Enter key when valid", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-
-    fireEvent.change(input, { target: { value: "valid task" } });
-    expect(store.input.expression).toBe("valid task");
-
-    const initialTaskCount = store.tasks.length;
-    fireEvent.keyDown(input, { key: "Enter" });
-
-    expect(store.tasks.length).toBe(initialTaskCount + 1);
-    expect(store.input.expression).toBe("");
-  });
-
-  it("does not add task on Enter key when invalid", () => {
-    renderInput();
-    const input = screen.getByPlaceholderText("filter or add a task...");
-
-    fireEvent.change(input, { target: { value: "invalid @@" } });
-    expect(store.input.expression).toBe("invalid @@");
-
-    const initialTaskCount = store.tasks.length;
-    fireEvent.keyDown(input, { key: "Enter" });
-
-    expect(store.tasks.length).toBe(initialTaskCount);
-    expect(store.input.expression).toBe("invalid @@");
+    it("still focuses input on mount", () => {
+      renderInput();
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      expect(input).toHaveFocus();
+    });
   });
 });

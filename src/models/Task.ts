@@ -116,11 +116,12 @@ const Task = Expression.named("Task")
       },
 
       get parsedUrls() {
-        return self.urls.map(url => {
+        return self.urls.map((url) => {
           try {
             const parsed = new URL(url);
-            const parts = parsed.hostname.split('.');
-            const domain = parts.length >= 2 ? parts.slice(-2).join('.') : parsed.hostname;
+            const parts = parsed.hostname.split(".");
+            const domain =
+              parts.length >= 2 ? parts.slice(-2).join(".") : parsed.hostname;
             return { url, domain };
           } catch {
             return { url, domain: null };

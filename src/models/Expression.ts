@@ -1,4 +1,6 @@
-import emojiFromWord from "emoji-from-word";
+import { emojiFromKeyword } from "../helpers";
+
+// Helper: find emoji by keyword
 
 import { types as t } from "mobx-state-tree";
 import { DateTime, Duration } from "luxon";
@@ -86,6 +88,19 @@ const Expression = t
 
     get subject() {
       return this.ast?.subject ?? "";
+    },
+
+    get subjectWithoutUrls() {
+      const subject = this.ast?.subject ?? "";
+      const urls = this.ast?.urls ?? [];
+      
+      let cleanSubject = subject;
+      urls.forEach(url => {
+        cleanSubject = cleanSubject.replace(url, '').trim();
+      });
+      
+      // Clean up multiple spaces
+      return cleanSubject.replace(/\s+/g, ' ').trim();
     },
 
     get urls() {
@@ -218,9 +233,8 @@ const Expression = t
 
     get emojis() {
       return this.tags
-        .map((x) => emojiFromWord(x))
-        .filter((x) => x !== undefined && x.emoji && x.emoji.char)
-        .map((x) => x!.emoji.char);
+        .map((x) => emojiFromKeyword(x))
+        .filter((x) => x !== undefined);
     },
   }));
 

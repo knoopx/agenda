@@ -46,3 +46,7 @@ testtoDistanceExpr({ days: -8 }, "past Thu"); // Jan 1 Fri - 8 days = Dec 24 Thu
 testtoDistanceExpr({ months: 2 }, "Mar 1"); // Jan 1 + 2 months = Mar 1
 testtoDistanceExpr({ months: 3 }, "Apr 1"); // Jan 1 + 3 months = Apr 1
 testtoDistanceExpr({ months: -2 }, "Nov 1"); // Jan 1 - 2 months = Nov 1
+
+// Test for year display when not current year
+testtoDistanceExpr({ years: 2 }, "Jan 1, 2023"); // Should display year if not current
+testtoDistanceExpr({ years: 2, months: 3 }, "Apr 1, 2023"); // Should display year if not current

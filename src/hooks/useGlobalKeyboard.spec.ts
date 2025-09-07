@@ -57,7 +57,7 @@ describe("useGlobalKeyboard", () => {
   });
 
   describe("Input Focus Guard", () => {
-    it("ignores keyboard events when focused on non-main input", () => {
+    it("processes keyboard events when focused on non-main input", () => {
       renderHook(() => useGlobalKeyboard());
 
       // Mock an input element that's not the main input
@@ -70,10 +70,10 @@ describe("useGlobalKeyboard", () => {
       const event = new KeyboardEvent("keydown", { key: "Escape" });
       document.dispatchEvent(event);
 
-      expect(mockStore.focusMainInput).not.toHaveBeenCalled();
+      expect(mockStore.focusMainInput).toHaveBeenCalled();
     });
 
-    it("processes keyboard events when focused on main input", () => {
+    it("ignores keyboard events when focused on main input", () => {
       const mockMainInput = document.createElement("input");
       mockStore.mainInputRef = mockMainInput;
 
@@ -87,7 +87,7 @@ describe("useGlobalKeyboard", () => {
       const event = new KeyboardEvent("keydown", { key: "Escape" });
       document.dispatchEvent(event);
 
-      expect(mockStore.focusMainInput).toHaveBeenCalled();
+      expect(mockStore.focusMainInput).not.toHaveBeenCalled();
     });
 
     it("processes keyboard events when not focused on any input", () => {

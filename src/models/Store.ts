@@ -127,6 +127,7 @@ const SyncMetadata = t
     lastSync: t.optional(t.Date, () => new Date()),
     lastModified: t.optional(t.Date, () => new Date()),
     isDirty: t.optional(t.boolean, false),
+    deletedTaskIds: t.optional(t.array(t.string), []),
   })
   .actions((self) => ({
     markDirty() {
@@ -136,6 +137,13 @@ const SyncMetadata = t
     markSynced() {
       self.isDirty = false;
       self.lastSync = new Date();
+      // Clear deleted task IDs after successful sync
+      self.deletedTaskIds.clear();
+    },
+    addDeletedTaskId(taskId: string) {
+      if (!self.deletedTaskIds.includes(taskId)) {
+        self.deletedTaskIds.push(taskId);
+      }
     },
   }));
 
@@ -251,6 +259,12 @@ const Store = t
 
     get contexts() {
       return _.uniq(self.tasks.flatMap((task) => task.contexts))
+        .filter(Boolean)
+        .sort();
+    },
+
+    get tags() {
+      return _.uniq(self.tasks.flatMap((task) => task.tags))
         .filter(Boolean)
         .sort();
     },
@@ -422,6 +436,8 @@ const Store = t
       return self.tasks[index - 1];
     },
     removeTask(task: ITask) {
+      // Track the deletion for sync purposes
+      self.sync.addDeletedTaskId(task.id);
       self.tasks.remove(task);
       self.webdav.markAsChanged();
     },
@@ -599,6 +615,7 @@ const Store = t
       // Only sync tasks, not settings
       const dataToSync = {
         tasks: self.tasks.map((task) => getSnapshot(task)),
+        deletedTaskIds: self.sync.deletedTaskIds.slice(), // Include deleted task IDs
         lastSync: new Date().toISOString(),
       };
       const data = JSON.stringify(dataToSync, null, 2);
@@ -608,6 +625,7 @@ const Store = t
         .then(() => {
           self.webdav.setLastSync(new Date());
           self.webdav.setPendingChanges(false);
+          self.sync.markSynced(); // Clear deleted task IDs after successful sync
         })
         .catch((error) => {
           self.webdav.setSyncError(error.message);
@@ -640,6 +658,7 @@ const Store = t
         .then(() => {
           self.webdav.setLastSync(new Date());
           self.webdav.setPendingChanges(false);
+          self.sync.markSynced(); // Clear deleted task IDs after successful sync
         })
         .catch((error) => {
           self.webdav.setSyncError(error.message);
@@ -680,8 +699,8 @@ const Store = t
         try {
           const remoteStore = JSON.parse(remoteData);
 
-          // Only merge tasks, not settings
-          this.mergeTasks(remoteStore.tasks || []);
+           // Only merge tasks, not settings
+           this.mergeTasks(remoteStore.tasks || [], remoteStore.deletedTaskIds || []);
 
           // Update remote last modified if available
           if (remoteStore.lastSync) {
@@ -695,7 +714,7 @@ const Store = t
       });
     },
 
-    mergeTasks(remoteTasks: any[]) {
+    mergeTasks(remoteTasks: any[], remoteDeletedTaskIds: string[] = []) {
       const localTasks = self.tasks;
       const mergedTasks = new Map();
 
@@ -704,8 +723,13 @@ const Store = t
         mergedTasks.set(task.id, { local: task, remote: null });
       });
 
-      // Index remote tasks by ID
+      // Index remote tasks by ID, but skip deleted ones
       remoteTasks.forEach((remoteTask) => {
+        // Skip tasks that were deleted locally
+        if (self.sync.deletedTaskIds.includes(remoteTask.id)) {
+          return;
+        }
+        
         const existing = mergedTasks.get(remoteTask.id);
         if (existing) {
           existing.remote = remoteTask;
@@ -714,41 +738,67 @@ const Store = t
         }
       });
 
+      // Remove tasks that were deleted remotely
+      remoteDeletedTaskIds.forEach((deletedId) => {
+        const existing = mergedTasks.get(deletedId);
+        if (existing && existing.local && !existing.remote) {
+          // This task exists locally but was deleted remotely
+          const taskIndex = self.tasks.findIndex(task => task.id === deletedId);
+          if (taskIndex !== -1) {
+            self.tasks.splice(taskIndex, 1);
+          }
+          mergedTasks.delete(deletedId);
+        }
+      });
+
       // Process merges
-      mergedTasks.forEach(({ local, remote }, taskId) => {
+      mergedTasks.forEach(({ local, remote }) => {
         if (local && remote) {
           // Both exist - merge with conflict resolution
           this.mergeTask(local, remote);
         } else if (remote && !local) {
           // Only remote exists - add it
           self.tasks.push(remote);
+        } else if (local && !remote) {
+          // Only local exists - check if it should be deleted
+          this.handleLocalOnlyTask(local);
         }
-        // If only local exists, keep it (no action needed)
       });
     },
 
     mergeTask(localTask: any, remoteTask: any) {
-      // Simple conflict resolution: prefer the most recently modified
-      const localModified =
-        localTask.lastCompletedAt || localTask.createdAt || new Date(0);
-      const remoteModified =
-        remoteTask.lastCompletedAt || remoteTask.createdAt || new Date(0);
-
-      // For testing purposes, if remote has a newer timestamp, update local
-      if (remoteModified > localModified) {
-        // Remote is newer - update local task properties (excluding id)
-        localTask.expression = remoteTask.expression;
-        if (remoteTask.lastCompletedAt) {
-          // Convert Date to ISO string for MST DateTime type
-          localTask.lastCompletedAt = remoteTask.lastCompletedAt.toISOString();
-        }
-        if (remoteTask.createdAt) {
-          // Convert Date to ISO string for MST DateTime type
-          localTask.createdAt = remoteTask.createdAt.toISOString();
-        }
-        // Copy other properties as needed
+      // For syncing purposes, always prefer remote version as source of truth
+      // Update local task properties (excluding id)
+      localTask.expression = remoteTask.expression;
+      if (remoteTask.lastCompletedAt) {
+        // Convert to ISO string for MST DateTime type
+        localTask.lastCompletedAt = remoteTask.lastCompletedAt.toISOString ? remoteTask.lastCompletedAt.toISOString() : remoteTask.lastCompletedAt;
       }
-      // If local is newer or equal, keep local (no action needed)
+      if (remoteTask.createdAt) {
+        // Convert to ISO string for MST DateTime type
+        localTask.createdAt = remoteTask.createdAt.toISOString ? remoteTask.createdAt.toISOString() : remoteTask.createdAt;
+      }
+      // Copy other properties as needed
+    },
+
+    handleLocalOnlyTask(localTask: any) {
+      // Check if this local task should be deleted (was deleted remotely)
+      const lastSync = self.webdav.lastSync;
+      if (!lastSync) {
+        // No sync history - keep the task (it's a new local task)
+        return;
+      }
+
+      const taskCreatedAt = new Date(localTask.createdAt);
+      if (taskCreatedAt < lastSync) {
+        // Task was created before last sync but doesn't exist remotely
+        // This means it was deleted remotely, so remove it locally
+        const taskIndex = self.tasks.findIndex(task => task.id === localTask.id);
+        if (taskIndex !== -1) {
+          self.tasks.splice(taskIndex, 1);
+        }
+      }
+      // If task was created after last sync, it's a new local task - keep it
     },
 
     mergeSettings(remoteStore: any) {

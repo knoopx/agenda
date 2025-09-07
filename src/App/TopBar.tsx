@@ -61,7 +61,7 @@ const TopBar = observer(() => {
   return (
     <div className="w-full grid lg:grid-cols-2 lg:gap-4 xl:gap-8 mb-2 mx-auto p-2">
       <Input />
-      <div className="hidden flex-auto lg:flex items-center justify-between">
+       <div className="hidden flex-auto items-center justify-between lg:flex">
         <Time />
         <Date />
         <div className="flex items-center">

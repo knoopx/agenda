@@ -1,13 +1,12 @@
 import { observer } from "mobx-react";
 import { forwardRef, Ref, useRef, useEffect, useCallback } from "react";
-import { applySnapshot, getSnapshot } from "mobx-state-tree";
 
 import {
   useEnterKey,
-  useEscapeKey,
   useFocus,
   useStore,
   useEventListener,
+  useEscapeKey,
 } from "../../hooks";
 
 import { TimeLabel } from "./TimeLabel";
@@ -29,6 +28,7 @@ export const TaskContent = observer(
       isSelected: boolean;
       onComplete: () => void;
       onSubmit?: () => void;
+      onCancel?: () => void;
       index?: number;
     }
   >(
@@ -40,10 +40,11 @@ export const TaskContent = observer(
         isSelected,
         onComplete,
         onSubmit,
+        onCancel,
         index,
         ...props
       },
-      ref
+      ref,
     ) => {
       const store = useStore();
 
@@ -97,6 +98,7 @@ export const TaskContent = observer(
               isFocused={isFocused}
               isSelected={isSelected}
               onSubmit={onSubmit}
+              onCancel={onCancel}
             />
 
             {!isFocused &&
@@ -113,7 +115,7 @@ export const TaskContent = observer(
                     <IconMdiLink />
                     <span>{domain}</span>
                   </a>
-                ) : null
+                ) : null,
               )}
 
             {task.nextAt && (
@@ -145,8 +147,8 @@ export const TaskContent = observer(
           </td>
         </tr>
       );
-    }
-  )
+    },
+  ),
 );
 
 const Task = observer(
@@ -174,8 +176,6 @@ const Task = observer(
     if (isFocused) {
       // Only allow editing if no other task is currently being edited
       if (!store.editingTask) {
-        // Store original snapshot before editing
-        originalSnapshot.current = getSnapshot(task);
         store.setEditingTask(task);
       }
       target = task;
@@ -187,20 +187,20 @@ const Task = observer(
         inputRef.current?.blur();
         store.clearEditingTask();
       },
-      [store]
+      [store],
     );
 
     const onCancel = useCallback(
-      (_e: Event) => {
+      (_e?: Event) => {
         // Restore original task values if we have a stored snapshot
         if (originalSnapshot.current) {
-          applySnapshot(task, originalSnapshot.current);
+          task.update({ expression: originalSnapshot.current.expression });
           originalSnapshot.current = null;
         }
         inputRef.current?.blur();
         store.clearEditingTask();
       },
-      [store]
+      [store, task],
     );
 
     const onComplete = () => {
@@ -211,7 +211,7 @@ const Task = observer(
     };
 
     useEnterKey(inputRef, onSubmit);
-    useEscapeKey(inputRef, onCancel);
+    useEscapeKey(inputRef, onCancel as EventListener, []);
 
     useEventListener(ref, "mouseover", () => {
       store.setHoveredTask(task);
@@ -222,25 +222,31 @@ const Task = observer(
     });
 
     useEventListener(inputRef, "focus", () => {
+      // Store snapshot before any editing happens
+      if (!originalSnapshot.current) {
+        originalSnapshot.current = { expression: task.expression };
+      }
+      
       if (task.ast && !task.isRecurring && task.ast.start) {
         task.setExpression(task.simplifiedExpression);
       }
     });
 
-    return (
-      <TaskContent
-        ref={ref}
-        isFocused={isFocused}
-        isSelected={isSelected}
-        inputRef={inputRef}
-        task={target}
-        onComplete={onComplete}
-        onSubmit={onSubmit}
-        index={index}
-        {...props}
-      />
-    );
-  }
+      return (
+        <TaskContent
+          ref={ref}
+          isFocused={isFocused}
+          isSelected={isSelected}
+          inputRef={inputRef}
+          task={target}
+          onComplete={onComplete}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          index={index}
+          {...props}
+        />
+      );
+  },
 );
 
 export default Task;

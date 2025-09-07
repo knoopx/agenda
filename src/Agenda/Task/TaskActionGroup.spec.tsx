@@ -27,7 +27,7 @@ describe("TaskActionGroup", () => {
     vi.clearAllMocks();
   });
 
-  it("renders container but no buttons for non-recurring tasks", () => {
+  it("renders container with remove button for non-recurring tasks", () => {
     const { container } = render(
       <MockWrapper>
         <TaskActionGroup task={task} />
@@ -43,9 +43,9 @@ describe("TaskActionGroup", () => {
       "space-x-1",
     );
 
-    // Should have no buttons
-    const buttons = screen.queryAllByRole("button");
-    expect(buttons).toHaveLength(0);
+    // Should have one button (remove)
+    const buttons = screen.getAllByRole("button");
+    expect(buttons).toHaveLength(1);
   });
 
   it("renders action buttons for recurring tasks", () => {

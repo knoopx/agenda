@@ -21,16 +21,14 @@ export const TaskActionGroup = observer(
           className,
         )}
       >
-        {task.isRecurring && (
-          <TaskActionButton
-            className={`${isSelected ? "text-base-0D" : ""} hover:text-base-08`}
-            onClick={() => {
-              task.remove();
-            }}
-          >
-            <IconMdiTrashCan />
-          </TaskActionButton>
-        )}
+        <TaskActionButton
+          className={`${isSelected ? "text-base-0D" : ""} hover:text-base-08`}
+          onClick={() => {
+            task.remove();
+          }}
+        >
+          <IconMdiTrashCan />
+        </TaskActionButton>
 
         {task.isRecurring && (
           <TaskActionButton

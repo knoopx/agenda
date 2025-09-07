@@ -8,7 +8,7 @@ export function useGlobalKeyboard() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         document.activeElement?.tagName === "INPUT" &&
-        document.activeElement !== store.mainInputRef
+        document.activeElement === store.mainInputRef
       ) {
         return;
       }

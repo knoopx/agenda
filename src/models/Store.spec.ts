@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { DateTime, Settings } from "luxon";
 import { expect, it, vi, describe, beforeEach, afterEach } from "vitest";
-import { clone } from "mobx-state-tree";
+import { clone, Instance } from "mobx-state-tree";
 
 import { Store, Task } from ".";
 
@@ -716,6 +716,49 @@ describe("WebDAV Sync Operations", () => {
     expect(task3?.expression).toBe("new remote task");
   });
 
+  it("should handle remote deletions during merge", () => {
+    const lastSyncTime = new Date("2024-01-01T12:00:00Z");
+    const store = Store.create({
+      tasks: [
+        {
+          id: "task1",
+          expression: "old local task",
+          createdAt: "2024-01-01T10:00:00Z", // Created before last sync
+        },
+        {
+          id: "task2",
+          expression: "new local task",
+          createdAt: "2024-01-01T14:00:00Z", // Created after last sync
+        },
+      ],
+      webdav: {
+        lastSync: lastSyncTime,
+      },
+    });
+
+    // Remote data has only task2 (task1 was deleted remotely)
+    const remoteTasks = [
+      {
+        id: "task2",
+        expression: "updated new local task",
+        createdAt: "2024-01-01T14:00:00Z",
+      },
+    ];
+
+    store.mergeTasks(remoteTasks);
+
+    // Should have only 1 task (task1 should be deleted, task2 should remain)
+    expect(store.tasks.length).toBe(1);
+
+    // Task1 should be removed (was deleted remotely)
+    const task1 = store.tasks.find((t) => t.id === "task1");
+    expect(task1).toBeUndefined();
+
+    // Task2 should remain (new local task)
+    const task2 = store.tasks.find((t) => t.id === "task2");
+    expect(task2?.expression).toBe("updated new local task");
+  });
+
   it("should merge settings preferring local values", () => {
     const store = Store.create({
       locale: "en-US",
@@ -827,5 +870,148 @@ describe("WebDAV Sync Operations", () => {
 
     expect(result).toBe(false);
     expect(webdavService.testConnection).not.toHaveBeenCalled();
+  });
+});
+
+describe("Deletion Tracking", () => {
+  let store: Instance<typeof Store>;
+
+  beforeEach(() => {
+    store = Store.create({
+      webdav: {
+        url: "https://example.com/webdav",
+        username: "test",
+        password: "test",
+      },
+    });
+  });
+
+  it("should track deleted task IDs when removing tasks", () => {
+    const task = store.addTask({ expression: "Test task" });
+    expect(task).toBeDefined();
+    const taskId = task!.id;
+    
+    expect(store.sync.deletedTaskIds).toHaveLength(0);
+    
+    store.removeTask(task!);
+    
+    expect(store.sync.deletedTaskIds).toContain(taskId);
+    expect(store.sync.deletedTaskIds).toHaveLength(1);
+  });
+
+  it("should not duplicate deleted task IDs", () => {
+    const task1 = store.addTask({ expression: "Test task 1" });
+    const task2 = store.addTask({ expression: "Test task 2" });
+    expect(task1).toBeDefined();
+    expect(task2).toBeDefined();
+    
+    const task1Id = task1!.id; // Capture ID before removal
+    
+    store.removeTask(task1!);
+    store.removeTask(task2!);
+    store.sync.addDeletedTaskId(task1Id); // Try to add duplicate
+    
+    expect(store.sync.deletedTaskIds).toHaveLength(2);
+    expect(store.sync.deletedTaskIds.filter((id: string) => id === task1Id)).toHaveLength(1);
+  });
+
+  it("should clear deleted task IDs after successful sync", () => {
+    const task = store.addTask({ expression: "Test task" });
+    expect(task).toBeDefined();
+    store.removeTask(task!);
+    
+    expect(store.sync.deletedTaskIds).toHaveLength(1);
+    
+    store.sync.markSynced();
+    
+    expect(store.sync.deletedTaskIds).toHaveLength(0);
+  });
+
+  it("should include deleted task IDs in sync data", async () => {
+    const task = store.addTask({ expression: "Test task" });
+    expect(task).toBeDefined();
+    const taskId = task!.id; // Capture ID before removal
+    store.removeTask(task!);
+    
+    (webdavService.uploadData as any).mockResolvedValue(undefined);
+    
+    await store.syncToWebDAV();
+    
+    const uploadCall = (webdavService.uploadData as any).mock.calls[0];
+    const syncData = JSON.parse(uploadCall[0]);
+    
+    expect(syncData.deletedTaskIds).toContain(taskId);
+  });
+
+  it("should not re-add tasks that were deleted locally during merge", () => {
+    const task1 = store.addTask({ expression: "Local task" });
+    expect(task1).toBeDefined();
+    const task1Id = task1!.id; // Capture ID before removal
+    const task2Id = "remote-task-id";
+    
+    // Delete local task
+    store.removeTask(task1!);
+    
+    // Simulate remote data that includes the deleted task and a new task
+    const remoteTasks = [
+      { id: task1Id, expression: "Deleted locally" },
+      { id: task2Id, expression: "New remote task" }
+    ];
+    
+    store.mergeTasks(remoteTasks, []);
+    
+    // Should not re-add the locally deleted task
+    expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
+    // Should add the new remote task
+    expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();
+  });
+
+  it("should remove tasks that were deleted remotely during merge", () => {
+    const task1 = store.addTask({ expression: "Task to be deleted remotely" });
+    const task2 = store.addTask({ expression: "Task to keep" });
+    expect(task1).toBeDefined();
+    expect(task2).toBeDefined();
+    
+    const task1Id = task1!.id; // Capture IDs before potential removal
+    const task2Id = task2!.id;
+    
+    // Simulate remote data that deleted task1 but kept task2
+    const remoteTasks = [
+      { id: task2Id, expression: task2!.expression }
+    ];
+    const remoteDeletedTaskIds = [task1Id];
+    
+    store.mergeTasks(remoteTasks, remoteDeletedTaskIds);
+    
+    // Task1 should be removed, task2 should remain
+    expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
+    expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();
+  });
+
+  it("should handle sync from WebDAV with deleted task IDs", async () => {
+    const task1 = store.addTask({ expression: "Task 1" });
+    const task2 = store.addTask({ expression: "Task 2" });
+    expect(task1).toBeDefined();
+    expect(task2).toBeDefined();
+    
+    const task1Id = task1!.id; // Capture IDs before potential removal
+    const task2Id = task2!.id;
+    
+    // Mock remote data where task1 was deleted
+    const remoteData = JSON.stringify({
+      tasks: [
+        { id: task2Id, expression: task2!.expression }
+      ],
+      deletedTaskIds: [task1Id],
+      lastSync: new Date().toISOString()
+    });
+    
+    (webdavService.downloadData as any).mockResolvedValue(remoteData);
+    
+    await store.syncFromWebDAV();
+    
+    // Task1 should be removed, task2 should remain
+    expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
+    expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();
   });
 });

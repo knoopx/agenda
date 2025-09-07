@@ -62,7 +62,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Initially not in edit mode
       expect(store.editingTask).toBeUndefined();
@@ -83,10 +83,10 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
-      // Initially shows subject
-      expect(input).toHaveValue("Test task");
+       // Initially shows subject
+       expect(input).toHaveValue("Test task");
 
       // Focus the input using fireEvent to ensure focus event is triggered
       fireEvent.focus(input);
@@ -109,7 +109,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -131,7 +131,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -156,7 +156,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -185,7 +185,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -215,7 +215,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -244,7 +244,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -256,8 +256,8 @@ describe("Task Editing Functionality", () => {
       // Press Escape to cancel
       await user.type(input, "{escape}");
 
-      // Input should show original subject (not focused anymore)
-      expect(input).toHaveValue("Test task");
+       // Input should show original subject (not focused anymore)
+       expect(input).toHaveValue("Test task");
     });
   });
 
@@ -275,8 +275,8 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input1 = screen.getByDisplayValue("Test task");
-      const input2 = screen.getByDisplayValue("Second task");
+       const input1 = screen.getByDisplayValue("Test task");
+       const input2 = screen.getByDisplayValue("Second task");
 
       // Start editing first task
       await user.click(input1);
@@ -300,7 +300,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -324,7 +324,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -354,7 +354,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
 
       // Enter edit mode
       await user.click(input);
@@ -382,7 +382,7 @@ describe("Task Editing Functionality", () => {
         </MockWrapper>,
       );
 
-      const input = screen.getByDisplayValue("Test task");
+       const input = screen.getByDisplayValue("Test task");
       const checkbox = screen.getByRole("checkbox");
 
       // Enter edit mode

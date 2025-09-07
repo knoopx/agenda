@@ -43,10 +43,10 @@ _ "space"
 	= [ ]+ { }
 
 URL
-	= "http"i "s"? "://" (!_) . (!(_ / ContextOrTagExpr / NaturalTimeExpr) .)* { return text() }
+	= "http"i "s"? "://" (!(_ (ContextOrTagExpr / NaturalTimeExpr)) !_ .)+ { return text() }
 
 Subject
-	= head:Word tail:(_ !ContextOrTagExpr !NaturalTimeExpr (Word / URL))* {
+	= head:(Word / URL) tail:(_ !ContextOrTagExpr !NaturalTimeExpr (Word / URL))* {
 		const parts = [head, ...tail.map(t => t[3] || t[1])];
 		const subjectParts = [];
 		const urls = [];
@@ -59,7 +59,7 @@ Subject
 				}
 			}
 		}
-		return { subject: subjectParts.join(' ').trim() || text(), urls };
+		return { subject: subjectParts.join(' ').trim(), urls };
 	}
 
 ContextOrTagExpr

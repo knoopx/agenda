@@ -252,3 +252,35 @@ it("should handle emojis with valid tags", () => {
   expect(Array.isArray(emojis)).toBe(true);
   // Note: emoji generation depends on the emoji-from-word library
 });
+
+it("should strip URLs from subject display", () => {
+  const task = createTask("#tag https://example.com");
+  expect(task.subject).toBe(""); // Grammar now correctly separates URLs from subject
+  expect(task.subjectWithoutUrls).toBe(""); // URLs stripped for display
+  expect(task.urls).toEqual(["https://example.com"]);
+  expect(task.tags).toEqual(["tag"]);
+});
+
+it("should strip URLs from subject with other text", () => {
+  const task = createTask("#work review https://github.com/user/repo/pull/123");
+  expect(task.subject).toBe("review"); // Grammar already separates URLs from text
+  expect(task.subjectWithoutUrls).toBe("review"); // Same since URL was already separated
+  expect(task.urls).toEqual(["https://github.com/user/repo/pull/123"]);
+  expect(task.tags).toEqual(["work"]);
+});
+
+it("strips URLs from subject display for complex Amazon URLs", () => {
+  const task = createTask("#shopping buy headphones https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1");
+  
+  expect(task.subject).toBe("buy headphones");
+  expect(task.subjectWithoutUrls).toBe("buy headphones");
+  expect(task.urls).toEqual(["https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1"]);
+  expect(task.tags).toEqual(["shopping"]);
+});
+
+it("should handle multiple URLs in subject", () => {
+  const task = createTask("task https://site1.com and https://site2.com links");
+  expect(task.subject).toBe("task and links"); // Grammar already separates URLs
+  expect(task.subjectWithoutUrls).toBe("task and links"); // Same since URLs were already separated
+  expect(task.urls).toEqual(["https://site1.com", "https://site2.com"]);
+});
