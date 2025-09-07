@@ -13,7 +13,7 @@ export const DurationLabel = observer(
       <Label
         position="right"
         icon={IconMdiTimerOutline}
-        className={classNames(className, "group-focus-within:text-base-0D")}
+        className={classNames(className)}
       >
         {formatDuration(duration)}
       </Label>

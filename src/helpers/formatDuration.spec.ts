@@ -20,7 +20,7 @@ describe("formatDuration", () => {
       minutes: 30,
       seconds: 45,
     });
-    expect(formatDuration(duration)).toBe("1d 2h 30m 45s");
+    expect(formatDuration(duration)).toBe("1d 2h");
   });
 
   it("handles zero values", () => {
@@ -31,6 +31,6 @@ describe("formatDuration", () => {
   it("rounds seconds with floating point precision", () => {
     // Create a duration that would result in floating point seconds
     const duration = Duration.fromMillis(22 * 60 * 60 * 1000 + 30 * 60 * 1000 + 26.103 * 1000);
-    expect(formatDuration(duration)).toBe("22h 30m 26s");
+    expect(formatDuration(duration)).toBe("22h 30m");
   });
 });

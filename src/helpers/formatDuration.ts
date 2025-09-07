@@ -23,6 +23,7 @@ export const formatDuration = (duration: Duration): string => {
     if (formattedValue > 0) {
       parts.push(`${formattedValue}${unit}`);
     }
+    if (parts.length >= 2) break; // Limit to at most 2 units
   }
 
   return parts.length > 0 ? parts.join(" ") : "0s";

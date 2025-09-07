@@ -66,7 +66,7 @@ export const TaskContent = observer(
               <div className="flex flex-col items-end space-y-1">
                 <DurationLabel
                   duration={task.lastCompletedAt.diff(task.createdAt)}
-                  className="text-xs text-base-0B font-medium"
+                  className="text-xs font-medium"
                 />
                 {task.isRecurring &&
                   task.completionStats &&
