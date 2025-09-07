@@ -40,7 +40,7 @@ export const Select = ({
   return (
     <select
       className={classNames(
-        "bg-base-01 rounded px-2 py-1 border-none appearance-none outline-none",
+        "bg-base-01 dark:bg-base-01 rounded px-2 py-1 border-none appearance-none outline-none",
         className,
       )}
       {...props}
@@ -87,8 +87,8 @@ const Settings = observer(() => {
   };
 
   return (
-    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-base-01 border border-base-04 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-      <Popover.Arrow className="fill-base-04" />
+    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-base-01 dark:bg-base-01 border border-base-04 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+      <Popover.Arrow className="fill-base-04 dark:fill-base-04" />
 
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
@@ -145,7 +145,7 @@ const Settings = observer(() => {
         <label className="inline-flex items-center space-x-2 cursor-pointer">
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 hover:border-base-0D appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold checked:after:text-xs"
+            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 dark:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 hover:border-base-0D appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold checked:after:text-xs"
             checked={store.displayEmoji}
             onChange={() => store.toggleDisplayEmoji()}
           />
@@ -218,7 +218,7 @@ const Settings = observer(() => {
                   </label>
                   <input
                     type="url"
-                    className="w-full bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
+                    className="w-full bg-base-01 dark:bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
                     placeholder="https://example.com/webdav/"
                     value={store.webdav.url}
                     onChange={(e) => store.webdav.setUrl(e.target.value)}
@@ -232,7 +232,7 @@ const Settings = observer(() => {
                     </label>
                     <input
                       type="text"
-                      className="w-full bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
+                      className="w-full bg-base-01 dark:bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
                       placeholder="Username"
                       value={store.webdav.username}
                       onChange={(e) => store.webdav.setUsername(e.target.value)}
@@ -244,7 +244,7 @@ const Settings = observer(() => {
                     </label>
                     <input
                       type="password"
-                      className="w-full bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
+                      className="w-full bg-base-01 dark:bg-base-01 rounded px-3 py-2 border border-base-03 outline-none focus:border-base-0D text-sm"
                       placeholder="Password"
                       value={store.webdav.password}
                       onChange={(e) => store.webdav.setPassword(e.target.value)}

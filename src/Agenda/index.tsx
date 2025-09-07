@@ -12,7 +12,7 @@ export const Agenda = observer(() => {
     return (
       <div className="flex flex-auto items-center justify-center py-16">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-base-02 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-base-02 dark:bg-base-02 flex items-center justify-center">
             <IconMdiPlaylistPlus className="w-8 h-8 text-base-04" />
           </div>
           <h1 className="text-base-04 text-xl font-medium">No tasks yet</h1>

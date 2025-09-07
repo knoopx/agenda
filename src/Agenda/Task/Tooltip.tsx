@@ -27,12 +27,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
           side={side}
           align={align}
           className={classNames(
-            "z-50 px-2 py-1 bg-base-01 border border-base-04 rounded-md text-base-05 text-xs shadow-lg select-none",
+            "z-50 px-2 py-1 bg-base-01 dark:bg-base-01 border border-base-04 rounded-md text-base-05 text-xs shadow-lg select-none",
             className,
           )}
         >
           {content}
-          <RadixTooltip.Arrow className="fill-base-04" />
+          <RadixTooltip.Arrow className="fill-base-04 dark:fill-base-04" />
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     </RadixTooltip.Root>

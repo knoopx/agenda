@@ -57,11 +57,10 @@ describe("TopBar Component", () => {
     expect(container).toHaveClass("p-2");
   });
 
-
-
   it("renders mobile settings button with correct classes", () => {
     renderTopBar();
-    const mobileSettings = screen.getByTestId("input-component").parentElement?.nextElementSibling;
+    const mobileSettings =
+      screen.getByTestId("input-component").parentElement?.nextElementSibling;
     expect(mobileSettings).toHaveClass("flex");
     expect(mobileSettings).toHaveClass("items-center");
     expect(mobileSettings).toHaveClass("ml-6");
@@ -99,8 +98,8 @@ describe("TopBar Component", () => {
     renderTopBar();
     // Look for the PopoverTrigger button in desktop view
     const popoverTriggers = screen.getAllByRole("button");
-    const desktopTrigger = popoverTriggers.find(trigger =>
-      trigger.closest(".hidden.lg\\:flex")
+    const desktopTrigger = popoverTriggers.find((trigger) =>
+      trigger.closest(".hidden.lg\\:flex"),
     );
     expect(desktopTrigger).toHaveAttribute("aria-haspopup", "dialog");
     const desktopSettings = screen.getAllByTestId("settings-component")[1]; // Desktop is the second one
@@ -127,7 +126,7 @@ describe("TopBar Component", () => {
     expect(cogIcons[1]).toHaveClass("p-2");
 
     // Common classes for both
-    cogIcons.forEach(cogIcon => {
+    cogIcons.forEach((cogIcon) => {
       expect(cogIcon).toHaveClass("flex-shrink-0");
       expect(cogIcon).toHaveClass("flex");
       expect(cogIcon).toHaveClass("items-center");
@@ -142,7 +141,7 @@ describe("TopBar Component", () => {
     renderTopBar();
     const cogIcons = screen.getAllByTestId("cog-icon");
 
-    cogIcons.forEach(cogIcon => {
+    cogIcons.forEach((cogIcon) => {
       expect(cogIcon).toHaveClass("hover:text-base-05");
       expect(cogIcon).toHaveClass("dark:hover:text-base-05");
     });

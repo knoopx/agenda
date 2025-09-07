@@ -59,7 +59,10 @@ describe("DurationLabel", () => {
     render(<DurationLabel duration={duration} className="custom-class" />);
 
     const label = screen.getByText("0y 0m 0w 0d 0h 0m 30s").parentElement;
-    expect(label).toHaveClass("custom-class", "group-focus-within:text-base-0D");
+    expect(label).toHaveClass(
+      "custom-class",
+      "group-focus-within:text-base-0D",
+    );
   });
 
   it("positions icon on the right by default", () => {

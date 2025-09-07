@@ -53,7 +53,7 @@ export const TaskContent = observer(
           data-task-index={index}
           className={`h-14 align-middle border-b dark:border-b-base-03 last-of-type:border-0 group ${
             task.isCompleted ? "text-base-03" : ""
-          } focus-within:bg-base-02`}
+          } focus-within:bg-base-02 dark:focus-within:bg-base-02`}
         >
           <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
             {task.nextAt && (
@@ -63,10 +63,10 @@ export const TaskContent = observer(
               <DurationLabel duration={task.duration} className="text-xs" />
             )}
             {task.isCompleted && task.createdAt && task.lastCompletedAt && (
-               <DurationLabel
-                 duration={task.lastCompletedAt.diff(task.createdAt)}
-                 className="text-xs text-base-0B"
-               />
+              <DurationLabel
+                duration={task.lastCompletedAt.diff(task.createdAt)}
+                className="text-xs text-base-0B"
+              />
             )}
           </td>
 
@@ -123,7 +123,7 @@ export const TaskContent = observer(
             <input
               type="checkbox"
               tabIndex={-1}
-              className="w-5 h-5 rounded border-2 border-base-04 bg-base-01 group-focus-within:border-base-0D group-focus-within:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold"
+              className="w-5 h-5 rounded border-2 border-base-04 bg-base-01 dark:bg-base-01 group-focus-within:border-base-0D group-focus-within:bg-base-01 dark:group-focus-within:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold"
               checked={task.isCompleted}
               onChange={onComplete}
             />
@@ -186,9 +186,9 @@ const Task = observer(
     const onCancel = useCallback(
       (e?: Event) => {
         const input = e?.target as HTMLInputElement;
-        const value = input?.value || '';
+        const value = input?.value || "";
         // Don't cancel if completions might be showing (input contains @ or #)
-        if (value.includes('@') || value.includes('#')) {
+        if (value.includes("@") || value.includes("#")) {
           return;
         }
         // Restore original task values if we have a stored snapshot

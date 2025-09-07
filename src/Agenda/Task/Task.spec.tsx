@@ -95,7 +95,7 @@ describe("Task Component", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
+        </MockWrapper>,
       );
       // Duration should be 2h 30m
       expect(screen.getByText(/2h.*30m/)).toBeInTheDocument();

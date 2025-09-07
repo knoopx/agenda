@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { DateTime, Settings } from "luxon";
 import { Store } from "../models";
 import { StoreContext } from "../hooks/useStore";
+import { now } from "../helpers";
 import Day from "./Day";
 
 // Global store variable for tests
@@ -29,7 +30,10 @@ vi.mock("../Agenda/Task/TimeLabel", () => ({
   ),
 }));
 
-// Don't mock helpers - use actual implementation
+// Mock the now helper function
+vi.mock("../helpers", () => ({
+  now: vi.fn(() => DateTime.local(2024, 1, 15)), // Default to a date in January
+}));
 
 const renderDay = (start: DateTime, isSameMonth = true) => {
   return render(
@@ -71,8 +75,12 @@ describe("Day Component", () => {
   });
 
   it("applies today styling when date is today", () => {
-    // Use current date for today test
-    const today = DateTime.now();
+    // Use a specific date for today test
+    const today = DateTime.local(2024, 1, 15);
+
+    // Mock the now function to return the same date
+    (now as any).mockReturnValue(today);
+
     renderDay(today);
 
     const trigger = document.querySelector("a");
@@ -243,5 +251,24 @@ describe("Day Component", () => {
     // Check that the hover card trigger is present
     const hoverCardTrigger = document.querySelector("a");
     expect(hoverCardTrigger).toBeInTheDocument();
+  });
+
+  it("renders indicators for today even when not in same month", () => {
+    // Use a date in a different month than the store's input start month
+    const todayDifferentMonth = DateTime.local(2024, 2, 15); // February
+    const mockOccurrences = [
+      { task: { id: "1", context: "work" } },
+      { task: { id: "2", context: "home" } },
+    ];
+
+    // Mock the now function to return our test date
+    (now as any).mockReturnValue(todayDifferentMonth);
+
+    store.getOccurrencesAtDay.mockReturnValue(mockOccurrences);
+
+    renderDay(todayDifferentMonth, false); // isSameMonth = false
+
+    const indicators = screen.getAllByTestId("indicator");
+    expect(indicators).toHaveLength(2); // Should show indicators even when not same month
   });
 });

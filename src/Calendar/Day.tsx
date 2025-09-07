@@ -50,45 +50,44 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
           {
             // "font-medium text-base-05": !isToday && isSameMonth,
             // "text-base-0D": !isSameMonth,
-            "bg-base-01": isSameMonth && !isToday,
-            "bg-base-03":
+            "bg-base-01 dark:bg-base-01": isSameMonth && !isToday,
+            "bg-base-03 dark:bg-base-03":
               isSameMonth && shouldHighlight && !isToday,
-            "bg-base-03 font-bold ring-3 ring-base-0D":
-              isToday,
+            "bg-base-03 dark:bg-base-03 font-bold ring-3 ring-base-0D": isToday,
           },
         )}
       >
-        {isSameMonth && (
-          <div className="flex flex-col h-full justify-between">
-            <div className="text-left font-medium">{start.day}</div>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {contexts.slice(0, 6).map((context, index) => (
-                <Indicator
-                  key={`${context}-${index}`}
-                  color={store.getContextColor(context)}
-                  size={indicatorSize}
-                  className={classNames(indicatorClassName, "shadow-sm")}
-                />
-              ))}
-              {contexts.length > 6 && (
-                <div className="text-xs text-base-04 ml-1">
-                  +{contexts.length - 6}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {!isSameMonth && (
-          <div className="text-center opacity-30">{start.day}</div>
-        )}
+         {(isSameMonth || isToday) && (
+           <div className="flex flex-col h-full justify-between">
+             <div className="text-left font-medium">{start.day}</div>
+             <div className="flex flex-wrap gap-1 mt-1">
+               {contexts.slice(0, 6).map((context, index) => (
+                 <Indicator
+                   key={`${context}-${index}`}
+                   color={store.getContextColor(context)}
+                   size={indicatorSize}
+                   className={classNames(indicatorClassName, "shadow-sm")}
+                 />
+               ))}
+               {contexts.length > 6 && (
+                 <div className="text-xs text-base-04 ml-1">
+                   +{contexts.length - 6}
+                 </div>
+               )}
+             </div>
+           </div>
+         )}
+         {!isSameMonth && !isToday && (
+           <div className="text-center opacity-30">{start.day}</div>
+         )}
       </HoverCard.Trigger>
 
       {isSameMonth && occurrences.length > 0 && (
         <HoverCard.Content
           side="top"
-          className="max-w-xs px-4 py-3 text-xs bg-base-01 border border-base-04 rounded-md shadow-lg"
+          className="max-w-xs px-4 py-3 text-xs bg-base-01 dark:bg-base-01 border border-base-04 rounded-md shadow-lg"
         >
-          <HoverCard.Arrow className="fill-base-04" />
+          <HoverCard.Arrow className="fill-base-04 dark:fill-base-04" />
           <div className="space-y-2">
             <h4 className="font-medium text-base-05 mb-2">
               {occurrences.length} task{occurrences.length > 1 ? "s" : ""} on{" "}

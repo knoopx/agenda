@@ -183,15 +183,15 @@ const Input = observer(() => {
         ) : null}
       </div>
 
-      <div
-        className={classNames(
-          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01 dark:bg-base-02 rounded-lg backdrop-blur-sm",
-          {
-            "border-base-08 ring-2 ring-base-08":
-              !input.isBlank && !input.isValid,
-          },
-        )}
-      >
+        <div
+          className={classNames(
+            "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01 dark:bg-base-02 rounded-lg backdrop-blur-sm focus-within:ring-2 focus-within:ring-base-0D",
+            {
+              "border-base-08 ring-2 ring-base-08":
+                !input.isBlank && !input.isValid,
+            },
+          )}
+        >
         {input.context && (
           <Indicator
             size="0.5rem"

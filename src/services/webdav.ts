@@ -77,9 +77,7 @@ export class WebDAVService {
     }
   }
 
-  async downloadData(
-    filename: string = ".agenda/tasks.json",
-  ): Promise<string> {
+  async downloadData(filename: string = ".agenda/tasks.json"): Promise<string> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
     }
@@ -142,9 +140,7 @@ export class WebDAVService {
     }
   }
 
-  async fileExists(
-    filename: string = ".agenda/tasks.json",
-  ): Promise<boolean> {
+  async fileExists(filename: string = ".agenda/tasks.json"): Promise<boolean> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
     }

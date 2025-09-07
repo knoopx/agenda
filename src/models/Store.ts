@@ -807,8 +807,12 @@ const Store = t
 
     mergeTask(localTask: any, remoteTask: any) {
       // Compare timestamps to determine which version is newer
-      const localModified = new Date(localTask.lastModified || localTask.createdAt);
-      const remoteModified = new Date(remoteTask.lastModified || remoteTask.createdAt);
+      const localModified = new Date(
+        localTask.lastModified || localTask.createdAt,
+      );
+      const remoteModified = new Date(
+        remoteTask.lastModified || remoteTask.createdAt,
+      );
 
       // If local is newer, keep local version
       if (localModified > remoteModified) {

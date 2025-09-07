@@ -20,7 +20,7 @@ export const CompletionCount = observer(
 
     return (
       <span
-        className={`text-xs text-base-04 bg-base-02 group-focus-within:text-base-0D group-focus-within:bg-base-0D px-2 py-1 rounded-full ${className}`}
+        className={`text-xs text-base-04 bg-base-02 dark:bg-base-02 group-focus-within:text-base-0D group-focus-within:bg-base-0D dark:group-focus-within:bg-base-0D px-2 py-1 rounded-full ${className}`}
       >
         {total}
       </span>

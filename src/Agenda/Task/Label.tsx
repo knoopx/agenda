@@ -17,9 +17,13 @@ export const Label = ({
         className,
       )}
     >
-      {Icon && position === "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
+      {Icon && position === "left" && (
+        <Icon className="w-4 h-4 flex-shrink-0" />
+      )}
       <span>{children}</span>
-      {Icon && position !== "left" && <Icon className="w-4 h-4 flex-shrink-0" />}
+      {Icon && position !== "left" && (
+        <Icon className="w-4 h-4 flex-shrink-0" />
+      )}
     </span>
   );
 };

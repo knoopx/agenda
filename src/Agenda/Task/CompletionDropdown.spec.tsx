@@ -217,7 +217,12 @@ describe("CompletionDropdown Component", () => {
     const items = screen.getAllByText(/work|home|urgent|personal/);
     items.forEach((item) => {
       const container = item.closest("div");
-      expect(container).toHaveClass("px-3", "py-2", "cursor-pointer", "text-sm");
+      expect(container).toHaveClass(
+        "px-3",
+        "py-2",
+        "cursor-pointer",
+        "text-sm",
+      );
     });
   });
 

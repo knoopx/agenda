@@ -55,11 +55,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
         expect(
           screen.getByText((content, element) => {
@@ -80,11 +82,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("urgent") &&
+                item.querySelector("span")?.textContent === "#",
+            );
+          })(),
         ).toBeInTheDocument();
         expect(
           screen.getByText((content, element) => {
@@ -105,11 +109,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
     });
@@ -151,11 +157,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -180,11 +188,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("urgent") &&
+                item.querySelector("span")?.textContent === "#",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -209,11 +219,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -255,11 +267,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -283,11 +297,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("urgent") &&
+                item.querySelector("span")?.textContent === "#",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -311,11 +327,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -343,11 +361,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -375,11 +395,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -399,11 +421,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -428,11 +452,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 
@@ -480,11 +506,13 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await waitFor(() => {
         expect(
           (() => {
-  const items = screen.getAllByRole("listitem");
-  return items.find(item =>
-    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
-  );
-})(),
+            const items = screen.getAllByRole("listitem");
+            return items.find(
+              (item) =>
+                item.textContent?.includes("work") &&
+                item.querySelector("span")?.textContent === "@",
+            );
+          })(),
         ).toBeInTheDocument();
       });
 

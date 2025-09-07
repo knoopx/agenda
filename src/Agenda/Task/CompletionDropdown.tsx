@@ -59,7 +59,7 @@ export const CompletionDropdown = observer(
     return (
       <>
         <div
-          className="absolute z-50 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-base-04"
+          className="absolute z-50 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-base-04 dark:border-b-base-04"
           style={{
             top: position.top - 4,
             left: position.left + 10,
@@ -67,29 +67,29 @@ export const CompletionDropdown = observer(
         />
         <div
           ref={dropdownRef}
-          className="absolute z-50 bg-base-01 border border-base-04 rounded-md shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-50 bg-base-01 dark:bg-base-01 border border-base-04 rounded-md shadow-lg max-h-48 overflow-y-auto"
           style={{
             top: position.top,
             left: position.left,
             minWidth: "120px",
           }}
         >
-        {items.map((item, index) => (
-          <div
-            key={`${item.type}${item.value}`}
-            role="listitem"
-            className={classNames(
-              "px-3 py-2 cursor-pointer text-sm",
-              {
-                "bg-base-03 text-base-05 font-bold": index === selectedIndex,
-              },
-            )}
-            onClick={() => onSelect(item)}
-          >
-            <span className={"text-base-04 font-medium mr-0.5"}>{item.type}</span>
-            {item.value}
-          </div>
-        ))}
+          {items.map((item, index) => (
+            <div
+              key={`${item.type}${item.value}`}
+              role="listitem"
+              className={classNames("px-3 py-2 cursor-pointer text-sm", {
+                "bg-base-03 dark:bg-base-03 text-base-05 font-bold":
+                  index === selectedIndex,
+              })}
+              onClick={() => onSelect(item)}
+            >
+              <span className={"text-base-04 font-medium mr-0.5"}>
+                {item.type}
+              </span>
+              {item.value}
+            </div>
+          ))}
         </div>
       </>
     );

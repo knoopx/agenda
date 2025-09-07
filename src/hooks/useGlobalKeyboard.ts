@@ -67,30 +67,34 @@ export function useGlobalKeyboard() {
             store.editSelectedTask();
           }
           break;
-         case " ":
-           // Only handle space if a task is selected and not editing
-           if (store.selectedTaskIndex >= 0 && !store.editingTask) {
-             e.preventDefault();
-             store.completeSelectedTask();
-             completeCurrentlyFocusedTask();
-           }
-           break;
-         case "r":
-           // Ctrl+R to trigger sync
-           if (e.ctrlKey) {
-             e.preventDefault();
-             store.syncWebDAV();
-           }
-           break;
-         case "Delete":
-           // Delete key to delete focused task
-           if (store.selectedTaskIndex >= 0 && store.selectedTaskIndex < store.filteredTasks.length && !store.editingTask) {
-             e.preventDefault();
-             const selectedTask = store.filteredTasks[store.selectedTaskIndex];
-             store.removeTask(selectedTask);
-           }
-           break;
-       }
+        case " ":
+          // Only handle space if a task is selected and not editing
+          if (store.selectedTaskIndex >= 0 && !store.editingTask) {
+            e.preventDefault();
+            store.completeSelectedTask();
+            completeCurrentlyFocusedTask();
+          }
+          break;
+        case "r":
+          // Ctrl+R to trigger sync
+          if (e.ctrlKey) {
+            e.preventDefault();
+            store.syncWebDAV();
+          }
+          break;
+        case "Delete":
+          // Delete key to delete focused task
+          if (
+            store.selectedTaskIndex >= 0 &&
+            store.selectedTaskIndex < store.filteredTasks.length &&
+            !store.editingTask
+          ) {
+            e.preventDefault();
+            const selectedTask = store.filteredTasks[store.selectedTaskIndex];
+            store.removeTask(selectedTask);
+          }
+          break;
+      }
     };
 
     const focusPreviousElement = () => {

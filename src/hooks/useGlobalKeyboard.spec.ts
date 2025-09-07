@@ -9,7 +9,6 @@ const mockStore = {
   editingTask: null as any,
   focusMainInput: vi.fn(),
 
-
   editSelectedTask: vi.fn(),
   completeSelectedTask: vi.fn(),
 };
@@ -57,8 +56,6 @@ describe("useGlobalKeyboard", () => {
   });
 
   describe("Input Focus Guard", () => {
-
-
     it("ignores keyboard events when focused on main input", () => {
       const mockMainInput = document.createElement("input");
       mockMainInput.tabIndex = 1; // Set tabIndex = 1 for main input

@@ -2,7 +2,6 @@
 
 ## Build, Lint, and Test Commands
 
-- **Dev server:** `bun run devel` or `bun run vite`
 - **Typecheck:** `bun tsc --noEmit` (TypeScript typecheck)
 - **Test all:** `bun vitest` (uses Vitest)
 - **Test single file:** `bun vitest src/Agenda/Task/Task.spec.tsx`

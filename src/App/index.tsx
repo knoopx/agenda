@@ -20,8 +20,6 @@ const App = observer(() => {
           <Calendar className="hidden flex-auto lg:flex w-full overflow-y-auto" />
         </div>
       </div>
-
-
     </div>
   );
 });
