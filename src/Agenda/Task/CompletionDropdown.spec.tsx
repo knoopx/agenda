@@ -158,11 +158,11 @@ describe("CompletionDropdown Component", () => {
 
     // Check that @ symbols have the correct styling class
     const atSymbols = screen.getAllByText("@");
-    expect(atSymbols[0]).toHaveClass("text-base-0B");
+    expect(atSymbols[0]).toHaveClass("text-base-04", "font-medium", "mr-0.5");
 
     // Check that # symbols have the correct styling class
     const hashSymbols = screen.getAllByText("#");
-    expect(hashSymbols[0]).toHaveClass("text-base-0B");
+    expect(hashSymbols[0]).toHaveClass("text-base-04", "font-medium", "mr-0.5");
   });
 
   it("closes when Escape is pressed", () => {
@@ -201,7 +201,7 @@ describe("CompletionDropdown Component", () => {
     }, 200);
   });
 
-  it("renders all items with hover styling", () => {
+  it("renders all items with correct base styling", () => {
     render(
       <CompletionDropdown
         items={mockItems}
@@ -217,7 +217,7 @@ describe("CompletionDropdown Component", () => {
     const items = screen.getAllByText(/work|home|urgent|personal/);
     items.forEach((item) => {
       const container = item.closest("div");
-      expect(container).toHaveClass("cursor-pointer", "hover:bg-base-03");
+      expect(container).toHaveClass("px-3", "py-2", "cursor-pointer", "text-sm");
     });
   });
 

@@ -13,14 +13,6 @@ function parse(input: string, startRule = "Root") {
       startRule,
       now: Now,
     });
-
-    // Test URL followed by context - this should fail initially
-    it("debug URL followed by context", () => {
-      const result = parse(
-        "#buy https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1 @order",
-      );
-      console.log("Full result:", JSON.stringify(result, null, 2));
-    });
   } catch (e: any) {
     throw new Error(e.message);
   }
@@ -132,6 +124,7 @@ testRule("NextExpr", (e) => {
   e("next friday").toEqual(DateTime.local(2021, 1, 1)); // Jan 1, 2021 is a Friday
   e("next tuesday").toEqual(DateTime.local(2021, 1, 5));
   e("next thursday").toEqual(DateTime.local(2021, 1, 7));
+  e("next january").toEqual(DateTime.local(2022, 1, 1)); // Since we're in Jan 2021, next Jan is 2022
 });
 
 testRule("DateExpr", (e) => {

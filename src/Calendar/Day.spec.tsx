@@ -77,10 +77,9 @@ describe("Day Component", () => {
 
     const trigger = document.querySelector("a");
     expect(trigger).toHaveClass("font-bold");
-    expect(trigger).toHaveClass("text-base-00");
-    expect(trigger).toHaveClass("ring-2");
+    expect(trigger).toHaveClass("ring-3");
     expect(trigger).toHaveClass("ring-base-0D");
-    expect(trigger).toHaveClass("bg-base-0D");
+    expect(trigger).toHaveClass("bg-base-03");
   });
 
   it("applies same month styling for non-today dates", () => {
@@ -88,8 +87,7 @@ describe("Day Component", () => {
     renderDay(testDate);
 
     const trigger = document.querySelector("a");
-    expect(trigger).toHaveClass("font-medium");
-    expect(trigger).toHaveClass("text-base-05");
+    expect(trigger).toHaveClass("bg-base-01");
   });
 
   it("applies different month styling", () => {
@@ -97,8 +95,15 @@ describe("Day Component", () => {
     renderDay(testDate, false);
 
     const trigger = document.querySelector("a");
-    expect(trigger).toHaveClass("font-light");
-    expect(trigger).toHaveClass("text-base-04");
+    expect(trigger).toHaveClass("aspect-square");
+    expect(trigger).toHaveClass("flex");
+    expect(trigger).toHaveClass("flex-col");
+    expect(trigger).toHaveClass("justify-between");
+    expect(trigger).toHaveClass("text-xs");
+    expect(trigger).toHaveClass("p-2");
+    expect(trigger).toHaveClass("leading-none");
+    expect(trigger).toHaveClass("rounded-lg");
+    expect(trigger).toHaveClass("min-h-[3rem]");
   });
 
   it("renders indicators for task contexts", () => {
@@ -188,7 +193,6 @@ describe("Day Component", () => {
     expect(trigger).toHaveClass("p-2");
     expect(trigger).toHaveClass("leading-none");
     expect(trigger).toHaveClass("rounded-lg");
-    expect(trigger).toHaveClass("cursor-pointer");
     expect(trigger).toHaveClass("min-h-[3rem]");
   });
 

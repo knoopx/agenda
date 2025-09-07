@@ -346,6 +346,7 @@ NextSubExpr
     / "quarter"i { return now.plus({ months: 4 }).startOf("month") }
     / "year"i { return now.plus({ years: 1 }).startOf("year") }
 	/ NextWeekDayExpr
+	/ NextMonthExpr
 	/ NextSeason
 
 NextSeason
@@ -362,6 +363,21 @@ NextWeekDayExpr
 			current = current.plus({ days: 1 })
 		}
 		return current.startOf("day")
+	 }
+
+NextMonthExpr
+	// january
+	= number:MonthNameAsNumber {
+		let current = now
+		let targetMonth = number
+		let targetYear = current.year
+
+		// If current month is after target month, move to next year
+		if (current.month >= targetMonth) {
+			targetYear = current.year + 1
+		}
+
+		return current.set({ year: targetYear, month: targetMonth }).startOf("month")
 	 }
 
 DateShort

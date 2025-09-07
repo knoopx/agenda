@@ -309,7 +309,11 @@ describe("Task Editing Functionality", () => {
 
       // Should still save the expression even if invalid
       expect(mockTask.expression).toContain("invalid expression");
-      expect(store.editingTask).toBeUndefined();
+
+      // Wait for the editing task to be cleared
+      await waitFor(() => {
+        expect(store.editingTask).toBeUndefined();
+      });
     });
   });
 

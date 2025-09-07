@@ -1012,4 +1012,56 @@ describe("Deletion Tracking", () => {
     expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
     expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();
   });
+
+  it("should prefer local changes when local task is newer", () => {
+    const store = Store.create({
+      tasks: [
+        {
+          id: "task1",
+          expression: "local task",
+          lastModified: "2024-01-02T12:00:00Z", // Local is newer
+        },
+      ],
+    });
+
+    const remoteTasks = [
+      {
+        id: "task1",
+        expression: "remote task",
+        lastModified: "2024-01-01T12:00:00Z", // Remote is older
+      },
+    ];
+
+    store.mergeTasks(remoteTasks);
+
+    // Should keep local version since it's newer
+    const task = store.tasks.find((t) => t.id === "task1");
+    expect(task?.expression).toBe("local task");
+  });
+
+  it("should prefer remote changes when remote task is newer", () => {
+    const store = Store.create({
+      tasks: [
+        {
+          id: "task1",
+          expression: "local task",
+          lastModified: "2024-01-01T12:00:00Z", // Local is older
+        },
+      ],
+    });
+
+    const remoteTasks = [
+      {
+        id: "task1",
+        expression: "remote task",
+        lastModified: "2024-01-02T12:00:00Z", // Remote is newer
+      },
+    ];
+
+    store.mergeTasks(remoteTasks);
+
+    // Should update to remote version since it's newer
+    const task = store.tasks.find((t) => t.id === "task1");
+    expect(task?.expression).toBe("remote task");
+  });
 });

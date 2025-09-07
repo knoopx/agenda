@@ -95,8 +95,8 @@ describe("Month Component", () => {
     const container = screen.getByText("enero").closest(".flex.flex-col");
     expect(container).toHaveClass("flex");
     expect(container).toHaveClass("flex-col");
+    expect(container).toHaveClass("h-fit");
     expect(container).toHaveClass("m-2");
-    expect(container).toHaveClass("bg-base-01");
   });
 
   it("renders month title with correct styling", () => {

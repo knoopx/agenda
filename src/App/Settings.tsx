@@ -145,7 +145,7 @@ const Settings = observer(() => {
         <label className="inline-flex items-center space-x-2 cursor-pointer">
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 hover:border-base-0D appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-xs"
+            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 hover:border-base-0D appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold checked:after:text-xs"
             checked={store.displayEmoji}
             onChange={() => store.toggleDisplayEmoji()}
           />

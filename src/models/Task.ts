@@ -18,12 +18,14 @@ const Task = Expression.named("Task")
     id: t.optional(t.identifier, () => nanoid()),
     createdAt: t.optional(dateTime, () => DateTime.now()),
     lastCompletedAt: t.optional(dateTime, () => DateTime.now()),
+    lastModified: t.optional(dateTime, () => DateTime.now()),
     isCompleted: t.optional(t.boolean, false),
     completionCount: t.optional(t.number, 0),
   })
   .actions((self) => ({
     update(props: Partial<ITask>) {
       Object.assign(self, props);
+      self.lastModified = DateTime.now();
     },
 
     complete() {
@@ -35,6 +37,7 @@ const Task = Expression.named("Task")
         if (self.completionCount > 0) {
           self.completionCount--;
         }
+        self.lastModified = now;
         return;
       }
 
@@ -52,12 +55,14 @@ const Task = Expression.named("Task")
           } else {
             self.lastCompletedAt = now;
           }
+          self.lastModified = now;
           return;
         }
       }
       // For non-recurring tasks, set lastCompletedAt to completion time
       self.lastCompletedAt = now;
       self.isCompleted = true;
+      self.lastModified = now;
     },
 
     remove() {

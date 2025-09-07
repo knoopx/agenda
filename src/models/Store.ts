@@ -806,8 +806,16 @@ const Store = t
     },
 
     mergeTask(localTask: any, remoteTask: any) {
-      // For syncing purposes, always prefer remote version as source of truth
-      // Update local task properties (excluding id)
+      // Compare timestamps to determine which version is newer
+      const localModified = new Date(localTask.lastModified || localTask.createdAt);
+      const remoteModified = new Date(remoteTask.lastModified || remoteTask.createdAt);
+
+      // If local is newer, keep local version
+      if (localModified > remoteModified) {
+        return; // Keep local version, don't update
+      }
+
+      // If remote is newer or same, update with remote version
       localTask.expression = remoteTask.expression;
       if (remoteTask.lastCompletedAt) {
         // Convert to ISO string for MST DateTime type
@@ -820,6 +828,12 @@ const Store = t
         localTask.createdAt = remoteTask.createdAt.toISOString
           ? remoteTask.createdAt.toISOString()
           : remoteTask.createdAt;
+      }
+      if (remoteTask.lastModified) {
+        // Update lastModified to remote's timestamp
+        localTask.lastModified = remoteTask.lastModified.toISOString
+          ? remoteTask.lastModified.toISOString()
+          : remoteTask.lastModified;
       }
       // Copy other properties as needed
     },
@@ -890,22 +904,11 @@ const Store = t
       return webdavService
         .getLastModified()
         .then((remoteLastModified) => {
-          if (remoteLastModified && self.webdav.remoteLastModified) {
-            // Both local and remote have timestamps - check if sync is needed
-            if (remoteLastModified > self.webdav.remoteLastModified) {
-              // Remote is newer - pull changes first
-              return this.syncFromWebDAV().then(() => {
-                // Then push our changes
-                return this.syncToWebDAV();
-              });
-            } else {
-              // Local is newer or same - push our changes
-              return this.syncToWebDAV();
-            }
-          } else if (remoteLastModified) {
-            // Only remote exists - pull it first, then merge
+          if (remoteLastModified) {
+            // Remote file exists - always download and merge to handle conflicts properly
             return webdavService.downloadData().then((remoteData) => {
               return this.mergeRemoteData(remoteData).then(() => {
+                // After merging, upload the resolved data
                 return this.syncToWebDAV();
               });
             });

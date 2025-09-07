@@ -63,10 +63,10 @@ export const TaskContent = observer(
               <DurationLabel duration={task.duration} className="text-xs" />
             )}
             {task.isCompleted && task.createdAt && task.lastCompletedAt && (
-              <DurationLabel
-                duration={task.lastCompletedAt.diff(task.createdAt)}
-                className="text-xs text-green-700"
-              />
+               <DurationLabel
+                 duration={task.lastCompletedAt.diff(task.createdAt)}
+                 className="text-xs text-base-0B"
+               />
             )}
           </td>
 
