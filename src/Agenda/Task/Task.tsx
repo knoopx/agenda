@@ -2,12 +2,12 @@ import { observer } from "mobx-react";
 import { forwardRef, Ref, useRef, useEffect, useCallback } from "react";
 
 import {
-  useEnterKey,
   useFocus,
   useStore,
   useEventListener,
   useEscapeKey,
 } from "../../hooks";
+import IconMdiLink from "~icons/mdi/link.jsx";
 
 import { TimeLabel } from "./TimeLabel";
 import { DurationLabel } from "./DurationLabel";
@@ -25,7 +25,6 @@ export const TaskContent = observer(
       task: ITask;
       inputRef: Ref<HTMLInputElement>;
       isFocused: boolean;
-      isSelected: boolean;
       onComplete: () => void;
       onSubmit?: () => void;
       onCancel?: () => void;
@@ -37,7 +36,6 @@ export const TaskContent = observer(
         task,
         inputRef,
         isFocused,
-        isSelected,
         onComplete,
         onSubmit,
         onCancel,
@@ -53,29 +51,21 @@ export const TaskContent = observer(
           {...props}
           ref={ref}
           data-task-index={index}
-          className={`h-14 align-middle border-b dark:border-b-base-02/50 last-of-type:border-0 group ${
-            task.isCompleted && !isSelected ? "opacity-50" : ""
-          } ${isSelected ? "bg-base-0D/10 dark:bg-base-0D/20" : ""} ${
-            isFocused ? "bg-base-0D/10 dark:bg-base-0D/20" : ""
-          }`}
+          className={`h-14 align-middle border-b dark:border-b-base-03 last-of-type:border-0 group ${
+            task.isCompleted ? "text-base-03" : ""
+          } focus-within:bg-base-02`}
         >
-          <td
-            className={`hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 ${
-              isSelected ? "text-base-0D" : "text-base-04"
-            }`}
-          >
+          <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
             {task.nextAt && (
-              <TimeLabel
-                date={task.nextAt}
-                isSelected={isSelected}
-                className="text-xs"
-              />
+              <TimeLabel date={task.nextAt} className="text-xs" />
             )}
             {task.duration && (
+              <DurationLabel duration={task.duration} className="text-xs" />
+            )}
+            {task.isCompleted && task.createdAt && task.lastCompletedAt && (
               <DurationLabel
-                duration={task.duration}
-                isSelected={isSelected}
-                className="text-xs"
+                duration={task.lastCompletedAt.diff(task.createdAt)}
+                className="text-xs text-green-700"
               />
             )}
           </td>
@@ -88,17 +78,13 @@ export const TaskContent = observer(
               !isFocused &&
               task.emojis.map((char) => <span key={char}>{char}</span>)}
 
-            {!isFocused && task.isRecurring && (
-              <RecurringIcon title={task.frequency} />
-            )}
-
             <SubjectInput
               ref={inputRef}
               task={task}
               isFocused={isFocused}
-              isSelected={isSelected}
               onSubmit={onSubmit}
               onCancel={onCancel}
+              tabIndex={index !== undefined ? index + 2 : undefined}
             />
 
             {!isFocused &&
@@ -109,6 +95,7 @@ export const TaskContent = observer(
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    tabIndex={-1}
                     className="flex items-center space-x-1 text-xs text-base-04 hover:text-base-0D ml-1"
                     title={url}
                   >
@@ -118,29 +105,25 @@ export const TaskContent = observer(
                 ) : null,
               )}
 
+            {!isFocused && task.isRecurring && (
+              <RecurringIcon title={task.frequency} className="text-base-04" />
+            )}
+
             {task.nextAt && (
               <DistanceLabel
-                className="text-xs"
+                className="text-xs text-base-04"
                 date={task.nextAt}
-                isSelected={isSelected}
               />
             )}
 
-            {!isFocused && (
-              <TaskActionGroup task={task} isSelected={isSelected} />
-            )}
+            {!isFocused && <TaskActionGroup task={task} />}
 
-            {!isFocused && task.isRecurring && (
-              <CompletionCount task={task} isSelected={isSelected} />
-            )}
+            {!isFocused && task.isRecurring && <CompletionCount task={task} />}
 
             <input
               type="checkbox"
-              className={`w-5 h-5 rounded border-2 ${
-                isSelected
-                  ? "border-base-0D bg-base-0D/5"
-                  : "border-base-04 bg-base-01"
-              } checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-sm`}
+              tabIndex={-1}
+              className="w-5 h-5 rounded border-2 border-base-04 bg-base-01 group-focus-within:border-base-0D group-focus-within:bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-base-00 checked:after:font-bold"
               checked={task.isCompleted}
               onChange={onComplete}
             />
@@ -157,7 +140,6 @@ const Task = observer(
     const ref = useRef<HTMLTableRowElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const isFocused = useFocus(inputRef);
-    const isSelected = index !== undefined && store.selectedTaskIndex === index;
     let target: ITask;
     const originalSnapshot = useRef<any>(null);
 
@@ -173,6 +155,18 @@ const Task = observer(
       };
     }, [store, index]);
 
+    // Register/unregister the row ref with the store when index changes
+    useEffect(() => {
+      if (index !== undefined && ref.current) {
+        store.setTaskRowRef(index, ref.current);
+      }
+      return () => {
+        if (index !== undefined) {
+          store.setTaskRowRef(index, null);
+        }
+      };
+    }, [store, index]);
+
     if (isFocused) {
       // Only allow editing if no other task is currently being edited
       if (!store.editingTask) {
@@ -184,7 +178,6 @@ const Task = observer(
     const onSubmit = useCallback(
       (_e?: Event) => {
         originalSnapshot.current = null;
-        inputRef.current?.blur();
         store.clearEditingTask();
       },
       [store],
@@ -197,7 +190,6 @@ const Task = observer(
           task.update({ expression: originalSnapshot.current.expression });
           originalSnapshot.current = null;
         }
-        inputRef.current?.blur();
         store.clearEditingTask();
       },
       [store, task],
@@ -210,7 +202,6 @@ const Task = observer(
       task.complete();
     };
 
-    useEnterKey(inputRef, onSubmit);
     useEscapeKey(inputRef, onCancel as EventListener, []);
 
     useEventListener(ref, "mouseover", () => {
@@ -226,26 +217,25 @@ const Task = observer(
       if (!originalSnapshot.current) {
         originalSnapshot.current = { expression: task.expression };
       }
-      
+
       if (task.ast && !task.isRecurring && task.ast.start) {
         task.setExpression(task.simplifiedExpression);
       }
     });
 
-      return (
-        <TaskContent
-          ref={ref}
-          isFocused={isFocused}
-          isSelected={isSelected}
-          inputRef={inputRef}
-          task={target}
-          onComplete={onComplete}
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-          index={index}
-          {...props}
-        />
-      );
+    return (
+      <TaskContent
+        ref={ref}
+        isFocused={isFocused}
+        inputRef={inputRef}
+        task={target}
+        onComplete={onComplete}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        index={index}
+        {...props}
+      />
+    );
   },
 );
 

@@ -5,6 +5,7 @@ import Calendar from "../Calendar";
 import { useGlobalKeyboard, useStore } from "../hooks";
 
 import TopBar from "./TopBar";
+import IconMdiSync from "~icons/mdi/sync.jsx";
 
 const App = observer(() => {
   useGlobalKeyboard();

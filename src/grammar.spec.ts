@@ -12,13 +12,15 @@ function parse(input: string, startRule = "Root") {
       grammarSource: "",
       startRule,
       now: Now,
-});
+    });
 
-// Test URL followed by context - this should fail initially
-it("debug URL followed by context", () => {
-  const result = parse("#buy https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1 @order");
-  console.log("Full result:", JSON.stringify(result, null, 2));
-});
+    // Test URL followed by context - this should fail initially
+    it("debug URL followed by context", () => {
+      const result = parse(
+        "#buy https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1 @order",
+      );
+      console.log("Full result:", JSON.stringify(result, null, 2));
+    });
   } catch (e: any) {
     throw new Error(e.message);
   }
@@ -673,16 +675,24 @@ testRule("Root", (e) => {
     urls: ["https://github.com/user/repo/pull/123"],
   });
 
-  e("#shopping buy headphones https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1").toMatchObject({
+  e(
+    "#shopping buy headphones https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1",
+  ).toMatchObject({
     tags: ["shopping"],
     subject: "buy headphones",
-    urls: ["https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1"],
+    urls: [
+      "https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1",
+    ],
   });
 
-  e("#buy https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1 @order").toMatchObject({
+  e(
+    "#buy https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1 @order",
+  ).toMatchObject({
     tags: ["buy"],
     subject: "",
-    urls: ["https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1"],
+    urls: [
+      "https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1",
+    ],
     contexts: ["order"],
   });
 });

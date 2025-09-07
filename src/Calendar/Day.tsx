@@ -48,13 +48,12 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
         className={classNames(
           "aspect-square flex flex-col justify-between text-xs p-2 leading-none rounded-lg cursor-pointer min-h-[3rem]",
           {
-            "font-bold text-base-0D ring-2 ring-base-0D/30 bg-base-0D/10":
+            "bg-base-02 font-bold ring-2 ring-base-0D":
               isToday,
             "font-medium text-base-05": !isToday && isSameMonth,
-            "font-light text-base-04/50": !isSameMonth,
-            "bg-base-01/50 dark:bg-base-01/50 hover:bg-base-01/80 dark:hover:bg-base-01/80":
-              isSameMonth && !isToday,
-            "bg-base-02/30 dark:bg-base-02/30 hover:bg-base-02/50 dark:hover:bg-base-02/50":
+            "font-light text-base-05": !isSameMonth,
+            "bg-base-02": isSameMonth && !isToday,
+            "bg-base-03":
               isSameMonth && shouldHighlight && !isToday,
           },
         )}
@@ -87,7 +86,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
       {isSameMonth && occurrences.length > 0 && (
         <HoverCard.Content
           side="top"
-          className="max-w-xs px-4 py-3 text-xs bg-base-01/95 dark:bg-base-01/95 backdrop-blur-sm rounded-lg shadow-lg shadow-base-00/20"
+          className="max-w-xs px-4 py-3 text-xs bg-base-01 dark:bg-base-01 backdrop-blur-sm rounded-lg shadow-lg shadow-base-00"
         >
           <HoverCard.Arrow className="fill-base-01 dark:fill-base-01" />
           <div className="space-y-2">
@@ -99,7 +98,7 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
               {occurrences.slice(0, 5).map(({ date, task }) => (
                 <div
                   key={task.id}
-                  className="flex items-center py-1 px-2 space-x-2 rounded bg-base-02/30 dark:bg-base-02/30"
+                  className="flex items-center py-1 px-2 space-x-2 rounded bg-base-02 dark:bg-base-02"
                 >
                   <Indicator
                     color={store.getContextColor(task.context)}

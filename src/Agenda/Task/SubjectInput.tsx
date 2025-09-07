@@ -12,11 +12,11 @@ export const SubjectInput = observer(
     {
       isFocused: boolean;
       task: ITask;
-      isSelected?: boolean;
       onSubmit?: () => void;
       onCancel?: () => void;
+      tabIndex?: number;
     }
-  >(({ isFocused, task, isSelected, onSubmit, onCancel }, ref) => {
+  >(({ isFocused, task, onSubmit, onCancel, tabIndex }, ref) => {
     const store = useStore();
     const [showCompletions, setShowCompletions] = useState(false);
     const [completionItems, setCompletionItems] = useState<CompletionItem[]>(
@@ -88,40 +88,43 @@ export const SubjectInput = observer(
         triggerIndex = lastHashIndex;
       }
 
-       if (trigger && triggerIndex >= 0) {
-         // Find the end of the current word (next space or end of text)
-         const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
-         const spaceIndex = textFromTrigger.indexOf(" ");
-         const query = spaceIndex >= 0 ? textFromTrigger.substring(0, spaceIndex) : textFromTrigger;
+      if (trigger && triggerIndex >= 0) {
+        // Find the end of the current word (next space or end of text)
+        const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
+        const spaceIndex = textFromTrigger.indexOf(" ");
+        const query =
+          spaceIndex >= 0
+            ? textFromTrigger.substring(0, spaceIndex)
+            : textFromTrigger;
 
-         // Only show completions if there's no space immediately after the trigger
-         const charAfterTrigger = newValue[triggerIndex + 1];
-         if (charAfterTrigger !== " ") {
-           const completions = getCompletions(trigger, query);
-           if (completions.length > 0) {
-             setCompletionItems(completions);
-             setSelectedCompletionIndex(0);
-             setCurrentTrigger(trigger);
-             setTriggerPosition(triggerIndex);
-             setCursorPosition(cursorPosition);
-             setShowCompletions(true);
+        // Only show completions if there's no space immediately after the trigger
+        const charAfterTrigger = newValue[triggerIndex + 1];
+        if (charAfterTrigger !== " ") {
+          const completions = getCompletions(trigger, query);
+          if (completions.length > 0) {
+            setCompletionItems(completions);
+            setSelectedCompletionIndex(0);
+            setCurrentTrigger(trigger);
+            setTriggerPosition(triggerIndex);
+            setCursorPosition(cursorPosition);
+            setShowCompletions(true);
 
-             // Calculate dropdown position
-             if (inputRef.current) {
-               const rect = inputRef.current.getBoundingClientRect();
-               const textMetrics = getTextWidth(
-                 textBeforeCursor,
-                 inputRef.current,
-               );
-               setDropdownPosition({
-                 top: rect.bottom + 2,
-                 left: rect.left + textMetrics,
-               });
-             }
-             return;
-           }
-         }
-       }
+            // Calculate dropdown position
+            if (inputRef.current) {
+              const rect = inputRef.current.getBoundingClientRect();
+              const textMetrics = getTextWidth(
+                textBeforeCursor,
+                inputRef.current,
+              );
+              setDropdownPosition({
+                top: rect.bottom + 2,
+                left: rect.left + textMetrics,
+              });
+            }
+            return;
+          }
+        }
+      }
 
       setShowCompletions(false);
     };
@@ -149,18 +152,20 @@ export const SubjectInput = observer(
       const beforeTrigger = currentValue.substring(0, triggerPosition);
       const textFromTrigger = currentValue.substring(triggerPosition + 1);
       const spaceIndex = textFromTrigger.indexOf(" ");
-      const afterQuery = spaceIndex >= 0 ? textFromTrigger.substring(spaceIndex) : "";
-      
+      const afterQuery =
+        spaceIndex >= 0 ? textFromTrigger.substring(spaceIndex) : "";
+
       // Construct new value: before trigger + trigger + completion value + space + after query
       const newValue = `${beforeTrigger}${item.type}${item.value} ${afterQuery}`;
       setLocalExpression(newValue);
       task.update({ expression: newValue });
       setShowCompletions(false);
-      
+
       // Focus back to input and set cursor position
       if (inputRef.current) {
         inputRef.current.focus();
-        const newCursorPos = beforeTrigger.length + item.type.length + item.value.length + 1; // +1 for space
+        const newCursorPos =
+          beforeTrigger.length + item.type.length + item.value.length + 1; // +1 for space
         setTimeout(() => {
           inputRef.current?.setSelectionRange(newCursorPos, newCursorPos);
           setCursorPosition(newCursorPos);
@@ -193,15 +198,16 @@ export const SubjectInput = observer(
             return; // Early return to prevent further handling
           case "Escape":
             e.preventDefault();
+            e.stopPropagation();
             setShowCompletions(false);
-            break;
+            return; // Prevent further handling (do not exit editing)
           default:
             // Allow other keys to propagate when completions are showing
             break;
         }
         return; // Early return when completions are showing
       }
-      
+
       // Handle Enter for editing
       if (e.key === "Enter" && isFocused && onSubmit) {
         onSubmit();
@@ -215,25 +221,25 @@ export const SubjectInput = observer(
           ref={inputRef}
           type="text"
           size={1}
+          tabIndex={tabIndex}
           value={value || (isFocused ? task.expression : "")}
           className={classNames(
-            "font-medium flex-auto bg-transparent outline-none appearance-none truncate",
+            "font-medium flex-auto bg-transparent outline-none appearance-none truncate focus:text-base-0D",
             {
               "text-base-08": !task.isValid,
-              "text-base-0D": isSelected,
               "line-through": task.isCompleted,
             },
           )}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-           onBlur={() => {
-             // Delay hiding completions to allow for clicks
-             setTimeout(() => setShowCompletions(false), 150);
-             // Call onSubmit when input loses focus
-             if (isFocused && onSubmit) {
-               onSubmit();
-             }
-           }}
+          onBlur={() => {
+            // Delay hiding completions to allow for clicks
+            setTimeout(() => setShowCompletions(false), 150);
+            // Call onSubmit when input loses focus
+            if (isFocused && onSubmit) {
+              onSubmit();
+            }
+          }}
         />
         <CompletionDropdown
           items={completionItems}

@@ -96,7 +96,7 @@ describe("Month Component", () => {
     expect(container).toHaveClass("flex");
     expect(container).toHaveClass("flex-col");
     expect(container).toHaveClass("m-2");
-    expect(container).toHaveClass("bg-base-01/30");
+    expect(container).toHaveClass("bg-base-01");
   });
 
   it("renders month title with correct styling", () => {

@@ -270,11 +270,15 @@ it("should strip URLs from subject with other text", () => {
 });
 
 it("strips URLs from subject display for complex Amazon URLs", () => {
-  const task = createTask("#shopping buy headphones https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1");
-  
+  const task = createTask(
+    "#shopping buy headphones https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1",
+  );
+
   expect(task.subject).toBe("buy headphones");
   expect(task.subjectWithoutUrls).toBe("buy headphones");
-  expect(task.urls).toEqual(["https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1"]);
+  expect(task.urls).toEqual([
+    "https://www.amazon.es/Sennheiser-Auriculares-Inteligentes-cancelaci%C3%B3n-adaptativa/dp/B0CTHVX6DK?ufe=app_do%3Aamzn1.fos.5e544547-1f8e-4072-8c08-ed563e39fc7d&th=1",
+  ]);
   expect(task.tags).toEqual(["shopping"]);
 });
 

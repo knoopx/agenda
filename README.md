@@ -21,18 +21,15 @@ A fast, modern agenda and task management app built with TypeScript, React, MobX
 ## Usage
 
 - **Keyboard Shortcuts:**
-
   - `Enter` to add/complete/edit tasks
   - `Esc` to cancel/close dialogs
   - Arrow keys to navigate tasks
 
 - **Natural Language Input:**
-
   - Add tasks like: `Review PR tomorrow at 10am #work`
   - Supports dates, times, durations, recurrence (e.g., `every Monday`), tags, and URLs.
 
 - **Emoji & Tags:**
-
   - Use hashtags (`#work`, `#home`) to auto-assign emoji and color labels.
   - Emoji are auto-picked from keywords.
 

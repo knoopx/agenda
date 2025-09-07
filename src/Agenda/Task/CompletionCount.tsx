@@ -4,11 +4,10 @@ import { ITask } from "../../models/Task";
 interface CompletionCountProps {
   task: ITask;
   className?: string;
-  isSelected?: boolean;
 }
 
 export const CompletionCount = observer(
-  ({ task, className = "", isSelected }: CompletionCountProps) => {
+  ({ task, className = "" }: CompletionCountProps) => {
     if (!task.isRecurring || !task.completionStats) {
       return null;
     }
@@ -21,7 +20,7 @@ export const CompletionCount = observer(
 
     return (
       <span
-        className={`text-xs ${isSelected ? "text-base-0D bg-base-0D/10" : "text-base-04 bg-base-02/30"} px-2 py-1 rounded-full ${className}`}
+        className={`text-xs text-base-04 bg-base-02 group-focus-within:text-base-0D group-focus-within:bg-base-0D px-2 py-1 rounded-full ${className}`}
       >
         {total}
       </span>

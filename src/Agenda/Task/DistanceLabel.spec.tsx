@@ -23,10 +23,10 @@ describe("DistanceLabel", () => {
 
   it("applies selected styling when isSelected is true", () => {
     const pastDate = DateTime.now().minus({ hours: 2 });
-    render(<DistanceLabel date={pastDate} isSelected={true} />);
+    render(<DistanceLabel date={pastDate} />);
 
     const label = screen.getByText(/\d/).parentElement;
-    expect(label).toHaveClass("text-base-0D");
+    expect(label).toHaveClass("group-focus-within:text-base-0D");
   });
 
   it("applies custom className", () => {

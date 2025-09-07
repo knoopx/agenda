@@ -79,7 +79,7 @@ describe("CompletionCount", () => {
     expect(span).toHaveClass(
       "text-xs",
       "text-base-04",
-      "bg-base-02/30",
+      "bg-base-02",
       "px-2",
       "py-1",
       "rounded-full",
@@ -91,12 +91,15 @@ describe("CompletionCount", () => {
 
     render(
       <MockWrapper>
-        <CompletionCount task={recurringTask} isSelected={true} />
+        <CompletionCount task={recurringTask} />
       </MockWrapper>,
     );
 
     const span = screen.getByText("1");
-    expect(span).toHaveClass("text-base-0D", "bg-base-0D/10");
+    expect(span).toHaveClass(
+      "group-focus-within:text-base-0D",
+      "group-focus-within:bg-base-0D",
+    );
   });
 
   it("applies custom className", () => {

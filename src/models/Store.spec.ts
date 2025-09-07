@@ -890,11 +890,11 @@ describe("Deletion Tracking", () => {
     const task = store.addTask({ expression: "Test task" });
     expect(task).toBeDefined();
     const taskId = task!.id;
-    
+
     expect(store.sync.deletedTaskIds).toHaveLength(0);
-    
+
     store.removeTask(task!);
-    
+
     expect(store.sync.deletedTaskIds).toContain(taskId);
     expect(store.sync.deletedTaskIds).toHaveLength(1);
   });
@@ -904,26 +904,28 @@ describe("Deletion Tracking", () => {
     const task2 = store.addTask({ expression: "Test task 2" });
     expect(task1).toBeDefined();
     expect(task2).toBeDefined();
-    
+
     const task1Id = task1!.id; // Capture ID before removal
-    
+
     store.removeTask(task1!);
     store.removeTask(task2!);
     store.sync.addDeletedTaskId(task1Id); // Try to add duplicate
-    
+
     expect(store.sync.deletedTaskIds).toHaveLength(2);
-    expect(store.sync.deletedTaskIds.filter((id: string) => id === task1Id)).toHaveLength(1);
+    expect(
+      store.sync.deletedTaskIds.filter((id: string) => id === task1Id),
+    ).toHaveLength(1);
   });
 
   it("should clear deleted task IDs after successful sync", () => {
     const task = store.addTask({ expression: "Test task" });
     expect(task).toBeDefined();
     store.removeTask(task!);
-    
+
     expect(store.sync.deletedTaskIds).toHaveLength(1);
-    
+
     store.sync.markSynced();
-    
+
     expect(store.sync.deletedTaskIds).toHaveLength(0);
   });
 
@@ -932,14 +934,14 @@ describe("Deletion Tracking", () => {
     expect(task).toBeDefined();
     const taskId = task!.id; // Capture ID before removal
     store.removeTask(task!);
-    
+
     (webdavService.uploadData as any).mockResolvedValue(undefined);
-    
+
     await store.syncToWebDAV();
-    
+
     const uploadCall = (webdavService.uploadData as any).mock.calls[0];
     const syncData = JSON.parse(uploadCall[0]);
-    
+
     expect(syncData.deletedTaskIds).toContain(taskId);
   });
 
@@ -948,18 +950,18 @@ describe("Deletion Tracking", () => {
     expect(task1).toBeDefined();
     const task1Id = task1!.id; // Capture ID before removal
     const task2Id = "remote-task-id";
-    
+
     // Delete local task
     store.removeTask(task1!);
-    
+
     // Simulate remote data that includes the deleted task and a new task
     const remoteTasks = [
       { id: task1Id, expression: "Deleted locally" },
-      { id: task2Id, expression: "New remote task" }
+      { id: task2Id, expression: "New remote task" },
     ];
-    
+
     store.mergeTasks(remoteTasks, []);
-    
+
     // Should not re-add the locally deleted task
     expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
     // Should add the new remote task
@@ -971,18 +973,16 @@ describe("Deletion Tracking", () => {
     const task2 = store.addTask({ expression: "Task to keep" });
     expect(task1).toBeDefined();
     expect(task2).toBeDefined();
-    
+
     const task1Id = task1!.id; // Capture IDs before potential removal
     const task2Id = task2!.id;
-    
+
     // Simulate remote data that deleted task1 but kept task2
-    const remoteTasks = [
-      { id: task2Id, expression: task2!.expression }
-    ];
+    const remoteTasks = [{ id: task2Id, expression: task2!.expression }];
     const remoteDeletedTaskIds = [task1Id];
-    
+
     store.mergeTasks(remoteTasks, remoteDeletedTaskIds);
-    
+
     // Task1 should be removed, task2 should remain
     expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
     expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();
@@ -993,23 +993,21 @@ describe("Deletion Tracking", () => {
     const task2 = store.addTask({ expression: "Task 2" });
     expect(task1).toBeDefined();
     expect(task2).toBeDefined();
-    
+
     const task1Id = task1!.id; // Capture IDs before potential removal
     const task2Id = task2!.id;
-    
+
     // Mock remote data where task1 was deleted
     const remoteData = JSON.stringify({
-      tasks: [
-        { id: task2Id, expression: task2!.expression }
-      ],
+      tasks: [{ id: task2Id, expression: task2!.expression }],
       deletedTaskIds: [task1Id],
-      lastSync: new Date().toISOString()
+      lastSync: new Date().toISOString(),
     });
-    
+
     (webdavService.downloadData as any).mockResolvedValue(remoteData);
-    
+
     await store.syncFromWebDAV();
-    
+
     // Task1 should be removed, task2 should remain
     expect(store.tasks.find((t: any) => t.id === task1Id)).toBeUndefined();
     expect(store.tasks.find((t: any) => t.id === task2Id)).toBeDefined();

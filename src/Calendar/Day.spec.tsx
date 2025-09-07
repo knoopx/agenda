@@ -77,10 +77,10 @@ describe("Day Component", () => {
 
     const trigger = document.querySelector("a");
     expect(trigger).toHaveClass("font-bold");
-    expect(trigger).toHaveClass("text-base-0D");
+    expect(trigger).toHaveClass("text-base-00");
     expect(trigger).toHaveClass("ring-2");
-    expect(trigger).toHaveClass("ring-base-0D/30");
-    expect(trigger).toHaveClass("bg-base-0D/10");
+    expect(trigger).toHaveClass("ring-base-0D");
+    expect(trigger).toHaveClass("bg-base-0D");
   });
 
   it("applies same month styling for non-today dates", () => {
@@ -98,7 +98,7 @@ describe("Day Component", () => {
 
     const trigger = document.querySelector("a");
     expect(trigger).toHaveClass("font-light");
-    expect(trigger).toHaveClass("text-base-04/50");
+    expect(trigger).toHaveClass("text-base-04");
   });
 
   it("renders indicators for task contexts", () => {
@@ -161,7 +161,7 @@ describe("Day Component", () => {
 
     const trigger = document.querySelector("a");
     // Note: Highlighting requires complex input parsing, skipping for now without helpers mocking
-    expect(trigger).toHaveClass("bg-base-01/50");
+    expect(trigger).toHaveClass("bg-base-01");
   });
 
   // Skip hover card tests for now - they require complex Radix UI mocking

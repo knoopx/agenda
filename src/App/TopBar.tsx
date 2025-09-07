@@ -7,6 +7,9 @@ import { useStore } from "../hooks";
 
 import Input from "./Input";
 import Settings from "./Settings";
+import IconMdiSync from "~icons/mdi/sync.jsx";
+import IconMdiCloudCheck from "~icons/mdi/cloud-check.jsx";
+import IconMdiCog from "~icons/mdi/cog.jsx";
 
 const Date = () => {
   return (
@@ -61,7 +64,7 @@ const TopBar = observer(() => {
   return (
     <div className="w-full grid lg:grid-cols-2 lg:gap-4 xl:gap-8 mb-2 mx-auto p-2">
       <Input />
-       <div className="hidden flex-auto items-center justify-between lg:flex">
+      <div className="hidden flex-auto items-center justify-between lg:flex">
         <Time />
         <Date />
         <div className="flex items-center">

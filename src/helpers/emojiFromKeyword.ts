@@ -3,7 +3,7 @@ import emojilib from "emojilib";
 // Custom work/personal-related word/emoji pairs
 const customEmojiMap: Record<string, string> = {
   // Work-related
-  work: "🧑‍💼",
+  work: "💼",
   office: "🏢",
   meeting: "📅",
   deadline: "⏰",
@@ -53,7 +53,7 @@ export function emojiFromKeyword(keyword: string): string | undefined {
     return customEmojiMap[keyword];
   }
   for (const [emoji, keywords] of Object.entries(emojilib)) {
-    if (keywords.map(k => k.toLowerCase()).includes(keyword)) {
+    if (keywords.map((k) => k.toLowerCase()).includes(keyword)) {
       return emoji;
     }
   }

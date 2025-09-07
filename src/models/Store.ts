@@ -39,6 +39,7 @@ interface StoreVolatileProps {
   selectedTaskIndex: number;
   mainInputRef: HTMLInputElement | null;
   taskInputRefs: Map<number, HTMLInputElement>;
+  taskRowRefs: Map<number, HTMLTableRowElement>;
   isSyncing: boolean;
   lastSyncError: string | null;
 }
@@ -150,7 +151,7 @@ const SyncMetadata = t
 const Store = t
   .model("Store", {
     tasks: t.array(Task),
-    editingTask: t.maybe(t.reference(Task)),
+    editingTask: t.safeReference(Task),
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
@@ -191,6 +192,7 @@ const Store = t
     selectedTaskIndex: -1,
     mainInputRef: null,
     taskInputRefs: new Map(),
+    taskRowRefs: new Map(),
     isSyncing: false,
     lastSyncError: null,
   }))
@@ -438,6 +440,12 @@ const Store = t
     removeTask(task: ITask) {
       // Track the deletion for sync purposes
       self.sync.addDeletedTaskId(task.id);
+
+      // Clear editingTask if it's the task being removed
+      if (self.editingTask && self.editingTask.id === task.id) {
+        self.editingTask = undefined;
+      }
+
       self.tasks.remove(task);
       self.webdav.markAsChanged();
     },
@@ -462,11 +470,32 @@ const Store = t
         self.taskInputRefs.delete(index);
       }
     },
+    setTaskRowRef(index: number, ref: HTMLTableRowElement | null) {
+      if (ref) {
+        self.taskRowRefs.set(index, ref);
+      } else {
+        self.taskRowRefs.delete(index);
+      }
+    },
     setSelectedTaskIndex(index: number) {
       self.selectedTaskIndex = Math.max(
         -1,
         Math.min(index, self.filteredTasks.length - 1),
       );
+      // Scroll selected task into view
+      this.scrollSelectedTaskIntoView();
+    },
+    scrollSelectedTaskIntoView() {
+      if (self.selectedTaskIndex >= 0) {
+        const rowRef = self.taskRowRefs.get(self.selectedTaskIndex);
+        if (rowRef) {
+          rowRef.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+          });
+        }
+      }
     },
     navigateUp() {
       if (self.filteredTasks.length === 0) return;
@@ -699,8 +728,11 @@ const Store = t
         try {
           const remoteStore = JSON.parse(remoteData);
 
-           // Only merge tasks, not settings
-           this.mergeTasks(remoteStore.tasks || [], remoteStore.deletedTaskIds || []);
+          // Only merge tasks, not settings
+          this.mergeTasks(
+            remoteStore.tasks || [],
+            remoteStore.deletedTaskIds || [],
+          );
 
           // Update remote last modified if available
           if (remoteStore.lastSync) {
@@ -729,7 +761,7 @@ const Store = t
         if (self.sync.deletedTaskIds.includes(remoteTask.id)) {
           return;
         }
-        
+
         const existing = mergedTasks.get(remoteTask.id);
         if (existing) {
           existing.remote = remoteTask;
@@ -743,8 +775,14 @@ const Store = t
         const existing = mergedTasks.get(deletedId);
         if (existing && existing.local && !existing.remote) {
           // This task exists locally but was deleted remotely
-          const taskIndex = self.tasks.findIndex(task => task.id === deletedId);
+          const taskIndex = self.tasks.findIndex(
+            (task) => task.id === deletedId,
+          );
           if (taskIndex !== -1) {
+            // Clear editingTask if it's the task being removed
+            if (self.editingTask && self.editingTask.id === deletedId) {
+              self.editingTask = undefined;
+            }
             self.tasks.splice(taskIndex, 1);
           }
           mergedTasks.delete(deletedId);
@@ -772,11 +810,15 @@ const Store = t
       localTask.expression = remoteTask.expression;
       if (remoteTask.lastCompletedAt) {
         // Convert to ISO string for MST DateTime type
-        localTask.lastCompletedAt = remoteTask.lastCompletedAt.toISOString ? remoteTask.lastCompletedAt.toISOString() : remoteTask.lastCompletedAt;
+        localTask.lastCompletedAt = remoteTask.lastCompletedAt.toISOString
+          ? remoteTask.lastCompletedAt.toISOString()
+          : remoteTask.lastCompletedAt;
       }
       if (remoteTask.createdAt) {
         // Convert to ISO string for MST DateTime type
-        localTask.createdAt = remoteTask.createdAt.toISOString ? remoteTask.createdAt.toISOString() : remoteTask.createdAt;
+        localTask.createdAt = remoteTask.createdAt.toISOString
+          ? remoteTask.createdAt.toISOString()
+          : remoteTask.createdAt;
       }
       // Copy other properties as needed
     },
@@ -793,8 +835,14 @@ const Store = t
       if (taskCreatedAt < lastSync) {
         // Task was created before last sync but doesn't exist remotely
         // This means it was deleted remotely, so remove it locally
-        const taskIndex = self.tasks.findIndex(task => task.id === localTask.id);
+        const taskIndex = self.tasks.findIndex(
+          (task) => task.id === localTask.id,
+        );
         if (taskIndex !== -1) {
+          // Clear editingTask if it's the task being removed
+          if (self.editingTask && self.editingTask.id === localTask.id) {
+            self.editingTask = undefined;
+          }
           self.tasks.splice(taskIndex, 1);
         }
       }

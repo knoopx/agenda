@@ -79,15 +79,15 @@ describe("TaskActionGroup", () => {
   it("applies selected styling when isSelected is true", () => {
     render(
       <MockWrapper>
-        <TaskActionGroup task={recurringTask} isSelected={true} />
+        <TaskActionGroup task={recurringTask} />
       </MockWrapper>,
     );
 
     const buttons = screen.getAllByRole("button");
 
-    // Both buttons should have text-base-0D class when selected
+    // Both buttons should have group-focus-within:text-base-0D class when focused
     buttons.forEach((button) => {
-      expect(button).toHaveClass("text-base-0D");
+      expect(button).toHaveClass("group-focus-within:text-base-0D");
     });
   });
 

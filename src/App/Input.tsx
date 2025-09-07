@@ -4,6 +4,7 @@ import { getSnapshot } from "mobx-state-tree";
 import { observer } from "mobx-react-lite";
 
 import { useStore, useEnterKey, useEscapeKey } from "../hooks";
+import IconMdiUpdate from "~icons/mdi/update.jsx";
 import { TimeLabel } from "../Agenda/Task/TimeLabel";
 import { DurationLabel } from "../Agenda/Task/DurationLabel";
 import { DateLabel } from "../Agenda/Task/DateLabel";
@@ -28,7 +29,12 @@ const Input = observer(() => {
   }, [store]);
 
   useEscapeKey(inputRef, () => {
-    input.setExpression("");
+    if (!showCompletions) {
+      input.setExpression("");
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
     setShowCompletions(false);
   });
 
@@ -40,6 +46,9 @@ const Input = observer(() => {
 
       input.setExpression("");
       setShowCompletions(false);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
       return true; // Event was handled
     }
     return false; // Event was not handled
@@ -79,8 +88,12 @@ const Input = observer(() => {
     // Find the end of the current word (next space or end of text)
     const textFromTrigger = currentValue.substring(triggerPosition + 1);
     const spaceIndex = textFromTrigger.indexOf(" ");
-    const query = spaceIndex >= 0 ? textFromTrigger.substring(0, spaceIndex) : textFromTrigger;
-    const afterQuery = spaceIndex >= 0 ? textFromTrigger.substring(spaceIndex) : "";
+    const query =
+      spaceIndex >= 0
+        ? textFromTrigger.substring(0, spaceIndex)
+        : textFromTrigger;
+    const afterQuery =
+      spaceIndex >= 0 ? textFromTrigger.substring(spaceIndex) : "";
 
     const newValue = `${beforeTrigger}${item.type}${item.value} ${afterQuery}`;
     input.setExpression(newValue);
@@ -123,7 +136,10 @@ const Input = observer(() => {
       // Find the end of the current word (next space or end of text)
       const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
       const spaceIndex = textFromTrigger.indexOf(" ");
-      const query = spaceIndex >= 0 ? textFromTrigger.substring(0, spaceIndex) : textFromTrigger;
+      const query =
+        spaceIndex >= 0
+          ? textFromTrigger.substring(0, spaceIndex)
+          : textFromTrigger;
 
       // Only show completions if there's no space immediately after the trigger
       const charAfterTrigger = newValue[triggerIndex + 1];
@@ -169,9 +185,9 @@ const Input = observer(() => {
 
       <div
         className={classNames(
-          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01/80 dark:bg-base-02/80 rounded-lg border border-base-02/50 dark:border-base-03/50 backdrop-blur-sm",
+          "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01 dark:bg-base-02 rounded-lg backdrop-blur-sm",
           {
-            "border-base-08/50 ring-2 ring-base-08/20":
+            "border-base-08 ring-2 ring-base-08":
               !input.isBlank && !input.isValid,
           },
         )}
@@ -198,40 +214,43 @@ const Input = observer(() => {
           ref={inputRef}
           autoComplete="off"
           autoFocus
+          tabIndex={1}
           name="expression"
           className="flex-auto font-medium placeholder:italic placeholder-base-04 bg-transparent outline-none"
           type="text"
           value={input.expression}
           onChange={onChangeExpression}
           onKeyDown={(e) => {
-            if (!showCompletions) return;
-
-            switch (e.key) {
-              case "ArrowDown":
-                e.preventDefault();
-                setSelectedCompletionIndex((prev) =>
-                  prev < completionItems.length - 1 ? prev + 1 : 0,
-                );
-                break;
-              case "ArrowUp":
-                e.preventDefault();
-                setSelectedCompletionIndex((prev) =>
-                  prev > 0 ? prev - 1 : completionItems.length - 1,
-                );
-                break;
-              case "Enter":
-              case "Tab":
-                e.preventDefault();
-                if (completionItems[selectedCompletionIndex]) {
-                  handleCompletionSelect(
-                    completionItems[selectedCompletionIndex],
+            if (showCompletions) {
+              switch (e.key) {
+                case "ArrowDown":
+                  e.preventDefault();
+                  setSelectedCompletionIndex((prev) =>
+                    prev < completionItems.length - 1 ? prev + 1 : 0,
                   );
-                }
-                break;
-              case "Escape":
-                e.preventDefault();
-                setShowCompletions(false);
-                break;
+                  break;
+                case "ArrowUp":
+                  e.preventDefault();
+                  setSelectedCompletionIndex((prev) =>
+                    prev > 0 ? prev - 1 : completionItems.length - 1,
+                  );
+                  break;
+                case "Enter":
+                case "Tab":
+                  e.preventDefault();
+                  if (completionItems[selectedCompletionIndex]) {
+                    handleCompletionSelect(
+                      completionItems[selectedCompletionIndex],
+                    );
+                  }
+                  break;
+                case "Escape":
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowCompletions(false);
+                  return; // Prevent further handling (do not reset input)
+              }
+              return; // Early return when completions are showing
             }
           }}
           onBlur={() => {

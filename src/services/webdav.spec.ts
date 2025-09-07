@@ -102,7 +102,7 @@ describe("WebDAVService", () => {
       await service.uploadData(testData);
 
       expect(mockClient.putFileContents).toHaveBeenCalledWith(
-        ".simply-do/tasks.json",
+        ".agenda/tasks.json",
         testData,
         {
           overwrite: true,
@@ -124,11 +124,11 @@ describe("WebDAVService", () => {
 
       await service.uploadData(testData);
 
-      expect(mockClient.createDirectory).toHaveBeenCalledWith(".simply-do", {
+      expect(mockClient.createDirectory).toHaveBeenCalledWith(".agenda", {
         recursive: true,
       });
       expect(mockClient.putFileContents).toHaveBeenCalledWith(
-        ".simply-do/tasks.json",
+        ".agenda/tasks.json",
         testData,
         {
           overwrite: true,
@@ -173,7 +173,7 @@ describe("WebDAVService", () => {
 
       expect(result).toBe(testData);
       expect(mockClient.getFileContents).toHaveBeenCalledWith(
-        ".simply-do/tasks.json",
+        ".agenda/tasks.json",
         { format: "text" },
       );
     });
@@ -286,9 +286,9 @@ describe("WebDAVService", () => {
 
       mockClient.createDirectory.mockResolvedValue(undefined);
 
-      await service.ensureDirectoryExists(".simply-do");
+      await service.ensureDirectoryExists(".agenda");
 
-      expect(mockClient.createDirectory).toHaveBeenCalledWith(".simply-do", {
+      expect(mockClient.createDirectory).toHaveBeenCalledWith(".agenda", {
         recursive: true,
       });
     });
@@ -306,7 +306,7 @@ describe("WebDAVService", () => {
 
       // Should not throw
       await expect(
-        service.ensureDirectoryExists(".simply-do"),
+        service.ensureDirectoryExists(".agenda"),
       ).resolves.toBeUndefined();
     });
   });

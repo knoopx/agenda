@@ -55,6 +55,8 @@ const Task = Expression.named("Task")
           return;
         }
       }
+      // For non-recurring tasks, set lastCompletedAt to completion time
+      self.lastCompletedAt = now;
       self.isCompleted = true;
     },
 

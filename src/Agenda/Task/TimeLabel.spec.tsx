@@ -48,12 +48,12 @@ describe("TimeLabel", () => {
     const time = DateTime.local(2024, 1, 15, 9, 15);
     render(
       <MockWrapper>
-        <TimeLabel date={time} isSelected={true} />
+        <TimeLabel date={time} />
       </MockWrapper>,
     );
 
     const label = screen.getByText("9:15").parentElement;
-    expect(label).toHaveClass("text-base-0D");
+    expect(label).toHaveClass("group-focus-within:text-base-0D");
   });
 
   it("applies custom className", () => {

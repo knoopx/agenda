@@ -18,12 +18,7 @@ let store: any;
 const renderSubjectInput = (task: ITask, props: any = {}) => {
   return render(
     <StoreContext.Provider value={store}>
-      <SubjectInput
-        isFocused={false}
-        task={task}
-        isSelected={false}
-        {...props}
-      />
+      <SubjectInput isFocused={false} task={task} tabIndex={2} {...props} />
     </StoreContext.Provider>,
   );
 };
@@ -58,12 +53,19 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@home';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "@home";
+          }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -76,12 +78,19 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "#");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '#urgent';
-        })).toBeInTheDocument();
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '#personal';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
+  );
+})(),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "#personal";
+          }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -94,9 +103,14 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
       });
     });
 
@@ -134,18 +148,25 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "@wo");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '@work';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       await user.keyboard("{Enter}");
+      await user.keyboard("{Enter}");
 
-       expect(input).toHaveValue("@work ");
-       expect(screen.queryByText((content, element) => {
-         return element?.textContent === '@work';
-       })).not.toBeInTheDocument();
+      expect(input).toHaveValue("@work ");
+      expect(
+        screen.queryByText((content, element) => {
+          return element?.textContent === "@work";
+        }),
+      ).not.toBeInTheDocument();
     });
 
     it("selects completion with Tab key", async () => {
@@ -156,18 +177,25 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "#u");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '#urgent';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       await user.keyboard("{Tab}");
+      await user.keyboard("{Tab}");
 
-       expect(input).toHaveValue("#urgent ");
-       expect(screen.queryByText((content, element) => {
-         return element?.textContent === '#urgent';
-       })).not.toBeInTheDocument();
+      expect(input).toHaveValue("#urgent ");
+      expect(
+        screen.queryByText((content, element) => {
+          return element?.textContent === "#urgent";
+        }),
+      ).not.toBeInTheDocument();
     });
 
     it("navigates completions with arrow keys", async () => {
@@ -178,34 +206,45 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "@");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '@work';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       // First item should be selected by default
-       let selectedItem = screen.getByText((content, element) => {
-         return element?.textContent === '@work';
-       }).closest("div");
-       expect(selectedItem).toHaveClass("bg-base-04");
+      // First item should be selected by default
+      let selectedItem = screen
+        .getByText((content, element) => {
+          return element?.textContent === "@work";
+        })
+        .closest("div");
+      expect(selectedItem).toHaveClass("bg-base-03");
 
-       // Navigate down
-       await user.keyboard("{ArrowDown}");
-       selectedItem = screen.getByText((content, element) => {
-         return element?.textContent === '@home';
-       }).closest("div");
-       expect(selectedItem).toHaveClass("bg-base-04");
+      // Navigate down
+      await user.keyboard("{ArrowDown}");
+      selectedItem = screen
+        .getByText((content, element) => {
+          return element?.textContent === "@home";
+        })
+        .closest("div");
+      expect(selectedItem).toHaveClass("bg-base-03");
 
-       // Navigate up (should cycle to last item)
-       await user.keyboard("{ArrowUp}");
-       selectedItem = screen.getByText((content, element) => {
-         return element?.textContent === '@work';
-       }).closest("div");
-       expect(selectedItem).toHaveClass("bg-base-04");
+      // Navigate up (should cycle to last item)
+      await user.keyboard("{ArrowUp}");
+      selectedItem = screen
+        .getByText((content, element) => {
+          return element?.textContent === "@work";
+        })
+        .closest("div");
+      expect(selectedItem).toHaveClass("bg-base-03");
     });
 
-    it("closes completion dropdown with Escape key", async () => {
+    it("closes completion dropdown with Escape key for @ completions", async () => {
       const user = userEvent.setup();
       renderSubjectInput(mockTask);
 
@@ -213,17 +252,52 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "@");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '@work';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       await user.keyboard("{Escape}");
+      await user.keyboard("{Escape}");
 
-       expect(screen.queryByText((content, element) => {
-         return element?.textContent === '@work';
-       })).not.toBeInTheDocument();
+      expect(
+        screen.queryByText((content, element) => {
+          return element?.textContent === "@work";
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("closes completion dropdown with Escape key for # completions", async () => {
+      const user = userEvent.setup();
+      renderSubjectInput(mockTask);
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.clear(input);
+      await user.type(input, "#");
+
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("urgent") && item.querySelector("span")?.textContent === "#"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
+
+      await user.keyboard("{Escape}");
+
+      expect(
+        screen.queryByText((content, element) => {
+          return element?.textContent === "#urgent";
+        }),
+      ).not.toBeInTheDocument();
     });
 
     it("closes completion dropdown on blur", async () => {
@@ -234,18 +308,25 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "@");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '@work';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       await user.click(document.body);
+      await user.click(document.body);
 
-       await waitFor(() => {
-         expect(screen.queryByText((content, element) => {
-           return element?.textContent === '@work';
-         })).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.queryByText((content, element) => {
+            return element?.textContent === "@work";
+          }),
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -259,17 +340,22 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.clear(input);
       await user.type(input, "Task @");
 
-       await waitFor(() => {
-         expect(screen.getByText((content, element) => {
-           return element?.textContent === '@work';
-         })).toBeInTheDocument();
-       });
+      await waitFor(() => {
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
+      });
 
-       const dropdown = screen
-         .getByText((content, element) => {
-           return element?.textContent === '@work';
-         })
-         .closest(".absolute") as HTMLElement;
+      const dropdown = screen
+        .getByText((content, element) => {
+          return element?.textContent === "@work";
+        })
+        .closest(".absolute") as HTMLElement;
       expect(dropdown).toBeInTheDocument();
       // Position should be set (exact values depend on input positioning)
       expect(dropdown?.style.top).toBeDefined();
@@ -287,9 +373,14 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "New task @wo");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
       });
 
       await user.keyboard("{Enter}");
@@ -306,9 +397,14 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "@wo");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
       });
 
       await user.keyboard("{Enter}");
@@ -330,9 +426,14 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "Task @wo more text");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
       });
 
       await user.keyboard("{Enter}");
@@ -354,7 +455,7 @@ describe("SubjectInput Component - Completion Functionality", () => {
 
       render(
         <StoreContext.Provider value={emptyStore}>
-          <SubjectInput isFocused={false} task={emptyTask} isSelected={false} />
+          <SubjectInput isFocused={false} task={emptyTask} />
         </StoreContext.Provider>,
       );
 
@@ -377,9 +478,14 @@ describe("SubjectInput Component - Completion Functionality", () => {
       await user.type(input, "rk");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === '@work';
-        })).toBeInTheDocument();
+        expect(
+          (() => {
+  const items = screen.getAllByRole("listitem");
+  return items.find(item =>
+    item.textContent?.includes("work") && item.querySelector("span")?.textContent === "@"
+  );
+})(),
+        ).toBeInTheDocument();
       });
 
       // Should still work correctly
@@ -398,15 +504,9 @@ describe("URL Display Behavior", () => {
       isValid: true,
     } as ITask;
 
-    render(
-      <SubjectInput
-        task={mockTask}
-        isFocused={false}
-        ref={() => {}}
-      />
-    );
+    render(<SubjectInput task={mockTask} isFocused={false} ref={() => {}} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole("textbox");
     expect(input).toHaveValue("");
   });
 
@@ -418,15 +518,9 @@ describe("URL Display Behavior", () => {
       isValid: true,
     } as ITask;
 
-    render(
-      <SubjectInput
-        task={mockTask}
-        isFocused={true}
-        ref={() => {}}
-      />
-    );
+    render(<SubjectInput task={mockTask} isFocused={true} ref={() => {}} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole("textbox");
     expect(input).toHaveValue("#buy https://amazon.com @order");
   });
 });

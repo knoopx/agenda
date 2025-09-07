@@ -4,15 +4,16 @@ import { HTMLAttributes } from "react";
 import { ITask } from "../../models/Task";
 
 import { TaskActionButton } from "./TaskActionButton";
+import { Tooltip } from "./Tooltip";
+import IconMdiTrashCan from "~icons/mdi/trash-can.jsx";
+import IconMdiUpdate from "~icons/mdi/update.jsx";
 
 export const TaskActionGroup = observer(
   ({
     className,
     task,
-    isSelected,
   }: {
     task: ITask;
-    isSelected?: boolean;
   } & HTMLAttributes<HTMLDivElement>) => {
     return (
       <div
@@ -20,25 +21,30 @@ export const TaskActionGroup = observer(
           "hidden group-hover:flex items-center space-x-1",
           className,
         )}
+        tabIndex={-1}
       >
-        <TaskActionButton
-          className={`${isSelected ? "text-base-0D" : ""} hover:text-base-08`}
-          onClick={() => {
-            task.remove();
-          }}
-        >
-          <IconMdiTrashCan />
-        </TaskActionButton>
-
-        {task.isRecurring && (
+        <Tooltip content="Delete task">
           <TaskActionButton
-            className={`${isSelected ? "text-base-0D" : ""} hover:text-base-0D`}
+            className="hover:text-base-08 group-focus-within:text-base-0D"
             onClick={() => {
-              task.reset();
+              task.remove();
             }}
           >
-            <IconMdiUpdate className="flip-x" />
+            <IconMdiTrashCan />
           </TaskActionButton>
+        </Tooltip>
+
+        {task.isRecurring && (
+          <Tooltip content="Reset recurring task">
+            <TaskActionButton
+              className="hover:text-base-0D group-focus-within:text-base-0D"
+              onClick={() => {
+                task.reset();
+              }}
+            >
+              <IconMdiUpdate className="flip-x" />
+            </TaskActionButton>
+          </Tooltip>
         )}
       </div>
     );

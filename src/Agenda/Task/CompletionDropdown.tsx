@@ -39,9 +39,19 @@ export const CompletionDropdown = observer(
         }
       };
 
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+        }
+      };
+
       document.addEventListener("mousedown", handleClickOutside);
-      return () =>
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
         document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
     }, [visible, onClose]);
 
     if (!visible || items.length === 0) return null;
@@ -49,7 +59,7 @@ export const CompletionDropdown = observer(
     return (
       <div
         ref={dropdownRef}
-        className="absolute z-50 bg-base-02 border border-base-05 dark:border-base-04 rounded-md shadow-lg max-h-48 overflow-y-auto"
+        className="absolute z-50 bg-base-01 border border-base-04 rounded-md shadow-lg max-h-48 overflow-y-auto"
         style={{
           top: position.top,
           left: position.left,
@@ -59,10 +69,11 @@ export const CompletionDropdown = observer(
         {items.map((item, index) => (
           <div
             key={`${item.type}${item.value}`}
+            role="listitem"
             className={classNames(
-              "px-3 py-2 cursor-pointer text-sm hover:bg-base-03",
+              "px-3 py-2 cursor-pointer text-sm text-base-05 hover:bg-base-03",
               {
-                "bg-base-04": index === selectedIndex,
+                "bg-base-03": index === selectedIndex,
               },
             )}
             onClick={() => onSelect(item)}

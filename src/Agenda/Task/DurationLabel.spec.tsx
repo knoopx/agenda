@@ -48,10 +48,10 @@ describe("DurationLabel", () => {
 
   it("applies selected styling when isSelected is true", () => {
     const duration = Duration.fromObject({ minutes: 45 });
-    render(<DurationLabel duration={duration} isSelected={true} />);
+    render(<DurationLabel duration={duration} />);
 
     const label = screen.getByText("45m").parentElement;
-    expect(label).toHaveClass("text-base-0D");
+    expect(label).toHaveClass("group-focus-within:text-base-0D");
   });
 
   it("applies custom className", () => {

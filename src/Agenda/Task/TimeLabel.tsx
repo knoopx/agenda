@@ -6,15 +6,14 @@ import { HTMLAttributes } from "react";
 import { useStore } from "../../hooks";
 
 import { Label } from "./Label";
+import IconMdiClockOutline from "~icons/mdi/clock-outline.jsx";
 
 export const TimeLabel = observer(
   ({
     date,
     className,
-    isSelected,
   }: {
     date: DateTime;
-    isSelected?: boolean;
   } & HTMLAttributes<HTMLSpanElement>) => {
     const { locale } = useStore();
 
@@ -24,9 +23,7 @@ export const TimeLabel = observer(
       <Label
         position="right"
         icon={IconMdiClockOutline}
-        className={classNames(className, {
-          "text-base-0D": isSelected,
-        })}
+        className={classNames(className, "group-focus-within:text-base-0D")}
       >
         {date.toLocaleString({ timeStyle: "short" }, { locale })}
       </Label>

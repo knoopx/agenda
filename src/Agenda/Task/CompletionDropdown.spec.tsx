@@ -80,8 +80,8 @@ describe("CompletionDropdown Component", () => {
     const selectedItem = screen.getByText("home").closest("div");
     const unselectedItem = screen.getByText("work").closest("div");
 
-    expect(selectedItem).toHaveClass("bg-base-04");
-    expect(unselectedItem).not.toHaveClass("bg-base-04");
+    expect(selectedItem).toHaveClass("bg-base-03");
+    expect(unselectedItem).not.toHaveClass("bg-base-03");
   });
 
   it("calls onSelect when item is clicked", () => {
@@ -165,6 +165,21 @@ describe("CompletionDropdown Component", () => {
     expect(hashSymbols[0]).toHaveClass("text-base-0B");
   });
 
+  it("closes when Escape is pressed", () => {
+    render(
+      <CompletionDropdown
+        items={mockItems}
+        selectedIndex={0}
+        onSelect={mockOnSelect}
+        onClose={mockOnClose}
+        position={{ top: 0, left: 0 }}
+        visible={true}
+      />,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
   it("handles click outside to close", () => {
     render(
       <CompletionDropdown
@@ -223,10 +238,9 @@ describe("CompletionDropdown Component", () => {
       .closest(".absolute") as HTMLElement;
     expect(dropdown).toHaveClass(
       "z-50",
-      "bg-base-02",
+      "bg-base-01",
       "border",
-      "border-base-05",
-      "dark:border-base-04",
+      "border-base-04",
       "rounded-md",
       "shadow-lg",
       "max-h-48",

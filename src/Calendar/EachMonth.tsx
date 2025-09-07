@@ -11,9 +11,9 @@ export default function EachMonth({
     <Interval
       {...props}
       className={classNames(
-        "flex-none w-full",
+        "flex-none w-full h-fit",
         {
-          "grid grid-cols-2 gap-4": !store.isCalendarSingleMonth,
+          "grid grid-cols-2 gap-1": !store.isCalendarSingleMonth,
         },
         props.className,
       )}

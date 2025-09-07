@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  cleanup,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DateTime, Settings } from "luxon";
 import { Store } from "../../models";
@@ -75,6 +81,24 @@ describe("Task Component", () => {
   });
 
   describe("Task Completion", () => {
+    it("displays duration for completed tasks", () => {
+      // Set up a task with a known createdAt and lastCompletedAt
+      const { runInAction } = require("mobx");
+      const createdAt = DateTime.local(2024, 1, 15, 8, 0, 0);
+      const completedAt = DateTime.local(2024, 1, 15, 10, 30, 0);
+      mockTask.update({
+        createdAt,
+        lastCompletedAt: completedAt,
+        isCompleted: true,
+      });
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>
+      );
+      // Duration should be 2h 30m
+      expect(screen.getByText(/2h.*30m/)).toBeInTheDocument();
+    });
     it("renders checked checkbox for completed task", () => {
       mockTask.complete();
 
@@ -98,7 +122,7 @@ describe("Task Component", () => {
       );
 
       const taskRow = screen.getByDisplayValue("Test task").closest("tr");
-      expect(taskRow).toHaveClass("opacity-50");
+      expect(taskRow).toHaveClass("text-base-03");
     });
 
     it("toggles task completion when checkbox is clicked", async () => {
@@ -271,7 +295,9 @@ describe("Task Component", () => {
       expect(store.editingTask).toBe(mockTask);
 
       await user.type(input, " updated{enter}");
-      expect(store.editingTask).toBeUndefined();
+      await waitFor(() => {
+        expect(store.editingTask).toBeUndefined();
+      });
       expect(mockTask.subject).toBe("Test task updated");
     });
 
@@ -289,7 +315,45 @@ describe("Task Component", () => {
       expect(store.editingTask).toBe(mockTask);
 
       await user.type(input, " updated{escape}");
-      expect(store.editingTask).toBeUndefined();
+      await waitFor(() => {
+        expect(store.editingTask).toBeUndefined();
+      });
+      expect(mockTask.subject).toBe("Test task"); // Should revert changes
+    });
+
+    it("maintains focus after submitting task edit with Enter", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.click(input);
+      expect(input).toHaveFocus();
+
+      await user.type(input, " updated{enter}");
+      expect(input).toHaveFocus(); // Focus should be maintained
+      expect(mockTask.subject).toBe("Test task updated");
+    });
+
+    it("maintains focus after cancelling task edit with Escape", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.click(input);
+      expect(input).toHaveFocus();
+
+      await user.type(input, " updated{escape}");
+      expect(input).toHaveFocus(); // Focus should be maintained
       expect(mockTask.subject).toBe("Test task"); // Should revert changes
     });
 
@@ -443,8 +507,10 @@ describe("Task Component", () => {
       // Click the checkbox - this should trigger onComplete with isFocused = true
       await user.click(checkbox);
       expect(mockTask.isCompleted).toBe(true);
-      // The input should be blurred by onSubmit
-      expect(input).not.toHaveFocus();
+      // After onSubmit, focus should return to input (checkbox gets focus initially)
+      await waitFor(() => {
+        expect(input).toHaveFocus();
+      });
     });
 
     it("does not call onSubmit when not focused before completing task", async () => {
@@ -482,12 +548,14 @@ describe("Task Component", () => {
       await user.type(input, " modified{escape}");
 
       expect(mockTask.subject).toBe(originalSubject);
-      expect(store.editingTask).toBeUndefined();
+      await waitFor(() => {
+        expect(store.editingTask).toBeUndefined();
+      });
     });
   });
 
   describe("onSubmit Behavior", () => {
-    it("clears editing task and blurs input on submit", async () => {
+    it("clears editing task but maintains focus on submit", async () => {
       const user = userEvent.setup();
 
       render(
@@ -502,8 +570,10 @@ describe("Task Component", () => {
       expect(store.editingTask).toBe(mockTask);
 
       await user.type(input, " updated{enter}");
-      expect(store.editingTask).toBeUndefined();
-      expect(input).not.toHaveFocus();
+      await waitFor(() => {
+        expect(store.editingTask).toBeUndefined();
+      });
+      expect(input).toHaveFocus(); // Focus should be maintained
     });
   });
 
@@ -708,21 +778,22 @@ describe("Task Component", () => {
       );
 
       const taskRow = screen.getByDisplayValue("Test task").closest("tr");
-      expect(taskRow).toHaveClass("opacity-50");
+      expect(taskRow).toHaveClass("text-base-03");
     });
 
-    it("applies background classes for selected and focused states", () => {
-      // Use the action to set selected task index
-      store.setSelectedTaskIndex(0);
-
+    it("applies background classes for selected and focused states", async () => {
       render(
         <MockWrapper>
           <Task task={mockTask} index={0} />
         </MockWrapper>,
       );
 
-      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
-      expect(taskRow).toHaveClass("bg-base-0D/10");
+      const input = screen.getByDisplayValue("Test task");
+      // Focus the input to trigger selected state
+      await userEvent.click(input);
+
+      const taskRow = input.closest("tr");
+      expect(taskRow).toHaveClass("focus-within:bg-base-02");
     });
 
     it("applies checked styling to checkbox", () => {
@@ -736,6 +807,28 @@ describe("Task Component", () => {
 
       const checkbox = screen.getByRole("checkbox");
       expect(checkbox).toHaveClass("checked:after:content-['✓']");
+    });
+
+    it("sets tabIndex correctly for keyboard navigation", () => {
+      render(
+        <MockWrapper>
+          <Task task={mockTask} index={0} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      expect(input).toHaveAttribute("tabIndex", "2"); // index 0 + 2 = 2
+    });
+
+    it("sets tabIndex correctly for different indices", () => {
+      render(
+        <MockWrapper>
+          <Task task={mockTask} index={5} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      expect(input).toHaveAttribute("tabIndex", "7"); // index 5 + 2 = 7
     });
   });
 });

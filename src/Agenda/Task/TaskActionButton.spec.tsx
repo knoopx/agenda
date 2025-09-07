@@ -16,8 +16,8 @@ describe("TaskActionButton", () => {
       "h-8",
       "text-base-04",
       "hover:text-base-05",
-      "hover:bg-base-02/50",
-      "dark:hover:bg-base-03/50",
+      "hover:bg-base-02",
+      "dark:hover:bg-base-03",
       "rounded-lg",
       "cursor-pointer",
     );

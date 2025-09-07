@@ -93,14 +93,14 @@ const Expression = t
     get subjectWithoutUrls() {
       const subject = this.ast?.subject ?? "";
       const urls = this.ast?.urls ?? [];
-      
+
       let cleanSubject = subject;
-      urls.forEach(url => {
-        cleanSubject = cleanSubject.replace(url, '').trim();
+      urls.forEach((url) => {
+        cleanSubject = cleanSubject.replace(url, "").trim();
       });
-      
+
       // Clean up multiple spaces
-      return cleanSubject.replace(/\s+/g, ' ').trim();
+      return cleanSubject.replace(/\s+/g, " ").trim();
     },
 
     get urls() {
@@ -232,7 +232,8 @@ const Expression = t
     },
 
     get emojis() {
-      return this.tags
+      // Combine tags and contexts, map to emojis, filter out undefined
+      return [...this.tags, ...this.contexts]
         .map((x) => emojiFromKeyword(x))
         .filter((x) => x !== undefined);
     },

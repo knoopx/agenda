@@ -1,6 +1,4 @@
 import Icons from "unplugin-icons/vite";
-import IconsResolver from "unplugin-icons/resolver";
-import AutoImport from "unplugin-auto-import/vite";
 import react from "@vitejs/plugin-react";
 import peggy from "peggy";
 import { defineConfig } from "vite";
@@ -41,19 +39,8 @@ const peggyPlugin = (options = {}) => {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/simply-do/",
+  base: "/agenda/",
   plugins: [
-    AutoImport({
-      eslintrc: {
-        enabled: true,
-      },
-      resolvers: [
-        IconsResolver({
-          prefix: "Icon",
-          extension: "jsx",
-        }),
-      ],
-    }),
     Icons({ compiler: "jsx", autoInstall: true }),
     peggyPlugin({
       cache: true,

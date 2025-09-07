@@ -6,6 +6,16 @@ import * as Popover from "@radix-ui/react-popover";
 import { useStore } from "../hooks";
 import { ButtonHTMLAttributes, SelectHTMLAttributes, useState } from "react";
 import { ITimeOfTheDay } from "../models/Store";
+import IconMdiSync from "~icons/mdi/sync.jsx";
+import IconMdiClose from "~icons/mdi/close.jsx";
+import IconMdiCloudUpload from "~icons/mdi/cloud-upload.jsx";
+import IconMdiAlertCircle from "~icons/mdi/alert-circle.jsx";
+import IconMdiCheckCircle from "~icons/mdi/check-circle.jsx";
+import IconMdiWeatherSunny from "~icons/mdi/weather-sunny.jsx";
+import IconMdiWeatherNight from "~icons/mdi/weather-night.jsx";
+import IconMdiContentCopy from "~icons/mdi/content-copy.jsx";
+import IconMdiContentPaste from "~icons/mdi/content-paste.jsx";
+import IconMdiTrashCanOutline from "~icons/mdi/trash-can-outline.jsx";
 
 export const Button = ({
   className,
@@ -135,7 +145,7 @@ const Settings = observer(() => {
         <label className="inline-flex items-center space-x-2 cursor-pointer">
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 hover:border-base-0D/70 appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-xs"
+            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D focus:ring-offset-0 hover:border-base-0D appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-xs"
             checked={store.displayEmoji}
             onChange={() => store.toggleDisplayEmoji()}
           />
@@ -166,7 +176,7 @@ const Settings = observer(() => {
                 <Button
                   onClick={forceSyncNow}
                   disabled={isForceSyncing}
-                  className="px-3 py-1 bg-base-0D hover:bg-base-0D/90 text-base-00 rounded disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                  className="px-3 py-1 bg-base-0D hover:bg-base-0D text-base-00 rounded disabled:bg-base-04 disabled:text-base-01 disabled:cursor-not-allowed text-xs font-medium"
                 >
                   {isForceSyncing ? (
                     <span className="flex items-center space-x-1">
@@ -189,7 +199,7 @@ const Settings = observer(() => {
                     store.webdav.setSyncError(undefined);
                     setWebdavStatus("");
                   }}
-                  className="px-3 py-1 bg-base-08 hover:bg-base-08/90 text-base-00 rounded text-xs font-medium"
+                  className="px-3 py-1 bg-base-08 hover:bg-base-08 text-base-00 rounded text-xs font-medium"
                 >
                   <span className="flex items-center space-x-1">
                     <IconMdiClose />
@@ -246,7 +256,7 @@ const Settings = observer(() => {
               <Button
                 onClick={connectAndSync}
                 disabled={isConnecting || !store.webdav.isConfigured()}
-                className="px-4 py-2 bg-base-0D hover:bg-base-0D/90 text-base-00 rounded disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                className="px-4 py-2 bg-base-0D hover:bg-base-0D text-base-00 rounded disabled:bg-base-04 disabled:text-base-01 disabled:cursor-not-allowed text-sm font-medium"
               >
                 {isConnecting ? (
                   <span className="flex items-center space-x-2">
@@ -267,8 +277,8 @@ const Settings = observer(() => {
             <div
               className={`text-xs px-3 py-2 rounded border ${
                 store.webdav.syncError || webdavStatus?.includes("failed")
-                  ? "bg-base-08/10 text-base-08 border-base-08/20 dark:bg-base-08/20 dark:text-base-08"
-                  : "bg-base-0B/10 text-base-0B border-base-0B/20 dark:bg-base-0B/20 dark:text-base-0B"
+                  ? "bg-base-08 text-base-08 border-base-08 dark:bg-base-08 dark:text-base-08"
+                  : "bg-base-0B text-base-0B border-base-0B dark:bg-base-0B dark:text-base-0B"
               }`}
             >
               <div className="flex items-start space-x-2">

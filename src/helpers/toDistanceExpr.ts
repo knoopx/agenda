@@ -35,7 +35,10 @@ export function toDistanceExpr(start: DateTime, end: DateTime) {
       return nextOrPast(end.day > 1 ? monthAndDay : endEn.monthShort || "");
     }
     // For dates exactly 2 years away, show full date with year
-    else if (duration.years === 2 || (duration.years === 1 && duration.months > 0)) {
+    else if (
+      duration.years === 2 ||
+      (duration.years === 1 && duration.months > 0)
+    ) {
       return monthDayYear;
     }
     // For very far dates (3+ years), use relative format - fall through to return relative

@@ -36,7 +36,7 @@ export class WebDAVService {
     }
   }
 
-  async ensureDirectoryExists(directory: string = ".simply-do"): Promise<void> {
+  async ensureDirectoryExists(directory: string = ".agenda"): Promise<void> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
     }
@@ -52,7 +52,7 @@ export class WebDAVService {
 
   async uploadData(
     data: string,
-    filename: string = ".simply-do/tasks.json",
+    filename: string = ".agenda/tasks.json",
   ): Promise<void> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
@@ -78,7 +78,7 @@ export class WebDAVService {
   }
 
   async downloadData(
-    filename: string = ".simply-do/tasks.json",
+    filename: string = ".agenda/tasks.json",
   ): Promise<string> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
@@ -98,7 +98,7 @@ export class WebDAVService {
   }
 
   async downloadDataIfNewer(
-    filename: string = ".simply-do/tasks.json",
+    filename: string = ".agenda/tasks.json",
   ): Promise<{ data: string; lastModified: Date } | null> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
@@ -124,7 +124,7 @@ export class WebDAVService {
   }
 
   async getLastModified(
-    filename: string = ".simply-do/tasks.json",
+    filename: string = ".agenda/tasks.json",
   ): Promise<Date | null> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");
@@ -143,7 +143,7 @@ export class WebDAVService {
   }
 
   async fileExists(
-    filename: string = ".simply-do/tasks.json",
+    filename: string = ".agenda/tasks.json",
   ): Promise<boolean> {
     if (!this.client) {
       throw new Error("WebDAV client not configured");

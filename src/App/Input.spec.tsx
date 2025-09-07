@@ -81,12 +81,16 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === "@work";
-        })).toBeInTheDocument();
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === "@home";
-        })).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "@work";
+          }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "@home";
+          }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -99,12 +103,16 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "#");
 
       await waitFor(() => {
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === "#urgent";
-        })).toBeInTheDocument();
-        expect(screen.getByText((content, element) => {
-          return element?.textContent === "#personal";
-        })).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "#urgent";
+          }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText((content, element) => {
+            return element?.textContent === "#personal";
+          }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -117,10 +125,10 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
-        expect(dropdown?.textContent).not.toContain('@home');
+        expect(dropdown?.textContent).toContain("@work");
+        expect(dropdown?.textContent).not.toContain("@home");
       });
     });
 
@@ -159,16 +167,16 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).toContain("@work");
       });
 
       await user.keyboard("{Enter}");
 
       expect(input).toHaveValue("@work ");
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -182,16 +190,16 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "#u");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('#urgent');
+        expect(dropdown?.textContent).toContain("#urgent");
       });
 
       await user.keyboard("{Tab}");
 
       expect(input).toHaveValue("#urgent ");
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -205,23 +213,23 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
       });
 
       // First item should be selected by default
-      const dropdown = document.querySelector('.absolute.z-50') as HTMLElement;
-      const firstItem = dropdown.querySelector('div');
-      expect(firstItem?.classList.contains('bg-base-04')).toBe(true);
+      const dropdown = document.querySelector(".absolute.z-50") as HTMLElement;
+      const firstItem = dropdown.querySelector("div");
+      expect(firstItem?.classList.contains("bg-base-03")).toBe(true);
 
       // Navigate down
       await user.keyboard("{ArrowDown}");
-      const secondItem = dropdown.querySelectorAll('div')[1];
-      expect(secondItem?.classList.contains('bg-base-04')).toBe(true);
+      const secondItem = dropdown.querySelectorAll("div")[1];
+      expect(secondItem?.classList.contains("bg-base-03")).toBe(true);
 
       // Navigate up (should cycle to last item)
       await user.keyboard("{ArrowUp}");
-      expect(firstItem?.classList.contains('bg-base-04')).toBe(true);
+      expect(firstItem?.classList.contains("bg-base-03")).toBe(true);
     });
 
     it("closes completion dropdown with Escape key", async () => {
@@ -233,14 +241,14 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
       });
 
       await user.keyboard("{Escape}");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -254,14 +262,14 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
       });
 
       await user.click(document.body);
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).not.toBeInTheDocument();
       });
     });
@@ -277,11 +285,11 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "Task @");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
       });
 
-      const dropdown = document.querySelector('.absolute.z-50') as HTMLElement;
+      const dropdown = document.querySelector(".absolute.z-50") as HTMLElement;
       expect(dropdown).toBeInTheDocument();
       // Position should be set (exact values depend on input positioning)
       expect(dropdown?.style.top).toBeDefined();
@@ -299,9 +307,9 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "New task @w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).toContain("@work");
       });
 
       await user.keyboard("{Enter}");
@@ -318,9 +326,9 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "@w");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).toContain("@work");
       });
 
       await user.keyboard("{Enter}");
@@ -339,9 +347,9 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "Task @w more text");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).toContain("@work");
       });
 
       await user.keyboard("{Enter}");
@@ -384,9 +392,9 @@ describe("Input Component - Completion Functionality", () => {
       await user.type(input, "rk");
 
       await waitFor(() => {
-        const dropdown = document.querySelector('.absolute.z-50');
+        const dropdown = document.querySelector(".absolute.z-50");
         expect(dropdown).toBeInTheDocument();
-        expect(dropdown?.textContent).toContain('@work');
+        expect(dropdown?.textContent).toContain("@work");
       });
 
       // Should still work correctly
@@ -429,6 +437,67 @@ describe("Input Component - Completion Functionality", () => {
       renderInput();
       const input = screen.getByPlaceholderText("filter or add a task...");
       expect(input).toHaveFocus();
+    });
+
+    it("maintains focus after submitting task with Enter", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "valid task");
+
+      // Initially focused
+      expect(input).toHaveFocus();
+
+      await user.keyboard("{Enter}");
+
+      // Should still be focused after submission
+      expect(input).toHaveFocus();
+      expect(store.input.expression).toBe("");
+    });
+
+    it("maintains focus after cancelling with Escape", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "some task");
+
+      // Initially focused
+      expect(input).toHaveFocus();
+
+      await user.keyboard("{Escape}");
+
+      // Should still be focused after cancellation
+      expect(input).toHaveFocus();
+      expect(store.input.expression).toBe("");
+    });
+
+    it("maintains focus after cancelling with Escape when completions are showing", async () => {
+      const user = userEvent.setup();
+      renderInput();
+
+      const input = screen.getByPlaceholderText("filter or add a task...");
+      await user.clear(input);
+      await user.type(input, "@w");
+
+      // Wait for completions to show
+      await waitFor(() => {
+        const dropdown = document.querySelector(".absolute.z-50");
+        expect(dropdown).toBeInTheDocument();
+      });
+
+      // Initially focused
+      expect(input).toHaveFocus();
+
+      await user.keyboard("{Escape}");
+
+      // Should still be focused after cancelling completions
+      expect(input).toHaveFocus();
+      // Expression should not be cleared when completions are showing
+      expect(store.input.expression).toBe("@w");
     });
   });
 });
