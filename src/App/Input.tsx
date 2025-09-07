@@ -21,7 +21,7 @@ const Input = observer(() => {
   const [completionItems, setCompletionItems] = useState<CompletionItem[]>([]);
   const [selectedCompletionIndex, setSelectedCompletionIndex] = useState(0);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const [currentTrigger, setCurrentTrigger] = useState<"@" | "#" | null>(null);
+
   const [triggerPosition, setTriggerPosition] = useState(0);
 
   useEffect(() => {
@@ -88,10 +88,6 @@ const Input = observer(() => {
     // Find the end of the current word (next space or end of text)
     const textFromTrigger = currentValue.substring(triggerPosition + 1);
     const spaceIndex = textFromTrigger.indexOf(" ");
-    const query =
-      spaceIndex >= 0
-        ? textFromTrigger.substring(0, spaceIndex)
-        : textFromTrigger;
     const afterQuery =
       spaceIndex >= 0 ? textFromTrigger.substring(spaceIndex) : "";
 
@@ -151,7 +147,7 @@ const Input = observer(() => {
           if (cursorPosition >= queryStart && cursorPosition <= queryEnd) {
             setCompletionItems(completions);
             setSelectedCompletionIndex(0);
-            setCurrentTrigger(trigger);
+
             setTriggerPosition(triggerIndex);
             setShowCompletions(true);
 

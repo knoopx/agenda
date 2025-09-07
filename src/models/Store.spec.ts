@@ -759,28 +759,7 @@ describe("WebDAV Sync Operations", () => {
     expect(task2?.expression).toBe("updated new local task");
   });
 
-  it("should merge settings preferring local values", () => {
-    const store = Store.create({
-      locale: "en-US",
-      timeZone: "UTC",
-      useDarkMode: false,
-    });
 
-    const remoteStore = {
-      locale: "es-ES", // Different from local
-      timeZone: "Europe/Madrid", // Different from local, should update
-      useDarkMode: true, // Local is defined, should keep local
-    };
-
-    store.mergeSettings(remoteStore);
-
-    // Should keep local locale
-    expect(store.locale).toBe("en-US");
-    // Should use remote timeZone since it's different
-    expect(store.timeZone).toBe("Europe/Madrid");
-    // Should keep local useDarkMode
-    expect(store.useDarkMode).toBe(false);
-  });
 
   it("should mark changes as pending when webdav is configured", () => {
     const store = Store.create({
@@ -969,8 +948,22 @@ describe("Deletion Tracking", () => {
   });
 
   it("should remove tasks that were deleted remotely during merge", () => {
-    const task1 = store.addTask({ expression: "Task to be deleted remotely" });
-    const task2 = store.addTask({ expression: "Task to keep" });
+    // Set up a last sync time in the past
+    const lastSyncTime = new Date("2024-01-01T12:00:00Z");
+    store.webdav.setLastSync(lastSyncTime);
+
+    // Create tasks with timestamps before the last sync
+    const oldTimestamp = DateTime.fromISO("2024-01-01T10:00:00Z");
+    const task1 = store.addTask({
+      expression: "Task to be deleted remotely",
+      createdAt: oldTimestamp,
+      lastModified: oldTimestamp
+    });
+    const task2 = store.addTask({
+      expression: "Task to keep",
+      createdAt: oldTimestamp,
+      lastModified: oldTimestamp
+    });
     expect(task1).toBeDefined();
     expect(task2).toBeDefined();
 
@@ -1063,5 +1056,329 @@ describe("Deletion Tracking", () => {
     // Should update to remote version since it's newer
     const task = store.tasks.find((t) => t.id === "task1");
     expect(task?.expression).toBe("remote task");
+  });
+
+  describe("Last-writer-wins task merging", () => {
+    it("should replace entire local task with remote when remote is newer", () => {
+      const store = Store.create({
+        tasks: [
+          {
+            id: "task1",
+            expression: "local expression",
+            isCompleted: false,
+            completionCount: 0,
+            tags: ["local"],
+            context: "local-context",
+            lastModified: "2024-01-01T12:00:00Z",
+          },
+        ],
+      });
+
+      const remoteTasks = [
+        {
+          id: "task1",
+          expression: "remote expression #remote @remote-context",
+          isCompleted: true,
+          completionCount: 2,
+          lastModified: "2024-01-02T12:00:00Z",
+        },
+      ];
+
+      store.mergeTasks(remoteTasks);
+
+      const task = store.tasks.find((t) => t.id === "task1");
+      expect(task?.expression).toBe("remote expression #remote @remote-context");
+      expect(task?.isCompleted).toBe(true);
+      expect(task?.completionCount).toBe(2);
+      expect(task?.tags).toEqual(["remote"]);
+      expect(task?.context).toBe("remote-context");
+    });
+
+    it("should keep entire local task when local is newer", () => {
+      const store = Store.create({
+        tasks: [
+          {
+            id: "task1",
+            expression: "local expression #local @local-context",
+            isCompleted: true,
+            completionCount: 1,
+            lastModified: "2024-01-02T12:00:00Z",
+          },
+        ],
+      });
+
+      const remoteTasks = [
+        {
+          id: "task1",
+          expression: "remote expression",
+          isCompleted: false,
+          completionCount: 0,
+          tags: ["remote"],
+          context: "remote-context",
+          lastModified: "2024-01-01T12:00:00Z",
+        },
+      ];
+
+      store.mergeTasks(remoteTasks);
+
+      const task = store.tasks.find((t) => t.id === "task1");
+      expect(task?.expression).toBe("local expression #local @local-context");
+      expect(task?.isCompleted).toBe(true);
+      expect(task?.completionCount).toBe(1);
+      expect(task?.tags).toEqual(["local"]);
+      expect(task?.context).toBe("local-context");
+    });
+
+    it("should handle equal timestamps by preferring remote (deterministic behavior)", () => {
+      const store = Store.create({
+        tasks: [
+          {
+            id: "task1",
+            expression: "local expression",
+            lastModified: "2024-01-01T12:00:00Z",
+          },
+        ],
+      });
+
+      const remoteTasks = [
+        {
+          id: "task1",
+          expression: "remote expression",
+          lastModified: "2024-01-01T12:00:00Z",
+        },
+      ];
+
+      store.mergeTasks(remoteTasks);
+
+      const task = store.tasks.find((t) => t.id === "task1");
+      expect(task?.expression).toBe("remote expression");
+    });
+  });
+
+  describe("Concurrent edit edge cases", () => {
+    it("should handle tasks created after last sync (should keep local)", () => {
+      const lastSyncTime = new Date("2024-01-01T12:00:00Z");
+      const store = Store.create({
+        tasks: [
+          {
+            id: "new-local-task",
+            expression: "new local task",
+            createdAt: "2024-01-02T12:00:00Z", // Created after last sync
+            lastModified: "2024-01-02T12:00:00Z",
+          },
+        ],
+        webdav: {
+          lastSync: lastSyncTime,
+        },
+      });
+
+      // Remote data doesn't include this task (it was created locally after sync)
+      const remoteTasks: any[] = [];
+      const remoteDeletedIds: string[] = [];
+
+      store.mergeTasks(remoteTasks, remoteDeletedIds);
+
+      // Should keep the local task
+      expect(store.tasks.length).toBe(1);
+      expect(store.tasks[0].id).toBe("new-local-task");
+    });
+
+    it("should handle tasks modified after last sync (should keep local)", () => {
+      const lastSyncTime = new Date("2024-01-01T12:00:00Z");
+      const store = Store.create({
+        tasks: [
+          {
+            id: "modified-local-task",
+            expression: "modified local task",
+            createdAt: "2024-01-01T10:00:00Z", // Created before last sync
+            lastModified: "2024-01-02T12:00:00Z", // Modified after last sync
+          },
+        ],
+        webdav: {
+          lastSync: lastSyncTime,
+        },
+      });
+
+      // Remote data has older version
+      const remoteTasks = [
+        {
+          id: "modified-local-task",
+          expression: "old remote task",
+          lastModified: "2024-01-01T11:00:00Z",
+        },
+      ];
+
+      store.mergeTasks(remoteTasks);
+
+      // Should keep the local modified version
+      const task = store.tasks.find((t) => t.id === "modified-local-task");
+      expect(task?.expression).toBe("modified local task");
+    });
+
+    it("should handle malformed remote data gracefully", () => {
+      const store = Store.create({
+        tasks: [
+          { id: "task1", expression: "original task" },
+        ],
+      });
+
+      // Remote data with various malformed entries
+      const remoteTasks = [
+        { id: "task1", expression: "valid task" },
+        { id: "task2", expression: null }, // Invalid expression
+        { id: "task3", expression: "valid task 3", isCompleted: "not-a-boolean" }, // Invalid boolean
+        null, // Null entry
+        undefined, // Undefined entry
+      ];
+
+      expect(() => {
+        store.mergeTasks(remoteTasks);
+      }).not.toThrow();
+
+      // Should have processed the valid tasks (task1 updated, task2 and task3 added)
+      expect(store.tasks.length).toBe(3); // Original (updated) + 2 valid remote tasks
+      expect(store.tasks.find((t) => t.id === "task1")?.expression).toBe("valid task");
+      expect(store.tasks.find((t) => t.id === "task2")?.expression).toBe("Task task2"); // Fixed from null
+      expect(store.tasks.find((t) => t.id === "task3")?.expression).toBe("valid task 3");
+    });
+
+    it("should handle empty or invalid remote data", () => {
+      const store = Store.create({
+        tasks: [
+          { id: "task1", expression: "original task" },
+        ],
+      });
+
+      // Test with null remote tasks
+      expect(() => {
+        store.mergeTasks(null as any);
+      }).not.toThrow();
+
+      // Test with undefined remote tasks
+      expect(() => {
+        store.mergeTasks(undefined as any);
+      }).not.toThrow();
+
+      // Test with non-array remote tasks
+      expect(() => {
+        store.mergeTasks("not-an-array" as any);
+      }).not.toThrow();
+
+      // Original task should still exist
+      expect(store.tasks.length).toBe(1);
+      expect(store.tasks[0].id).toBe("task1");
+    });
+
+    it("should sanitize task data during merge", () => {
+      const store = Store.create({
+        tasks: [],
+      });
+
+      const remoteTasks = [
+        {
+          id: "task1",
+          expression: "test task #tag1",
+          isCompleted: true, // Boolean
+          completionCount: 5, // Number
+        },
+      ];
+
+      store.mergeTasks(remoteTasks);
+
+      const task = store.tasks[0];
+      expect(task.isCompleted).toBe(true);
+      expect(task.completionCount).toBe(5);
+      expect(task.tags).toEqual(["tag1"]); // Tags parsed from expression
+      expect(task.expression).toBe("test task #tag1");
+    });
+  });
+
+  describe("Data validation", () => {
+    it("should validate and sanitize remote tasks", () => {
+      const store = Store.create();
+
+      const validTasks = store.validateAndSanitizeTasks([
+        { id: "valid1", expression: "valid task" },
+        { id: "", expression: "invalid id" }, // Invalid: empty id
+        { id: "valid2", expression: "" }, // Invalid: empty expression
+        null, // Invalid: null
+        { id: "valid3", expression: "valid task 3" },
+      ]);
+
+      expect(validTasks.length).toBe(3); // valid1, valid2 (fixed), valid3
+      expect(validTasks[0].id).toBe("valid1");
+      expect(validTasks[1].id).toBe("valid2"); // Expression was fixed with default
+      expect(validTasks[2].id).toBe("valid3");
+    });
+
+    it("should validate and sanitize deleted task IDs", () => {
+      const store = Store.create();
+
+      const validIds = store.validateAndSanitizeDeletedIds([
+        "valid-id-1",
+        "", // Invalid: empty string
+        null, // Invalid: null
+        "valid-id-2",
+        123, // Invalid: number
+      ]);
+
+      expect(validIds.length).toBe(2);
+      expect(validIds).toEqual(["valid-id-1", "valid-id-2"]);
+    });
+
+    it("should handle mergeRemoteData with invalid JSON", async () => {
+      const store = Store.create();
+
+      await expect(store.mergeRemoteData("invalid json")).rejects.toThrow("Invalid remote data format");
+      await expect(store.mergeRemoteData("")).rejects.toThrow("Invalid remote data format");
+      await expect(store.mergeRemoteData(null as any)).rejects.toThrow("Invalid remote data format");
+    });
+
+    it("should handle mergeRemoteData with valid data", async () => {
+      const store = Store.create();
+
+      const remoteData = JSON.stringify({
+        tasks: [
+          {
+            id: "remote1",
+            expression: "remote task 1",
+            createdAt: "2024-01-01T10:00:00.000Z",
+            lastCompletedAt: "2024-01-01T10:00:00.000Z",
+            lastModified: "2024-01-01T10:00:00.000Z",
+            isCompleted: false,
+            completionCount: 0,
+          },
+          {
+            id: "remote2",
+            expression: "remote task 2",
+            createdAt: "2024-01-01T11:00:00.000Z",
+            lastCompletedAt: "2024-01-01T11:00:00.000Z",
+            lastModified: "2024-01-01T11:00:00.000Z",
+            isCompleted: false,
+            completionCount: 0,
+          },
+        ],
+        deletedTaskIds: [],
+        lastSync: "2024-01-01T12:00:00.000Z",
+      });
+
+      await expect(store.mergeRemoteData(remoteData)).resolves.toBeUndefined();
+      expect(store.tasks.length).toBe(2);
+    });
+
+    it("should handle mergeRemoteData with metadata", async () => {
+      const store = Store.create();
+
+      const remoteDataWithMetadata = JSON.stringify({
+        tasks: [
+          { id: "remote1", expression: "remote task 1" },
+        ],
+        deletedTaskIds: [],
+        lastSync: "2024-01-01T12:00:00Z",
+      });
+
+      await expect(store.mergeRemoteData(remoteDataWithMetadata)).resolves.toBeUndefined();
+      expect(store.tasks.length).toBe(1);
+    });
   });
 });

@@ -27,11 +27,9 @@ export const SubjectInput = observer(
       top: 0,
       left: 0,
     });
-    const [currentTrigger, setCurrentTrigger] = useState<"@" | "#" | null>(
-      null,
-    );
+
     const [triggerPosition, setTriggerPosition] = useState(0);
-    const [cursorPosition, setCursorPosition] = useState(0);
+
     const inputRef = useRef<HTMLInputElement>(null);
     const [localExpression, setLocalExpression] = useState(task.expression);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,7 +113,7 @@ export const SubjectInput = observer(
           const completions = getCompletions(trigger, query);
           if (completions.length > 0) {
             const queryStart = triggerIndex + 1;
-            const queryEnd = queryStart + query.length;
+
             // More lenient cursor position check for test environments
             if (
               cursorPosition >= queryStart ||
@@ -129,9 +127,9 @@ export const SubjectInput = observer(
               setSelectedCompletionIndex(
                 exactMatchIndex >= 0 ? exactMatchIndex : 0,
               );
-              setCurrentTrigger(trigger);
+
               setTriggerPosition(triggerIndex);
-              setCursorPosition(cursorPosition);
+
               setShowCompletions(true);
 
               // Calculate dropdown position
@@ -243,7 +241,7 @@ export const SubjectInput = observer(
         timeoutRef.current = setTimeout(() => {
           if (isMountedRef.current && inputRef.current) {
             inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
-            setCursorPosition(newCursorPos);
+
           }
         }, 0);
       }
