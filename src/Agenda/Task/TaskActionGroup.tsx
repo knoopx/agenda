@@ -30,7 +30,7 @@ export const TaskActionGroup = observer(
               task.remove();
             }}
           >
-            <IconMdiTrashCan />
+            <IconMdiTrashCan className="w-4 h-4" />
           </TaskActionButton>
         </Tooltip>
 
@@ -42,7 +42,7 @@ export const TaskActionGroup = observer(
                 task.reset();
               }}
             >
-              <IconMdiUpdate className="flip-x" />
+              <IconMdiUpdate className="w-4 h-4 flip-x" />
             </TaskActionButton>
           </Tooltip>
         )}

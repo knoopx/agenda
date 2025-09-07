@@ -175,10 +175,10 @@ describe("Input Component - Completion Functionality", () => {
       await user.keyboard("{Enter}");
 
       expect(input).toHaveValue("@work ");
-      await waitFor(() => {
-        const dropdown = document.querySelector(".absolute.z-50");
-        expect(dropdown).not.toBeInTheDocument();
-      });
+       await waitFor(() => {
+         const dropdown = document.querySelector(".absolute.z-50");
+         expect(dropdown).not.toBeInTheDocument();
+       });
     });
 
     it("selects completion with Tab key", async () => {

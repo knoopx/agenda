@@ -35,12 +35,36 @@ const Expression = t
   .model("Expression", {
     expression: t.string,
   })
+  .preProcessSnapshot((snapshot: any) => {
+    if (typeof snapshot === "string") {
+      return { expression: snapshot.trim() };
+    }
+    if (snapshot && typeof snapshot.expression === "string") {
+      return {
+        ...snapshot,
+        expression: snapshot.expression.trim(),
+      };
+    }
+    return snapshot;
+  })
+  .postProcessSnapshot((snapshot: any) => {
+    if (snapshot && typeof snapshot.expression === "string") {
+      return {
+        ...snapshot,
+        expression: snapshot.expression.trim(),
+      };
+    }
+    return snapshot;
+  })
   .volatile(() => ({
     error: "",
   }))
   .actions((self) => ({
     setExpression(expression: string) {
       self.expression = expression;
+    },
+    finalizeExpression() {
+      self.expression = self.expression.trim();
     },
     setError(error: string) {
       self.error = error;

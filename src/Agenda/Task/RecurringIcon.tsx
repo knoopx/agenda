@@ -5,7 +5,7 @@ export const RecurringIcon = (
 ): React.ReactElement => {
   return (
     <span className="flex items-center" {...props}>
-      <IconMdiUpdate />
+      <IconMdiUpdate className="w-4 h-4" />
     </span>
   );
 };

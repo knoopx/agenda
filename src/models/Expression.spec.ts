@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { expect, it } from "vitest";
+import { getSnapshot } from "mobx-state-tree";
 
 import { Store } from ".";
 
@@ -287,4 +288,34 @@ it("should handle multiple URLs in subject", () => {
   expect(task.subject).toBe("task and links"); // Grammar already separates URLs
   expect(task.subjectWithoutUrls).toBe("task and links"); // Same since URLs were already separated
   expect(task.urls).toEqual(["https://site1.com", "https://site2.com"]);
+});
+
+it("should trim expressions when finalized", () => {
+  // Test creating task with leading/trailing whitespace (trimmed by preprocessor)
+  const task = createTask("  task with spaces  ");
+  expect(task.expression).toBe("task with spaces");
+
+  // Test setting expression with whitespace (not trimmed)
+  task.setExpression("  updated task  ");
+  expect(task.expression).toBe("  updated task  ");
+
+  // Test finalizing expression trims it
+  task.finalizeExpression();
+  expect(task.expression).toBe("updated task");
+
+  // Test with only whitespace
+  const blankTask = createTask("   ");
+  expect(blankTask.expression).toBe("");
+});
+
+it("should trim expressions in snapshots", () => {
+  // Test that snapshots contain trimmed expressions
+  const task = createTask("  task with spaces  ");
+  const snapshot = getSnapshot(task);
+  expect(snapshot.expression).toBe("task with spaces");
+
+  // Test with untrimmed expression that gets trimmed in snapshot
+  task.setExpression("  untrimmed expression  ");
+  const snapshot2 = getSnapshot(task);
+  expect(snapshot2.expression).toBe("untrimmed expression");
 });

@@ -99,7 +99,7 @@ export const TaskContent = observer(
                     className="flex items-center space-x-1 text-xs text-base-04 hover:text-base-0D ml-1"
                     title={url}
                   >
-                    <IconMdiLink />
+                    <IconMdiLink className="w-4 h-4" />
                     <span>{domain}</span>
                   </a>
                 ) : null,
@@ -184,7 +184,13 @@ const Task = observer(
     );
 
     const onCancel = useCallback(
-      (_e?: Event) => {
+      (e?: Event) => {
+        const input = e?.target as HTMLInputElement;
+        const value = input?.value || '';
+        // Don't cancel if completions might be showing (input contains @ or #)
+        if (value.includes('@') || value.includes('#')) {
+          return;
+        }
         // Restore original task values if we have a stored snapshot
         if (originalSnapshot.current) {
           task.update({ expression: originalSnapshot.current.expression });

@@ -39,9 +39,9 @@ const Input = observer(() => {
   });
 
   useEnterKey(inputRef, () => {
-    const { expression } = getSnapshot(input);
-
     if (input.isValid && !showCompletions) {
+      input.finalizeExpression();
+      const { expression } = getSnapshot(input);
       addTask({ expression });
 
       input.setExpression("");
@@ -206,7 +206,7 @@ const Input = observer(() => {
 
         {input.isRecurring && (
           <span className="flex items-center">
-            <IconMdiUpdate />
+            <IconMdiUpdate className="w-4 h-4" />
           </span>
         )}
 

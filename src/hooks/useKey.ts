@@ -11,10 +11,13 @@ export function useKey(
   const listener = (e: KeyboardEvent) => {
     if (choices.includes(e.code) || choices.includes(e.key)) {
       // Only prevent default and stop propagation if the callback actually does something
+      // Don't stop propagation for Escape to allow other handlers to run
       const result = callback(e);
       if (result !== false) {
         e.preventDefault();
-        e.stopPropagation();
+        if (e.key !== "Escape") {
+          e.stopPropagation();
+        }
       }
     }
   };

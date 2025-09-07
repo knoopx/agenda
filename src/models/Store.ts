@@ -590,6 +590,7 @@ const Store = t
         text.split(/[\r\n]+/).forEach((expression) => {
           if (expression.trim() !== "") {
             const task = Task.create({ expression });
+            task.finalizeExpression();
             const { isValid } = task;
             if (isValid) {
               this.addTask(task);

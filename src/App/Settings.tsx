@@ -87,8 +87,8 @@ const Settings = observer(() => {
   };
 
   return (
-    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-base-05 dark:bg-base-01 rounded border border-base-03 dark:border-base-02 shadow">
-      <Popover.Arrow className="fill-base-03 dark:fill-base-02" />
+    <Popover.Content className="flex flex-auto flex-col p-4 text-xs bg-base-01 border border-base-04 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+      <Popover.Arrow className="fill-base-04" />
 
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
@@ -185,7 +185,7 @@ const Settings = observer(() => {
                     </span>
                   ) : (
                     <span className="flex items-center space-x-1">
-                      <IconMdiSync />
+                      <IconMdiSync className="w-4 h-4" />
                       <span>Sync Now</span>
                     </span>
                   )}
@@ -202,7 +202,7 @@ const Settings = observer(() => {
                   className="px-3 py-1 bg-base-08 hover:bg-base-08 text-base-00 rounded text-xs font-medium"
                 >
                   <span className="flex items-center space-x-1">
-                    <IconMdiClose />
+                    <IconMdiClose className="w-4 h-4" />
                     <span>Disconnect</span>
                   </span>
                 </Button>
@@ -265,7 +265,7 @@ const Settings = observer(() => {
                   </span>
                 ) : (
                   <span className="flex items-center space-x-2">
-                    <IconMdiCloudUpload />
+                    <IconMdiCloudUpload className="w-4 h-4" />
                     <span>Connect & Sync</span>
                   </span>
                 )}
@@ -277,15 +277,15 @@ const Settings = observer(() => {
             <div
               className={`text-xs px-3 py-2 rounded border ${
                 store.webdav.syncError || webdavStatus?.includes("failed")
-                  ? "bg-base-08 text-base-08 border-base-08 dark:bg-base-08 dark:text-base-08"
-                  : "bg-base-0B text-base-0B border-base-0B dark:bg-base-0B dark:text-base-0B"
+                  ? "bg-base-08 text-base-00 border-base-08 dark:bg-base-08 dark:text-base-00"
+                  : "bg-base-0B text-base-00 border-base-0B dark:bg-base-0B dark:text-base-00"
               }`}
             >
               <div className="flex items-start space-x-2">
                 {store.webdav.syncError || webdavStatus?.includes("failed") ? (
-                  <IconMdiAlertCircle className="flex-shrink-0 mt-0.5" />
+                  <IconMdiAlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 ) : (
-                  <IconMdiCheckCircle className="flex-shrink-0 mt-0.5" />
+                  <IconMdiCheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 )}
                 <span>{store.webdav.syncError || webdavStatus}</span>
               </div>
@@ -306,9 +306,9 @@ const Settings = observer(() => {
             }}
           >
             {store.useDarkMode ? (
-              <IconMdiWeatherSunny />
+              <IconMdiWeatherSunny className="w-4 h-4" />
             ) : (
-              <IconMdiWeatherNight />
+              <IconMdiWeatherNight className="w-4 h-4" />
             )}
           </Button>
 
@@ -317,7 +317,7 @@ const Settings = observer(() => {
               store.copyListToClipboard();
             }}
           >
-            <IconMdiContentCopy />
+            <IconMdiContentCopy className="w-4 h-4" />
           </Button>
 
           <Button
@@ -325,7 +325,7 @@ const Settings = observer(() => {
               store.importListFromClipboard();
             }}
           >
-            <IconMdiContentPaste />
+            <IconMdiContentPaste className="w-4 h-4" />
           </Button>
 
           <Button
@@ -333,7 +333,7 @@ const Settings = observer(() => {
               store.clearAll();
             }}
           >
-            <IconMdiTrashCanOutline />
+            <IconMdiTrashCanOutline className="w-4 h-4" />
           </Button>
         </div>
       </div>

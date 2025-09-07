@@ -26,10 +26,7 @@ const App = observer(() => {
       {/* Startup sync indicator */}
       {store.webdav.isSyncing && store.webdav.isConfigured() && (
         <div className="fixed bottom-4 right-4 bg-base-05 dark:bg-base-01 border border-base-03 dark:border-base-02 rounded-lg px-4 py-2 shadow-lg z-50">
-          <div className="flex items-center space-x-2">
-            <IconMdiSync className="animate-spin text-base-0D" />
-            <span className="text-sm text-base-04">Syncing with server...</span>
-          </div>
+          <IconMdiSync className="w-4 h-4 animate-spin text-base-0D" />
         </div>
       )}
     </div>

@@ -22,7 +22,7 @@ const Month = observer(({ start: monthStart }: { start: DateTime }) => {
   }
 
   return (
-    <div className="flex flex-col m-2 bg-base-01 dark:bg-base-01 rounded-xl p-2 h-fit">
+    <div className="flex flex-col h-fit m-2">
       <div className="flex items-center justify-center mb-3 pb-2">
         <h2 className="text-center text-base-05 font-medium text-lg">
           {monthStart.monthLong}

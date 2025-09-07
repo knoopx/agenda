@@ -34,8 +34,13 @@ export function useGlobalKeyboard() {
             return;
           }
         } else {
-          // For non-arrow keys, don't interfere with any input
-          return;
+          // For non-arrow keys, don't interfere with any input except for specific shortcuts
+          // Allow Ctrl+R (sync) and Delete (delete task) to work even in inputs
+          if ((e.ctrlKey && e.key === "r") || e.key === "Delete") {
+            // Let these shortcuts pass through to the switch statement
+          } else {
+            return;
+          }
         }
       }
 
@@ -62,15 +67,30 @@ export function useGlobalKeyboard() {
             store.editSelectedTask();
           }
           break;
-        case " ":
-          // Only handle space if a task is selected and not editing
-          if (store.selectedTaskIndex >= 0 && !store.editingTask) {
-            e.preventDefault();
-            store.completeSelectedTask();
-            completeCurrentlyFocusedTask();
-          }
-          break;
-      }
+         case " ":
+           // Only handle space if a task is selected and not editing
+           if (store.selectedTaskIndex >= 0 && !store.editingTask) {
+             e.preventDefault();
+             store.completeSelectedTask();
+             completeCurrentlyFocusedTask();
+           }
+           break;
+         case "r":
+           // Ctrl+R to trigger sync
+           if (e.ctrlKey) {
+             e.preventDefault();
+             store.syncWebDAV();
+           }
+           break;
+         case "Delete":
+           // Delete key to delete focused task
+           if (store.selectedTaskIndex >= 0 && store.selectedTaskIndex < store.filteredTasks.length && !store.editingTask) {
+             e.preventDefault();
+             const selectedTask = store.filteredTasks[store.selectedTaskIndex];
+             store.removeTask(selectedTask);
+           }
+           break;
+       }
     };
 
     const focusPreviousElement = () => {

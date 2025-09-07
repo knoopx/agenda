@@ -46,15 +46,15 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
       <HoverCard.Trigger
         ref={ref}
         className={classNames(
-          "aspect-square flex flex-col justify-between text-xs p-2 leading-none rounded-lg cursor-pointer min-h-[3rem]",
+          "aspect-square flex flex-col justify-between text-xs p-2 leading-none rounded-lg min-h-[3rem]",
           {
-            "bg-base-02 font-bold ring-2 ring-base-0D":
-              isToday,
-            "font-medium text-base-05": !isToday && isSameMonth,
-            "font-light text-base-05": !isSameMonth,
-            "bg-base-02": isSameMonth && !isToday,
+            // "font-medium text-base-05": !isToday && isSameMonth,
+            // "text-base-0D": !isSameMonth,
+            "bg-base-01": isSameMonth && !isToday,
             "bg-base-03":
               isSameMonth && shouldHighlight && !isToday,
+            "bg-base-03 font-bold ring-3 ring-base-0D":
+              isToday,
           },
         )}
       >
@@ -86,9 +86,9 @@ const Day = observer(({ start, isSameMonth }: DayProps) => {
       {isSameMonth && occurrences.length > 0 && (
         <HoverCard.Content
           side="top"
-          className="max-w-xs px-4 py-3 text-xs bg-base-01 dark:bg-base-01 backdrop-blur-sm rounded-lg shadow-lg shadow-base-00"
+          className="max-w-xs px-4 py-3 text-xs bg-base-01 border border-base-04 rounded-md shadow-lg"
         >
-          <HoverCard.Arrow className="fill-base-01 dark:fill-base-01" />
+          <HoverCard.Arrow className="fill-base-04" />
           <div className="space-y-2">
             <h4 className="font-medium text-base-05 mb-2">
               {occurrences.length} task{occurrences.length > 1 ? "s" : ""} on{" "}

@@ -52,8 +52,20 @@ describe("TopBar Component", () => {
     renderTopBar();
     const container = screen.getByTestId("input-component").closest(".w-full");
     expect(container).toHaveClass("w-full");
-    expect(container).toHaveClass("grid");
-    expect(container).toHaveClass("lg:grid-cols-2");
+    expect(container).toHaveClass("mb-2");
+    expect(container).toHaveClass("mx-auto");
+    expect(container).toHaveClass("p-2");
+  });
+
+
+
+  it("renders mobile settings button with correct classes", () => {
+    renderTopBar();
+    const mobileSettings = screen.getByTestId("input-component").parentElement?.nextElementSibling;
+    expect(mobileSettings).toHaveClass("flex");
+    expect(mobileSettings).toHaveClass("items-center");
+    expect(mobileSettings).toHaveClass("ml-6");
+    expect(mobileSettings).toHaveClass("lg:hidden");
   });
 
   it("renders the Input component", () => {
@@ -65,9 +77,9 @@ describe("TopBar Component", () => {
     renderTopBar();
     const timeElement = screen.getByText(/\d{1,2}:\d{2} (AM|PM)/);
     const desktopSection = timeElement.parentElement;
-    expect(desktopSection).toHaveClass("hidden");
-    expect(desktopSection).toHaveClass("flex-auto");
-    expect(desktopSection).toHaveClass("lg:flex");
+    expect(desktopSection).toHaveClass("flex");
+    expect(desktopSection).toHaveClass("items-center");
+    expect(desktopSection).toHaveClass("space-x-4");
   });
 
   it("renders Time component in desktop view", () => {
@@ -85,29 +97,55 @@ describe("TopBar Component", () => {
 
   it("renders Settings popover in desktop view", () => {
     renderTopBar();
-    // Look for the PopoverTrigger button
-    const popoverTrigger = screen.getByRole("button");
-    expect(popoverTrigger).toHaveAttribute("aria-haspopup", "dialog");
-    expect(screen.getByTestId("settings-component")).toBeInTheDocument();
-    expect(screen.getByTestId("cog-icon")).toBeInTheDocument();
+    // Look for the PopoverTrigger button in desktop view
+    const popoverTriggers = screen.getAllByRole("button");
+    const desktopTrigger = popoverTriggers.find(trigger =>
+      trigger.closest(".hidden.lg\\:flex")
+    );
+    expect(desktopTrigger).toHaveAttribute("aria-haspopup", "dialog");
+    const desktopSettings = screen.getAllByTestId("settings-component")[1]; // Desktop is the second one
+    expect(desktopSettings).toBeInTheDocument();
+    const desktopCogIcons = screen.getAllByTestId("cog-icon");
+    expect(desktopCogIcons.length).toBe(2); // Should have both mobile and desktop
   });
 
-  it("renders cog icon with correct classes", () => {
+  it("renders cog icons with correct classes", () => {
     renderTopBar();
-    const cogIcon = screen.getByTestId("cog-icon");
-    expect(cogIcon).toHaveClass("flex");
-    expect(cogIcon).toHaveClass("items-center");
-    expect(cogIcon).toHaveClass("justify-center");
-    expect(cogIcon).toHaveClass("text-base-04");
-    expect(cogIcon).toHaveClass("rounded");
-    expect(cogIcon).toHaveClass("cursor-pointer");
+    const cogIcons = screen.getAllByTestId("cog-icon");
+    expect(cogIcons).toHaveLength(2); // Mobile and desktop versions
+
+    // Mobile icon (first one)
+    expect(cogIcons[0]).toHaveClass("w-10");
+    expect(cogIcons[0]).toHaveClass("h-10");
+    expect(cogIcons[0]).toHaveClass("p-3");
+    expect(cogIcons[0]).toHaveClass("min-w-[44px]");
+    expect(cogIcons[0]).toHaveClass("min-h-[44px]");
+
+    // Desktop icon (second one)
+    expect(cogIcons[1]).toHaveClass("w-10");
+    expect(cogIcons[1]).toHaveClass("h-10");
+    expect(cogIcons[1]).toHaveClass("p-2");
+
+    // Common classes for both
+    cogIcons.forEach(cogIcon => {
+      expect(cogIcon).toHaveClass("flex-shrink-0");
+      expect(cogIcon).toHaveClass("flex");
+      expect(cogIcon).toHaveClass("items-center");
+      expect(cogIcon).toHaveClass("justify-center");
+      expect(cogIcon).toHaveClass("text-base-04");
+      expect(cogIcon).toHaveClass("rounded");
+      expect(cogIcon).toHaveClass("cursor-pointer");
+    });
   });
 
-  it("applies hover classes to cog icon", () => {
+  it("applies hover classes to cog icons", () => {
     renderTopBar();
-    const cogIcon = screen.getByTestId("cog-icon");
-    expect(cogIcon).toHaveClass("hover:text-base-05");
-    expect(cogIcon).toHaveClass("dark:hover:text-base-05");
+    const cogIcons = screen.getAllByTestId("cog-icon");
+
+    cogIcons.forEach(cogIcon => {
+      expect(cogIcon).toHaveClass("hover:text-base-05");
+      expect(cogIcon).toHaveClass("dark:hover:text-base-05");
+    });
   });
 });
 
