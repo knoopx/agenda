@@ -13,7 +13,7 @@ const store = Store.create(JSON.parse(localStorage.data ?? "{}"));
 
 // Add demo tasks with contexts if store is empty (first time use)
 if (store.tasks.length === 0) {
-  store.addTask({ expression: "Welcome to Simply Do! @getting-started" });
+  store.addTask({ expression: "Welcome! @getting-started" });
   store.addTask({ expression: "Review project documentation @work" });
   store.addTask({ expression: "Plan weekend activities @personal" });
   store.addTask({ expression: "Buy groceries #shopping @home" });
@@ -36,7 +36,7 @@ root.render(
     <StoreContext.Provider value={store}>
       <App />
     </StoreContext.Provider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
 onSnapshot(store, () => {
