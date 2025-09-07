@@ -1,22 +1,10 @@
 import classNames from "classnames";
-import { Duration, DurationObjectUnits } from "luxon";
+import { Duration } from "luxon";
 import { observer } from "mobx-react";
 
 import { Label } from "./Label";
+import { formatDuration } from "../../helpers";
 import IconMdiTimerOutline from "~icons/mdi/timer-outline.jsx";
-
-export const formatDuration = (duration: Duration): string => {
-  const obj = duration
-    .shiftTo("years", "months", "weeks", "days", "hours", "minutes", "seconds")
-    .toObject();
-  return Object.keys(obj)
-    .map((key) => {
-      const value = obj[key as keyof DurationObjectUnits];
-      const unit = key[0];
-      return `${value}${unit}`;
-    })
-    .join(" ");
-};
 
 export const DurationLabel = observer(
   ({ duration, className }: { duration: Duration; className?: string }) => {
