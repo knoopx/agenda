@@ -4,8 +4,6 @@ import {
   screen,
   cleanup,
   fireEvent,
-  waitFor,
-  act,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DateTime, Settings } from "luxon";
@@ -84,7 +82,6 @@ describe("Task Component", () => {
   describe("Task Completion", () => {
     it("displays duration for completed tasks", () => {
       // Set up a task with a known createdAt and lastCompletedAt
-      const { runInAction } = require("mobx");
       const createdAt = DateTime.local(2024, 1, 15, 8, 0, 0);
       const completedAt = DateTime.local(2024, 1, 15, 10, 30, 0);
       mockTask.update({
@@ -99,6 +96,30 @@ describe("Task Component", () => {
       );
       // Duration should be 2h 30m
       expect(screen.getByText(/2h.*30m/)).toBeInTheDocument();
+    });
+
+    it("displays completion count for recurring completed tasks", () => {
+      const recurringTask = store.addTask({ expression: "Daily task every day" })!;
+      const createdAt = DateTime.local(2024, 1, 15, 8, 0, 0);
+      const completedAt = DateTime.local(2024, 1, 15, 10, 30, 0);
+
+      // Set up recurring task with multiple completions
+      recurringTask.update({
+        createdAt,
+        lastCompletedAt: completedAt,
+        isCompleted: true,
+        completionCount: 5,
+      });
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      // Should display both duration and completion count
+      expect(screen.getByText(/2h.*30m/)).toBeInTheDocument();
+      expect(screen.getByText("5 completions")).toBeInTheDocument();
     });
     it("renders checked checkbox for completed task", () => {
       mockTask.complete();
@@ -445,7 +466,7 @@ describe("Task Component", () => {
       expect(taskWithStart.expression).not.toBe(originalExpression);
     });
 
-    it("does not simplify expression for recurring tasks", async () => {
+    it("simplifies expression for recurring tasks when focused", async () => {
       const user = userEvent.setup();
       const recurringTask = store.addTask({
         expression: "Task every monday at 3pm",
@@ -466,8 +487,9 @@ describe("Task Component", () => {
 
       await user.click(input);
 
-      // Expression should remain unchanged for recurring tasks
-      expect(recurringTask.expression).toBe(originalExpression);
+      // Expression should be simplified for recurring tasks when focused
+      expect(recurringTask.expression).not.toBe(originalExpression);
+      expect(recurringTask.expression).toBe(recurringTask.simplifiedExpression);
     });
   });
 

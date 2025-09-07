@@ -55,20 +55,27 @@ export const TaskContent = observer(
             task.isCompleted ? "text-base-03" : ""
           } focus-within:bg-base-02 dark:focus-within:bg-base-02`}
         >
-          <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
-            {task.nextAt && (
-              <TimeLabel date={task.nextAt} className="text-xs" />
-            )}
-            {task.duration && (
-              <DurationLabel duration={task.duration} className="text-xs" />
-            )}
-            {task.isCompleted && task.createdAt && task.lastCompletedAt && (
-              <DurationLabel
-                duration={task.lastCompletedAt.diff(task.createdAt)}
-                className="text-xs text-base-0B"
-              />
-            )}
-          </td>
+           <td className="hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 text-base-04 group-focus-within:text-base-0D">
+             {task.nextAt && (
+               <TimeLabel date={task.nextAt} className="text-xs" />
+             )}
+             {task.duration && (
+               <DurationLabel duration={task.duration} className="text-xs" />
+             )}
+             {task.isCompleted && task.createdAt && task.lastCompletedAt && (
+               <div className="flex flex-col items-end space-y-1">
+                 <DurationLabel
+                   duration={task.lastCompletedAt.diff(task.createdAt)}
+                   className="text-xs text-base-0B font-medium"
+                 />
+                 {task.isRecurring && task.completionStats && task.completionStats.total > 1 && (
+                   <span className="text-xs text-base-04">
+                     {task.completionStats.total} completions
+                   </span>
+                 )}
+               </div>
+             )}
+           </td>
 
           <td
             style={{ borderColor: task.contextColor }}
@@ -224,7 +231,8 @@ const Task = observer(
         originalSnapshot.current = { expression: task.expression };
       }
 
-      if (task.ast && !task.isRecurring && task.ast.start) {
+      // Show simplified expression for all valid tasks when editing
+      if (task.ast) {
         task.setExpression(task.simplifiedExpression);
       }
     });

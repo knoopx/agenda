@@ -234,10 +234,10 @@ const Expression = t
         return toExpression(this.ast, {
           relative: true,
           timeOfTheDay: this.timeOfTheDay,
-        });
+        }).trim();
       }
 
-      return self.expression;
+      return self.expression.trim();
     },
 
     get rawExpression(): string {

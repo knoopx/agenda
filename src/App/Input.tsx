@@ -132,42 +132,46 @@ const Input = observer(() => {
       triggerIndex = lastHashIndex;
     }
 
-    if (trigger && triggerIndex >= 0) {
-      // Find the end of the current word (next space or end of text)
-      const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
-      const spaceIndex = textFromTrigger.indexOf(" ");
-      const query =
-        spaceIndex >= 0
-          ? textFromTrigger.substring(0, spaceIndex)
-          : textFromTrigger;
+     if (trigger && triggerIndex >= 0) {
+       // Find the end of the current word (next space or end of text)
+       const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
+       const spaceIndex = textFromTrigger.indexOf(" ");
+       const query =
+         spaceIndex >= 0
+           ? textFromTrigger.substring(0, spaceIndex)
+           : textFromTrigger;
 
-      // Only show completions if there's no space immediately after the trigger
-      const charAfterTrigger = newValue[triggerIndex + 1];
-      if (charAfterTrigger !== " ") {
-        const completions = getCompletions(trigger, query);
-        if (completions.length > 0) {
-          setCompletionItems(completions);
-          setSelectedCompletionIndex(0);
-          setCurrentTrigger(trigger);
-          setTriggerPosition(triggerIndex);
-          setShowCompletions(true);
+       // Only show completions if there's no space immediately after the trigger
+       const charAfterTrigger = newValue[triggerIndex + 1];
+       if (charAfterTrigger !== " ") {
+         const completions = getCompletions(trigger, query);
+         if (completions.length > 0) {
+           const queryStart = triggerIndex + 1;
+           const queryEnd = queryStart + query.length;
+           if (cursorPosition >= queryStart && cursorPosition <= queryEnd) {
+             setCompletionItems(completions);
+             setSelectedCompletionIndex(0);
+             setCurrentTrigger(trigger);
+             setTriggerPosition(triggerIndex);
+             setShowCompletions(true);
 
-          // Calculate dropdown position
-          if (inputRef.current) {
-            const rect = inputRef.current.getBoundingClientRect();
-            const textMetrics = getTextWidth(
-              textBeforeCursor,
-              inputRef.current,
-            );
-            setDropdownPosition({
-              top: rect.bottom + 2,
-              left: rect.left + textMetrics,
-            });
-          }
-          return;
-        }
-      }
-    }
+             // Calculate dropdown position
+             if (inputRef.current) {
+               const rect = inputRef.current.getBoundingClientRect();
+               const textMetrics = getTextWidth(
+                 textBeforeCursor,
+                 inputRef.current,
+               );
+               setDropdownPosition({
+                 top: rect.bottom + 2,
+                 left: rect.left + textMetrics,
+               });
+             }
+             return;
+           }
+         }
+       }
+     }
 
     setShowCompletions(false);
   };

@@ -290,18 +290,18 @@ it("should handle multiple URLs in subject", () => {
   expect(task.urls).toEqual(["https://site1.com", "https://site2.com"]);
 });
 
-it("should trim expressions when finalized", () => {
+it("should reformat and trim expressions when finalized", () => {
   // Test creating task with leading/trailing whitespace (trimmed by preprocessor)
   const task = createTask("  task with spaces  ");
   expect(task.expression).toBe("task with spaces");
 
-  // Test setting expression with whitespace (not trimmed)
-  task.setExpression("  updated task  ");
-  expect(task.expression).toBe("  updated task  ");
+  // Test setting expression with whitespace and contexts/tags (not trimmed or reformatted)
+  task.setExpression("  task @work #urgent  ");
+  expect(task.expression).toBe("  task @work #urgent  ");
 
-  // Test finalizing expression trims it
+  // Test finalizing expression reformats and trims it
   task.finalizeExpression();
-  expect(task.expression).toBe("updated task");
+  expect(task.expression).toBe("@work #urgent task");
 
   // Test with only whitespace
   const blankTask = createTask("   ");

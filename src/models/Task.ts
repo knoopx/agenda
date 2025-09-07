@@ -70,10 +70,18 @@ const Task = Expression.named("Task")
       parent.removeTask(self as ITask);
     },
 
-    reset() {
-      self.lastCompletedAt = self.createdAt;
-      self.completionCount = 0;
-    },
+     reset() {
+       self.lastCompletedAt = self.createdAt;
+       self.completionCount = 0;
+     },
+
+     finalizeExpression() {
+       if (self.ast) {
+         self.expression = self.simplifiedExpression.trim();
+       } else {
+         self.expression = self.expression.trim();
+       }
+     },
   }))
   .views((self) => {
     return {
@@ -117,8 +125,15 @@ const Task = Expression.named("Task")
       get completionStats() {
         if (!self.isRecurring) return null;
 
+        // For recurring tasks, calculate total time spent across all completions
+        let totalTimeSpent = null;
+        if (self.createdAt && self.lastCompletedAt && self.completionCount > 0) {
+          totalTimeSpent = self.lastCompletedAt.diff(self.createdAt);
+        }
+
         return {
           total: self.completionCount,
+          totalTimeSpent,
         };
       },
 

@@ -109,6 +109,11 @@ testSimplifiedExpression(
   "@personal task every morning",
 );
 
+testSimplifiedExpression(
+  "task https://example.com @personal",
+  "@personal task https://example.com",
+);
+
 test("task every 15 min", () => {
   const task = make("task every 15 min");
   const { ast } = task;
@@ -327,5 +332,25 @@ describe("toExpression", () => {
     const ast = {};
     const result = toExpression(ast, { timeOfTheDay });
     expect(result).toBe("");
+  });
+
+  test("should handle task with URLs", () => {
+    const ast = {
+      subject: "test task",
+      urls: ["https://example.com", "https://github.com/user/repo"],
+    };
+    const result = toExpression(ast, { timeOfTheDay });
+    expect(result).toBe("test task https://example.com https://github.com/user/repo");
+  });
+
+  test("should handle task with contexts, tags, and URLs", () => {
+    const ast = {
+      subject: "test task",
+      contexts: ["work"],
+      tags: ["urgent"],
+      urls: ["https://example.com"],
+    };
+    const result = toExpression(ast, { timeOfTheDay });
+    expect(result).toBe("@work #urgent test task https://example.com");
   });
 });

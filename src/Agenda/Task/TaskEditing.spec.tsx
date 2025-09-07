@@ -76,7 +76,7 @@ describe("Task Editing Functionality", () => {
       expect(store.editingTask).toBe(mockTask); // Should be the same task
     });
 
-    it("shows expression in input when focused", async () => {
+    it("shows simplified expression in input when focused", async () => {
       render(
         <MockWrapper store={store}>
           <Task task={mockTask} />
@@ -94,8 +94,8 @@ describe("Task Editing Functionality", () => {
       // Wait for focus state to update
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      // Should now show full expression
-      expect(input).toHaveValue("Test task @work");
+      // Should now show simplified expression (contexts/tags moved to front)
+      expect(input).toHaveValue("@work Test task");
     });
   });
 

@@ -229,8 +229,9 @@ export function toExpression(
     timeOfTheDay?: { [key: string]: number };
   } = { relative: false, timeOfTheDay: {} },
 ): string {
-  const contexts = ast?.contexts?.map((tag) => `@${tag}`).join(" ");
-  const tags = ast?.tags?.map((tag) => `#${tag}`).join(" ");
+  const contexts = ast?.contexts?.filter(Boolean).map((tag) => `@${tag}`).join(" ");
+  const tags = ast?.tags?.filter(Boolean).map((tag) => `#${tag}`).join(" ");
+  const urls = ast?.urls?.join(" ");
 
   return [
     contexts,
@@ -239,6 +240,7 @@ export function toExpression(
     ast.frequency
       ? toRecurringExpression(ast, options)
       : [toDateExpr(ast.start, options), toAtTimeExpr(ast.start, options)],
+    urls,
   ]
     .flat()
     .filter(Boolean)

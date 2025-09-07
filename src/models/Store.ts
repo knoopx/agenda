@@ -248,7 +248,12 @@ const Store = t
       if (self.input.implicitEndAt) {
         return self.input.implicitEndAt;
       }
-      return this.calendarStart.plus({ months: 3 }).endOf("month");
+      if (self.input.start) {
+        // Filter is applied, use original logic
+        return this.calendarStart.plus({ months: 3 }).endOf("month");
+      }
+      // No filter applied, show only current month
+      return this.calendarStart.endOf("month");
     },
 
     get calendarDuration() {

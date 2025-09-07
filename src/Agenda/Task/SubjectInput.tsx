@@ -88,43 +88,47 @@ export const SubjectInput = observer(
         triggerIndex = lastHashIndex;
       }
 
-      if (trigger && triggerIndex >= 0) {
-        // Find the end of the current word (next space or end of text)
-        const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
-        const spaceIndex = textFromTrigger.indexOf(" ");
-        const query =
-          spaceIndex >= 0
-            ? textFromTrigger.substring(0, spaceIndex)
-            : textFromTrigger;
+       if (trigger && triggerIndex >= 0) {
+         // Find the end of the current word (next space or end of text)
+         const textFromTrigger = textBeforeCursor.substring(triggerIndex + 1);
+         const spaceIndex = textFromTrigger.indexOf(" ");
+         const query =
+           spaceIndex >= 0
+             ? textFromTrigger.substring(0, spaceIndex)
+             : textFromTrigger;
 
-        // Only show completions if there's no space immediately after the trigger
-        const charAfterTrigger = newValue[triggerIndex + 1];
-        if (charAfterTrigger !== " ") {
-          const completions = getCompletions(trigger, query);
-          if (completions.length > 0) {
-            setCompletionItems(completions);
-            setSelectedCompletionIndex(0);
-            setCurrentTrigger(trigger);
-            setTriggerPosition(triggerIndex);
-            setCursorPosition(cursorPosition);
-            setShowCompletions(true);
+         // Only show completions if there's no space immediately after the trigger
+         const charAfterTrigger = newValue[triggerIndex + 1];
+         if (charAfterTrigger !== " ") {
+           const completions = getCompletions(trigger, query);
+           if (completions.length > 0) {
+             const queryStart = triggerIndex + 1;
+             const queryEnd = queryStart + query.length;
+             if (cursorPosition >= queryStart && cursorPosition <= queryEnd) {
+               setCompletionItems(completions);
+               setSelectedCompletionIndex(0);
+               setCurrentTrigger(trigger);
+               setTriggerPosition(triggerIndex);
+               setCursorPosition(cursorPosition);
+               setShowCompletions(true);
 
-            // Calculate dropdown position
-            if (inputRef.current) {
-              const rect = inputRef.current.getBoundingClientRect();
-              const textMetrics = getTextWidth(
-                textBeforeCursor,
-                inputRef.current,
-              );
-              setDropdownPosition({
-                top: rect.bottom + 2,
-                left: rect.left + textMetrics,
-              });
-            }
-            return;
-          }
-        }
-      }
+               // Calculate dropdown position
+               if (inputRef.current) {
+                 const rect = inputRef.current.getBoundingClientRect();
+                 const textMetrics = getTextWidth(
+                   textBeforeCursor,
+                   inputRef.current,
+                 );
+                 setDropdownPosition({
+                   top: rect.bottom + 2,
+                   left: rect.left + textMetrics,
+                 });
+               }
+               return;
+             }
+           }
+         }
+       }
 
       setShowCompletions(false);
     };
@@ -173,47 +177,49 @@ export const SubjectInput = observer(
       }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (showCompletions) {
-        switch (e.key) {
-          case "ArrowDown":
-            e.preventDefault();
-            setSelectedCompletionIndex((prev) =>
-              prev < completionItems.length - 1 ? prev + 1 : 0,
-            );
-            break;
-          case "ArrowUp":
-            e.preventDefault();
-            setSelectedCompletionIndex((prev) =>
-              prev > 0 ? prev - 1 : completionItems.length - 1,
-            );
-            break;
-          case "Enter":
-          case "Tab":
-            e.preventDefault();
-            e.stopPropagation();
-            if (completionItems[selectedCompletionIndex]) {
-              handleCompletionSelect(completionItems[selectedCompletionIndex]);
-            }
-            return; // Early return to prevent further handling
-          case "Escape":
-            e.preventDefault();
-            e.stopPropagation();
-            setShowCompletions(false);
-            return; // Prevent further handling (do not exit editing)
-          default:
-            // Allow other keys to propagate when completions are showing
-            break;
-        }
-        return; // Early return when completions are showing
-      }
+     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+       if (showCompletions) {
+         switch (e.key) {
+           case "ArrowDown":
+             e.preventDefault();
+             setSelectedCompletionIndex((prev) =>
+               prev < completionItems.length - 1 ? prev + 1 : 0,
+             );
+             break;
+           case "ArrowUp":
+             e.preventDefault();
+             setSelectedCompletionIndex((prev) =>
+               prev > 0 ? prev - 1 : completionItems.length - 1,
+             );
+             break;
+           case "Enter":
+           case "Tab":
+             e.preventDefault();
+             e.stopPropagation();
+             if (completionItems[selectedCompletionIndex]) {
+               handleCompletionSelect(completionItems[selectedCompletionIndex]);
+             }
+             return; // Early return to prevent further handling
+           case "Escape":
+             e.preventDefault();
+             e.stopPropagation();
+             setShowCompletions(false);
+             return; // Prevent further handling (do not exit editing)
+           default:
+             // Allow other keys to propagate when completions are showing
+             break;
+         }
+         return; // Early return when completions are showing
+       }
 
-      // Handle Enter for editing
-      if (e.key === "Enter" && isFocused && onSubmit) {
-        onSubmit();
-      }
-      // Don't handle Escape here - let Task component handle it
-    };
+       // Handle Enter for editing
+       if (e.key === "Enter" && isFocused && onSubmit) {
+         onSubmit();
+         // Blur the input to exit edit mode
+         inputRef.current?.blur();
+       }
+       // Don't handle Escape here - let Task component handle it
+     };
 
     return (
       <>
