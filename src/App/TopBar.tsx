@@ -34,6 +34,29 @@ const Time = observer(() => {
   );
 });
 
+const SyncIndicator = observer(() => {
+  const store = useStore();
+
+  if (store.webdav.isSyncing) {
+    return (
+      <div className="flex items-center space-x-1 mr-2">
+        <IconMdiSync className="animate-spin text-base-0D w-4 h-4" />
+        <span className="text-xs text-base-04">Syncing...</span>
+      </div>
+    );
+  }
+
+  if (store.isWebDAVConnected()) {
+    return (
+      <div className="flex items-center mr-2">
+        <IconMdiCloudCheck className="text-base-0B w-4 h-4" />
+      </div>
+    );
+  }
+
+  return null;
+});
+
 const TopBar = observer(() => {
   return (
     <div className="w-full grid lg:grid-cols-2 lg:gap-4 xl:gap-8 mb-2 mx-auto p-2">
@@ -41,12 +64,15 @@ const TopBar = observer(() => {
       <div className="hidden flex-auto lg:flex items-center justify-between">
         <Time />
         <Date />
-        <Popover.Root>
-          <Settings />
-          <Popover.PopoverTrigger>
-            <IconMdiCog className="flex items-center justify-center text-base-04 hover:text-base-05 dark:hover:text-base-05 rounded cursor-pointer" />
-          </Popover.PopoverTrigger>
-        </Popover.Root>
+        <div className="flex items-center">
+          <SyncIndicator />
+          <Popover.Root>
+            <Settings />
+            <Popover.PopoverTrigger>
+              <IconMdiCog className="flex items-center justify-center text-base-04 hover:text-base-05 dark:hover:text-base-05 rounded cursor-pointer" />
+            </Popover.PopoverTrigger>
+          </Popover.Root>
+        </div>
       </div>
     </div>
   );

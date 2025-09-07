@@ -156,15 +156,15 @@ describe("Settings Component", () => {
   it("displays emoji toggle", () => {
     renderSettings();
     expect(screen.getByText("show emoji")).toBeInTheDocument();
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toBeChecked();
+    const emojiCheckbox = screen.getByLabelText("show emoji");
+    expect(emojiCheckbox).toBeChecked();
   });
 
   it("allows toggling emoji display", () => {
     renderSettings();
-    const checkbox = screen.getByRole("checkbox");
+    const emojiCheckbox = screen.getByLabelText("show emoji");
 
-    fireEvent.click(checkbox);
+    fireEvent.click(emojiCheckbox);
 
     expect(store.displayEmoji).toBe(false);
   });

@@ -119,11 +119,7 @@ const Expression = t
       if (!this.ast) return null;
       if (!this.frequency) return null;
 
-      const {
-        duration,
-        start = this.implicitStart,
-        ...rrule
-      } = this.ast;
+      const { duration, start = this.implicitStart, ...rrule } = this.ast;
 
       if (Object.keys(rrule).length === 0) return null;
 

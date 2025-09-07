@@ -1,9 +1,22 @@
 import _ from "lodash";
 import { DateTime, Settings } from "luxon";
-import { expect, it, vi } from "vitest";
+import { expect, it, vi, describe, beforeEach, afterEach } from "vitest";
 import { clone } from "mobx-state-tree";
 
 import { Store, Task } from ".";
+
+// Mock the webdavService for testing
+vi.mock("../services/webdav", () => ({
+  webdavService: {
+    configure: vi.fn(),
+    testConnection: vi.fn(),
+    uploadData: vi.fn(),
+    downloadData: vi.fn(),
+    getLastModified: vi.fn(),
+  },
+}));
+
+import { webdavService } from "../services/webdav";
 
 const Now = DateTime.local(2021, 1, 1, 0, 0, 0);
 Settings.now = () => Now.toMillis();
@@ -515,4 +528,304 @@ it("should not navigate when no tasks", () => {
 
   store.navigateUp();
   expect(store.selectedTaskIndex).toBe(-1);
+});
+
+it("should configure WebDAV settings", () => {
+  const store = Store.create();
+
+  // Initially not configured
+  expect(store.webdav.isConfigured()).toBe(false);
+
+  // Configure WebDAV
+  store.webdav.setUrl("https://example.com/webdav/");
+  store.webdav.setUsername("testuser");
+  store.webdav.setPassword("testpass");
+
+  expect(store.webdav.url).toBe("https://example.com/webdav/");
+  expect(store.webdav.username).toBe("testuser");
+  expect(store.webdav.password).toBe("testpass");
+  expect(store.webdav.isConfigured()).toBe(true);
+});
+
+describe("WebDAV Sync Operations", () => {
+  beforeEach(() => {
+    // Reset all mocks
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should configure WebDAV settings", () => {
+    const store = Store.create();
+
+    // Initially not configured
+    expect(store.webdav.isConfigured()).toBe(false);
+
+    // Configure WebDAV
+    store.webdav.setUrl("https://example.com/webdav/");
+    store.webdav.setUsername("testuser");
+    store.webdav.setPassword("testpass");
+
+    expect(store.webdav.url).toBe("https://example.com/webdav/");
+    expect(store.webdav.username).toBe("testuser");
+    expect(store.webdav.password).toBe("testpass");
+    expect(store.webdav.isConfigured()).toBe(true);
+  });
+
+  it("should handle WebDAV sync operations", async () => {
+    const store = Store.create({
+      tasks: [{ id: "test-task", expression: "test task" }],
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    // Mock successful operations
+    (webdavService.uploadData as any).mockResolvedValue(undefined);
+    (webdavService.downloadData as any).mockResolvedValue(
+      '{"tasks": [], "locale": "en-US"}',
+    );
+
+    // Test sync to WebDAV
+    await store.syncToWebDAV();
+
+    expect(webdavService.configure).toHaveBeenCalledWith({
+      url: "https://example.com/webdav/",
+      username: "testuser",
+      password: "testpass",
+    });
+    expect(webdavService.uploadData).toHaveBeenCalled();
+    expect(store.webdav.isSyncing).toBe(false);
+    expect(store.webdav.hasPendingChanges).toBe(false);
+  });
+
+  it("should handle sync from WebDAV with merge", async () => {
+    const store = Store.create({
+      tasks: [{ id: "local-task", expression: "local task" }],
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    const remoteData = JSON.stringify({
+      tasks: [{ id: "remote-task", expression: "remote task" }],
+      locale: "es-ES",
+    });
+
+    (webdavService.downloadData as any).mockResolvedValue(remoteData);
+
+    await store.syncFromWebDAV();
+
+    expect(webdavService.downloadData).toHaveBeenCalled();
+    expect(store.webdav.isSyncing).toBe(false);
+    expect(store.webdav.hasPendingChanges).toBe(false);
+  });
+
+  it("should handle sync errors gracefully", async () => {
+    const store = Store.create({
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    (webdavService.uploadData as any).mockRejectedValue(
+      new Error("Network error"),
+    );
+
+    await expect(store.syncToWebDAV()).rejects.toThrow();
+
+    expect(store.webdav.isSyncing).toBe(false);
+    expect(store.webdav.syncError).toContain("Network error");
+  });
+
+  it("should perform startup sync when configured", async () => {
+    const store = Store.create({
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    (webdavService.getLastModified as any).mockResolvedValue(new Date());
+    (webdavService.downloadData as any).mockResolvedValue(
+      '{"tasks": [], "locale": "en-US"}',
+    );
+
+    await store.performStartupSync();
+
+    expect(webdavService.configure).toHaveBeenCalled();
+    expect(webdavService.getLastModified).toHaveBeenCalled();
+    expect(webdavService.downloadData).toHaveBeenCalled();
+  });
+
+  it("should skip startup sync when not configured", async () => {
+    const store = Store.create({
+      webdav: {
+        url: "",
+        username: "",
+        password: "",
+      },
+    });
+
+    await store.performStartupSync();
+
+    expect(webdavService.configure).not.toHaveBeenCalled();
+  });
+
+  it("should merge tasks with conflict resolution", () => {
+    const store = Store.create({
+      tasks: [
+        { id: "task1", expression: "task 1" },
+        { id: "task2", expression: "task 2" },
+      ],
+    });
+
+    const remoteTasks = [
+      {
+        id: "task1",
+        expression: "updated task 1",
+        lastCompletedAt: new Date("2024-01-02T00:00:00Z"),
+      },
+      { id: "task3", expression: "new remote task" },
+    ];
+
+    store.mergeTasks(remoteTasks);
+
+    // Should have 3 tasks total
+    expect(store.tasks.length).toBe(3);
+
+    // Task1 should be updated with remote version (newer)
+    const task1 = store.tasks.find((t) => t.id === "task1");
+    expect(task1?.expression).toBe("updated task 1");
+
+    // Task2 should remain (only local)
+    const task2 = store.tasks.find((t) => t.id === "task2");
+    expect(task2?.expression).toBe("task 2");
+
+    // Task3 should be added (only remote)
+    const task3 = store.tasks.find((t) => t.id === "task3");
+    expect(task3?.expression).toBe("new remote task");
+  });
+
+  it("should merge settings preferring local values", () => {
+    const store = Store.create({
+      locale: "en-US",
+      timeZone: "UTC",
+      useDarkMode: false,
+    });
+
+    const remoteStore = {
+      locale: "es-ES", // Different from local
+      timeZone: "Europe/Madrid", // Different from local, should update
+      useDarkMode: true, // Local is defined, should keep local
+    };
+
+    store.mergeSettings(remoteStore);
+
+    // Should keep local locale
+    expect(store.locale).toBe("en-US");
+    // Should use remote timeZone since it's different
+    expect(store.timeZone).toBe("Europe/Madrid");
+    // Should keep local useDarkMode
+    expect(store.useDarkMode).toBe(false);
+  });
+
+  it("should mark changes as pending when webdav is configured", () => {
+    const store = Store.create({
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+        hasPendingChanges: false,
+      },
+    });
+
+    store.addTask({ expression: "new task" });
+
+    expect(store.webdav.hasPendingChanges).toBe(true);
+  });
+
+  it("should not mark changes as pending when webdav is not configured", () => {
+    const store = Store.create({
+      webdav: {
+        url: "",
+        username: "",
+        password: "",
+        hasPendingChanges: false,
+      },
+    });
+
+    store.addTask({ expression: "new task" });
+
+    expect(store.webdav.hasPendingChanges).toBe(false);
+  });
+
+  it("should handle bidirectional sync", async () => {
+    const store = Store.create({
+      tasks: [{ id: "local-task", expression: "local task" }],
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    // Mock remote file exists and is newer
+    (webdavService.getLastModified as any).mockResolvedValue(
+      new Date(Date.now() + 1000),
+    );
+    (webdavService.downloadData as any).mockResolvedValue(
+      JSON.stringify({
+        tasks: [{ id: "remote-task", expression: "remote task" }],
+        lastSync: new Date().toISOString(),
+      }),
+    );
+    (webdavService.uploadData as any).mockResolvedValue(undefined);
+
+    await store.syncWebDAV();
+
+    expect(webdavService.downloadData).toHaveBeenCalled();
+    expect(webdavService.uploadData).toHaveBeenCalled();
+  });
+
+  it("should handle test connection", async () => {
+    const store = Store.create({
+      webdav: {
+        url: "https://example.com/webdav/",
+        username: "testuser",
+        password: "testpass",
+      },
+    });
+
+    (webdavService.testConnection as any).mockResolvedValue(true);
+
+    const result = await store.testWebDAVConnection();
+
+    expect(result).toBe(true);
+    expect(webdavService.testConnection).toHaveBeenCalled();
+  });
+
+  it("should return false for test connection when not configured", async () => {
+    const store = Store.create({
+      webdav: {
+        url: "",
+        username: "",
+        password: "",
+      },
+    });
+
+    const result = await store.testWebDAVConnection();
+
+    expect(result).toBe(false);
+    expect(webdavService.testConnection).not.toHaveBeenCalled();
+  });
 });

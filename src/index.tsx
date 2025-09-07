@@ -11,6 +11,16 @@ import { StoreContext } from "./hooks/useStore";
 
 const store = Store.create(JSON.parse(localStorage.data ?? "{}"));
 
+// Perform startup sync if WebDAV is configured
+store
+  .performStartupSync()
+  .then(() => {
+    console.log("Startup sync completed");
+  })
+  .catch((error) => {
+    console.warn("Startup sync failed:", error);
+  });
+
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <React.StrictMode>
