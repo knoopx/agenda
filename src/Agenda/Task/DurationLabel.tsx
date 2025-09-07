@@ -14,7 +14,15 @@ export const formatDuration = (duration: Duration): string => {
 };
 
 export const DurationLabel = observer(
-  ({ duration, isSelected, className }: { duration: Duration; isSelected?: boolean; className?: string }) => {
+  ({
+    duration,
+    isSelected,
+    className,
+  }: {
+    duration: Duration;
+    isSelected?: boolean;
+    className?: string;
+  }) => {
     if (duration.toMillis() === 0) return null;
     return (
       <Label
@@ -27,5 +35,5 @@ export const DurationLabel = observer(
         {formatDuration(duration)}
       </Label>
     );
-  }
+  },
 );

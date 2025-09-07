@@ -1,8 +1,15 @@
-declare module 'emoji-from-word' {
-  interface EmojiResult {
-    emoji: string;
+declare module "emoji-from-word" {
+  interface EmojiData {
+    keywords: string[];
     char: string;
+    category: string;
   }
-  function emojiFromWord(word: string): EmojiResult;
+  interface Match {
+    input: string;
+    score: number;
+    emoji: EmojiData;
+    emoji_name: string;
+  }
+  function emojiFromWord(word: string): Match | undefined;
   export default emojiFromWord;
 }

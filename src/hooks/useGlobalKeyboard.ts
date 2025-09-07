@@ -6,12 +6,15 @@ export function useGlobalKeyboard() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT' && document.activeElement !== store.mainInputRef) {
+      if (
+        document.activeElement?.tagName === "INPUT" &&
+        document.activeElement !== store.mainInputRef
+      ) {
         return;
       }
 
       switch (e.key) {
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           // If editing a task, let the task's escape handler exit edit mode
           // Otherwise, let the browser handle focus naturally
@@ -19,21 +22,21 @@ export function useGlobalKeyboard() {
             store.focusMainInput();
           }
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           store.navigateUp();
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           store.navigateDown();
           break;
-        case 'Enter':
+        case "Enter":
           if (store.selectedTaskIndex >= 0 && !store.editingTask) {
             e.preventDefault();
             store.editSelectedTask();
           }
           break;
-        case ' ':
+        case " ":
           if (store.selectedTaskIndex >= 0) {
             e.preventDefault();
             store.completeSelectedTask();
@@ -42,7 +45,7 @@ export function useGlobalKeyboard() {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [store]);
 }

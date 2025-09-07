@@ -13,10 +13,7 @@ const Calendar = observer(({ className }: { className?: string }) => {
         {(interval) => {
           const monthStart = interval.start;
           return monthStart ? (
-            <Month
-              key={monthStart.toISODate()}
-              start={monthStart}
-            />
+            <Month key={monthStart.toISODate()} start={monthStart} />
           ) : null;
         }}
       </EachMonth>

@@ -1,230 +1,741 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, cleanup, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { DateTime, Settings } from 'luxon'
-import { Store } from '../../models'
-import Task from './Task'
-import { ITask } from '../../models/Task'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { DateTime, Settings } from "luxon";
+import { Store } from "../../models";
+import { StoreContext } from "../../hooks/useStore";
+import Task from "./Task";
+import { ITask } from "../../models/Task";
 
 // Set up timezone and mock time
-Settings.defaultZone = 'Europe/Madrid'
-const mockNow = DateTime.local(2024, 1, 15, 10, 0, 0)
-Settings.now = () => mockNow.toMillis()
+Settings.defaultZone = "Europe/Madrid";
+const mockNow = DateTime.local(2024, 1, 15, 10, 0, 0);
+Settings.now = () => mockNow.toMillis();
 
 // Global store variable for tests
-let store: any
-
-// Mock hooks
-vi.mock('../../hooks', () => ({
-  useStore: () => store,
-  useFocus: () => false,
-  useEnterKey: vi.fn(),
-  useEscapeKey: vi.fn(),
-  useEventListener: vi.fn(),
-}))
+let store: any;
 
 // Mock wrapper - wrap in table for proper rendering
 const MockWrapper = ({ children }: { children: React.ReactNode }) => (
-  <table><tbody>{children}</tbody></table>
-)
+  <StoreContext.Provider value={store}>
+    <table>
+      <tbody>{children}</tbody>
+    </table>
+  </StoreContext.Provider>
+);
 
-describe('Task Component', () => {
-  let mockTask: ITask
+describe("Task Component", () => {
+  let mockTask: ITask;
 
   beforeEach(() => {
     store = Store.create({
       tasks: [],
       displayEmoji: true,
       useDarkMode: false,
-    })
-    
-    mockTask = store.addTask({ expression: 'Test task' })!
-    vi.clearAllMocks()
-  })
+    });
 
-  describe('Task Rendering', () => {
-    it('renders task with subject', () => {
+    mockTask = store.addTask({ expression: "Test task" })!;
+    vi.clearAllMocks();
+  });
+
+  describe("Task Rendering", () => {
+    it("renders task with subject", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      expect(screen.getByDisplayValue('Test task')).toBeInTheDocument()
-    })
+      expect(screen.getByDisplayValue("Test task")).toBeInTheDocument();
+    });
 
-    it('renders task with checkbox', () => {
+    it("renders task with checkbox", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).toBeInTheDocument()
-      expect(checkbox).not.toBeChecked()
-    })
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).toBeInTheDocument();
+      expect(checkbox).not.toBeChecked();
+    });
 
-    it('applies proper CSS classes to task row', () => {
+    it("applies proper CSS classes to task row", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const taskRow = screen.getByDisplayValue('Test task').closest('tr')
-      expect(taskRow).toHaveClass('align-middle')
-      expect(taskRow).not.toHaveClass('opacity-50')
-    })
-  })
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toHaveClass("align-middle");
+      expect(taskRow).not.toHaveClass("opacity-50");
+    });
+  });
 
-  describe('Task Completion', () => {
-    it('renders checked checkbox for completed task', () => {
-      mockTask.complete()
-      
+  describe("Task Completion", () => {
+    it("renders checked checkbox for completed task", () => {
+      mockTask.complete();
+
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).toBeChecked()
-    })
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).toBeChecked();
+    });
 
-    it('applies dimmed styling to completed tasks', () => {
-      mockTask.complete()
-      
+    it("applies dimmed styling to completed tasks", () => {
+      mockTask.complete();
+
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const taskRow = screen.getByDisplayValue('Test task').closest('tr')
-      expect(taskRow).toHaveClass('opacity-50')
-    })
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toHaveClass("opacity-50");
+    });
 
-    it('toggles task completion when checkbox is clicked', async () => {
-      const user = userEvent.setup()
-      
+    it("toggles task completion when checkbox is clicked", async () => {
+      const user = userEvent.setup();
+
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const checkbox = screen.getByRole('checkbox')
-      expect(mockTask.isCompleted).toBe(false)
+      const checkbox = screen.getByRole("checkbox");
+      expect(mockTask.isCompleted).toBe(false);
 
-      await user.click(checkbox)
-      
-      expect(mockTask.isCompleted).toBe(true)
-    })
+      await user.click(checkbox);
 
-    it('uncompletes task when clicking completed task checkbox', async () => {
-      const user = userEvent.setup()
-      mockTask.complete() // Start with completed task
-      
+      expect(mockTask.isCompleted).toBe(true);
+    });
+
+    it("uncompletes task when clicking completed task checkbox", async () => {
+      const user = userEvent.setup();
+      mockTask.complete(); // Start with completed task
+
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const checkbox = screen.getByRole('checkbox')
-      expect(mockTask.isCompleted).toBe(true)
+      const checkbox = screen.getByRole("checkbox");
+      expect(mockTask.isCompleted).toBe(true);
 
-      await user.click(checkbox)
-      
-      expect(mockTask.isCompleted).toBe(false)
-    })
-  })
+      await user.click(checkbox);
 
-  describe('Task Editing', () => {
-    it('shows task input field', () => {
+      expect(mockTask.isCompleted).toBe(false);
+    });
+  });
+
+  describe("Task Editing", () => {
+    it("shows task input field", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const input = screen.getByDisplayValue('Test task')
-      expect(input).toBeInTheDocument()
-      expect(input).toHaveAttribute('type', 'text')
-    })
+      const input = screen.getByDisplayValue("Test task");
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveAttribute("type", "text");
+    });
 
-    it('allows text input in task field', async () => {
-      const user = userEvent.setup()
-      
+    it("allows text input in task field", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const input = screen.getByDisplayValue('Test task')
-      fireEvent.change(input, { target: { value: 'Updated task' } })
+      const input = screen.getByDisplayValue("Test task");
+      fireEvent.change(input, { target: { value: "Updated task" } });
 
-      expect(input).toHaveValue('Updated task')
-    })
-  })
+      expect(input).toHaveValue("Updated task");
+    });
+  });
 
-  describe('Task Properties', () => {
-    it('handles tasks with different completion states', () => {
-      const incompleteTask = store.addTask({ expression: 'Task 1' })!
-      const completeTask = store.addTask({ expression: 'Completed task' })!
-      completeTask.complete()
+  describe("Task Properties", () => {
+    it("handles tasks with different completion states", () => {
+      const incompleteTask = store.addTask({ expression: "Task 1" })!;
+      const completeTask = store.addTask({ expression: "Completed task" })!;
+      completeTask.complete();
 
       // Test incomplete task
       render(
         <MockWrapper>
           <Task task={incompleteTask} />
-        </MockWrapper>
-      )
-      expect(screen.getByRole('checkbox')).not.toBeChecked()
+        </MockWrapper>,
+      );
+      expect(screen.getByRole("checkbox")).not.toBeChecked();
 
       // Clean up and test complete task
-      cleanup()
+      cleanup();
       render(
         <MockWrapper>
           <Task task={completeTask} />
-        </MockWrapper>
-      )
-      expect(screen.getByRole('checkbox')).toBeChecked()
-    })
+        </MockWrapper>,
+      );
+      expect(screen.getByRole("checkbox")).toBeChecked();
+    });
 
-    it('maintains task state correctly', () => {
-      expect(mockTask.isCompleted).toBe(false)
-      expect(mockTask.subject).toBe('Test task')
-      expect(mockTask.isValid).toBe(true)
-    })
-  })
+    it("maintains task state correctly", () => {
+      expect(mockTask.isCompleted).toBe(false);
+      expect(mockTask.subject).toBe("Test task");
+      expect(mockTask.isValid).toBe(true);
+    });
+  });
 
-  describe('Component Structure', () => {
-    it('renders within table row structure', () => {
+  describe("Component Structure", () => {
+    it("renders within table row structure", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      const taskRow = screen.getByDisplayValue('Test task').closest('tr')
-      expect(taskRow).toBeInTheDocument()
-      
-      const cells = taskRow?.querySelectorAll('td')
-      expect(cells).toHaveLength(2) // Time cell and content cell
-    })
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toBeInTheDocument();
 
-    it('contains required task elements', () => {
+      const cells = taskRow?.querySelectorAll("td");
+      expect(cells).toHaveLength(2); // Time cell and content cell
+    });
+
+    it("contains required task elements", () => {
       render(
         <MockWrapper>
           <Task task={mockTask} />
-        </MockWrapper>
-      )
+        </MockWrapper>,
+      );
 
-      expect(screen.getByDisplayValue('Test task')).toBeInTheDocument()
-      expect(screen.getByRole('checkbox')).toBeInTheDocument()
-    })
-  })
-})
+      expect(screen.getByDisplayValue("Test task")).toBeInTheDocument();
+      expect(screen.getByRole("checkbox")).toBeInTheDocument();
+    });
+  });
+
+  describe("Task Focus and Editing", () => {
+    it("sets editing task when input receives focus", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      expect(store.editingTask).toBeUndefined();
+
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+    });
+
+    it("clears editing task when input loses focus", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+
+      // Click outside to blur
+      await user.click(document.body);
+      expect(store.editingTask).toBeUndefined();
+    });
+
+    it("handles Enter key to submit changes", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+
+      await user.type(input, " updated{enter}");
+      expect(store.editingTask).toBeUndefined();
+      expect(mockTask.subject).toBe("Test task updated");
+    });
+
+    it("handles Escape key to cancel changes", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+
+      await user.type(input, " updated{escape}");
+      expect(store.editingTask).toBeUndefined();
+      expect(mockTask.subject).toBe("Test task"); // Should revert changes
+    });
+
+    it("allows switching between tasks for editing", async () => {
+      const user = userEvent.setup();
+      const task2 = store.addTask({ expression: "Second task" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+          <Task task={task2} />
+        </MockWrapper>,
+      );
+
+      const input1 = screen.getByDisplayValue("Test task");
+      const input2 = screen.getByDisplayValue("Second task");
+
+      await user.click(input1);
+      expect(store.editingTask).toBe(mockTask);
+
+      await user.click(input2);
+      expect(store.editingTask).toBe(task2); // Should switch to the second task
+    });
+  });
+
+  describe("Task Hover Events", () => {
+    it("sets hovered task on mouseover", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr")!;
+      expect(store.hoveredTask).toBeNull();
+
+      await user.hover(taskRow);
+      expect(store.hoveredTask).toBe(mockTask);
+    });
+
+    it("clears hovered task on mouseout", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr")!;
+
+      await user.hover(taskRow);
+      expect(store.hoveredTask).toBe(mockTask);
+
+      await user.unhover(taskRow);
+      expect(store.hoveredTask).toBeNull();
+    });
+  });
+
+  describe("Task Expression Simplification", () => {
+    it("simplifies expression on focus for non-recurring tasks with start time", async () => {
+      const user = userEvent.setup();
+      const taskWithStart = store.addTask({ expression: "Task at 3pm" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithStart} />
+        </MockWrapper>,
+      );
+
+      // The task parsing extracts the time, so display value is just "Task"
+      const input = screen.getByDisplayValue("Task");
+      const originalExpression = taskWithStart.expression;
+
+      await user.click(input);
+
+      // The expression should be simplified when focused
+      expect(taskWithStart.expression).not.toBe(originalExpression);
+    });
+
+    it("does not simplify expression for recurring tasks", async () => {
+      const user = userEvent.setup();
+      const recurringTask = store.addTask({
+        expression: "Task every monday at 3pm",
+      })!;
+
+      // Verify the task is actually recurring
+      expect(recurringTask.isRecurring).toBe(true);
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      // The task parsing extracts the time, so display value is just "Task"
+      const input = screen.getByDisplayValue("Task");
+      const originalExpression = recurringTask.expression;
+
+      await user.click(input);
+
+      // Expression should remain unchanged for recurring tasks
+      expect(recurringTask.expression).toBe(originalExpression);
+    });
+  });
+
+  describe("Input Ref Registration", () => {
+    it("registers input ref with store when index is provided", () => {
+      render(
+        <MockWrapper>
+          <Task task={mockTask} index={0} />
+        </MockWrapper>,
+      );
+
+      expect(store.taskInputRefs.get(0)).toBeDefined();
+    });
+
+    it("unregisters input ref when component unmounts", () => {
+      const { unmount } = render(
+        <MockWrapper>
+          <Task task={mockTask} index={0} />
+        </MockWrapper>,
+      );
+
+      expect(store.taskInputRefs.get(0)).toBeDefined();
+      unmount();
+      expect(store.taskInputRefs.get(0)).toBeUndefined();
+    });
+  });
+
+  describe("onComplete Behavior", () => {
+    it("calls onSubmit when focused before completing task", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      const checkbox = screen.getByRole("checkbox");
+
+      // Focus the input
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+      expect(input).toHaveFocus();
+
+      // Click the checkbox - this should trigger onComplete with isFocused = true
+      await user.click(checkbox);
+      expect(mockTask.isCompleted).toBe(true);
+      // The input should be blurred by onSubmit
+      expect(input).not.toHaveFocus();
+    });
+
+    it("does not call onSubmit when not focused before completing task", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const checkbox = screen.getByRole("checkbox");
+
+      // Click checkbox without focusing input first
+      await user.click(checkbox);
+      expect(store.editingTask).toBeUndefined(); // Should remain undefined
+      expect(mockTask.isCompleted).toBe(true);
+    });
+  });
+
+  describe("onCancel Behavior", () => {
+    it("restores original snapshot when escape is pressed", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+      const originalSubject = mockTask.subject;
+
+      await user.click(input);
+      await user.type(input, " modified{escape}");
+
+      expect(mockTask.subject).toBe(originalSubject);
+      expect(store.editingTask).toBeUndefined();
+    });
+  });
+
+  describe("onSubmit Behavior", () => {
+    it("clears editing task and blurs input on submit", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Test task");
+
+      await user.click(input);
+      expect(store.editingTask).toBe(mockTask);
+
+      await user.type(input, " updated{enter}");
+      expect(store.editingTask).toBeUndefined();
+      expect(input).not.toHaveFocus();
+    });
+  });
+
+  describe("Conditional Rendering", () => {
+    it("renders TimeLabel when task has nextAt", () => {
+      const taskWithTime = store.addTask({ expression: "Task at 3pm" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithTime} />
+        </MockWrapper>,
+      );
+
+      expect(screen.getByText(/15:00/)).toBeInTheDocument(); // TimeLabel should render in 24h format
+    });
+
+    it("renders DurationLabel when task has duration", () => {
+      const taskWithDuration = store.addTask({ expression: "Task for 1h" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithDuration} />
+        </MockWrapper>,
+      );
+
+      expect(screen.getByText(/1h/)).toBeInTheDocument(); // DurationLabel should render
+    });
+
+    it("renders emojis in input when displayEmoji is true and not focused", () => {
+      const taskWithEmojis = store.addTask({ expression: "Task 😀" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithEmojis} />
+        </MockWrapper>,
+      );
+
+      // Emojis are part of the input value
+      expect(screen.getByDisplayValue("Task 😀")).toBeInTheDocument();
+    });
+
+    it("shows simplified expression when focused", async () => {
+      const user = userEvent.setup();
+      const taskWithEmojis = store.addTask({ expression: "Task 😀" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithEmojis} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Task 😀");
+      await user.click(input);
+
+      // When focused, should still show the same expression since there are no time components to simplify
+      expect(screen.getByDisplayValue("Task 😀")).toBeInTheDocument();
+    });
+
+    it("renders RecurringIcon for recurring tasks when not focused", () => {
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      expect(screen.getByTitle("DAILY")).toBeInTheDocument();
+    });
+
+    it("does not render RecurringIcon when focused", async () => {
+      const user = userEvent.setup();
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Task");
+      await user.click(input);
+
+      expect(screen.queryByTitle("DAILY")).not.toBeInTheDocument();
+    });
+
+    it("renders DistanceLabel when task has nextAt", () => {
+      const taskWithTime = store.addTask({ expression: "Task at 3pm" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithTime} />
+        </MockWrapper>,
+      );
+
+      // DistanceLabel should render with relative time (past since mock time is 10:00 and task is at 15:00)
+      expect(screen.getByText(/past/)).toBeInTheDocument();
+    });
+
+    it("renders TaskActionGroup when not focused", () => {
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      // TaskActionGroup buttons are hidden by default but exist in DOM
+      const buttons = document.querySelectorAll("button");
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    it("does not render TaskActionGroup when focused", async () => {
+      const user = userEvent.setup();
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Task");
+      await user.click(input);
+
+      // When focused, TaskActionGroup should not be rendered
+      const buttons = document.querySelectorAll("button");
+      expect(buttons.length).toBe(0);
+    });
+
+    it("renders CompletionCount for recurring tasks when not focused", () => {
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      // CompletionCount renders a span with completion info
+      expect(screen.getByText(/\d+/)).toBeInTheDocument(); // Some number
+    });
+
+    it("does not render CompletionCount when focused", async () => {
+      const user = userEvent.setup();
+      const recurringTask = store.addTask({ expression: "Task every day" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={recurringTask} />
+        </MockWrapper>,
+      );
+
+      const input = screen.getByDisplayValue("Task");
+      await user.click(input);
+
+      // When focused, CompletionCount should not be rendered
+      // Check that there are no completion count spans
+      const completionSpans = document.querySelectorAll("span");
+      const completionCountSpans = Array.from(completionSpans).filter(
+        (span) => span.textContent && /^\d+$/.test(span.textContent.trim()),
+      );
+      expect(completionCountSpans.length).toBe(0);
+    });
+  });
+
+  describe("Styling and Attributes", () => {
+    it("sets data-task-index attribute correctly", () => {
+      render(
+        <MockWrapper>
+          <Task task={mockTask} index={5} />
+        </MockWrapper>,
+      );
+
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toHaveAttribute("data-task-index", "5");
+    });
+
+    it("applies context color border", () => {
+      // Create a task with a context to get a specific color
+      const taskWithContext = store.addTask({ expression: "Task @work" })!;
+
+      render(
+        <MockWrapper>
+          <Task task={taskWithContext} />
+        </MockWrapper>,
+      );
+
+      const contentCell = screen.getByDisplayValue("Task").closest("td");
+      // The context color should be applied via the style attribute
+      expect(contentCell?.style.borderColor).toBeDefined();
+    });
+
+    it("applies opacity class for completed tasks when not selected", () => {
+      mockTask.complete();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toHaveClass("opacity-50");
+    });
+
+    it("applies background classes for selected and focused states", () => {
+      // Use the action to set selected task index
+      store.setSelectedTaskIndex(0);
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} index={0} />
+        </MockWrapper>,
+      );
+
+      const taskRow = screen.getByDisplayValue("Test task").closest("tr");
+      expect(taskRow).toHaveClass("bg-base-0D/10");
+    });
+
+    it("applies checked styling to checkbox", () => {
+      mockTask.complete();
+
+      render(
+        <MockWrapper>
+          <Task task={mockTask} />
+        </MockWrapper>,
+      );
+
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).toHaveClass("checked:after:content-['✓']");
+    });
+  });
+});

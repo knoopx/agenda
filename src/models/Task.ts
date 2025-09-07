@@ -28,7 +28,7 @@ const Task = Expression.named("Task")
 
     complete() {
       const now = DateTime.now();
-      
+
       if (self.isCompleted) {
         // Uncomplete the task - decrement count if > 0
         self.isCompleted = false;
@@ -37,10 +37,10 @@ const Task = Expression.named("Task")
         }
         return;
       }
-      
+
       // Add completion
       self.completionCount++;
-      
+
       if (self.isRecurring) {
         let nextAt = self.nextAfter(now);
         if (nextAt) {
@@ -109,9 +109,9 @@ const Task = Expression.named("Task")
 
       get completionStats() {
         if (!self.isRecurring) return null;
-        
+
         return {
-          total: self.completionCount
+          total: self.completionCount,
         };
       },
     };

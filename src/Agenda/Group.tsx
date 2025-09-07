@@ -10,8 +10,8 @@ const GroupTaskList = observer(
 
     // Sort tasks within the group by their global index to maintain keyboard navigation order
     const sortedTasks = tasks.slice().sort((a, b) => {
-      const indexA = store.filteredTasks.findIndex(task => task.id === a.id);
-      const indexB = store.filteredTasks.findIndex(task => task.id === b.id);
+      const indexA = store.filteredTasks.findIndex((task) => task.id === a.id);
+      const indexB = store.filteredTasks.findIndex((task) => task.id === b.id);
       return indexA - indexB;
     });
 
@@ -30,15 +30,15 @@ const GroupTaskList = observer(
         </thead>
         <tbody>
           {sortedTasks.map((t) => {
-            const globalIndex = store.filteredTasks.findIndex(task => task.id === t.id);
-            return (
-              <Task key={t.id} task={t} index={globalIndex} />
+            const globalIndex = store.filteredTasks.findIndex(
+              (task) => task.id === t.id,
             );
+            return <Task key={t.id} task={t} index={globalIndex} />;
           })}
         </tbody>
       </>
     );
-  }
+  },
 );
 
 export default GroupTaskList;

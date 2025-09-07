@@ -69,14 +69,15 @@ export class Frequency {
   public static YEARLY: ICalRuleFrequency = "YEARLY";
 
   static fromUnit(unit: DateTimeUnit): string | undefined {
-    return {
-      minutes: this.MINUTELY,
-      hours: this.HOURLY,
-      days: this.DAILY,
-      weeks: this.WEEKLY,
-      months: this.MONTHLY,
-      years: this.YEARLY,
-    }[unit.toUpperCase()];
+    const mapping: Partial<Record<DateTimeUnit, ICalRuleFrequency>> = {
+      minute: this.MINUTELY,
+      hour: this.HOURLY,
+      day: this.DAILY,
+      week: this.WEEKLY,
+      month: this.MONTHLY,
+      year: this.YEARLY,
+    };
+    return mapping[unit];
   }
 }
 
@@ -104,7 +105,7 @@ export class Recurrence {
 
   static make(
     frequency: ICalRuleFrequency,
-    { interval, ...rest }: IRecurrenceOptions
+    { interval, ...rest }: IRecurrenceOptions,
   ): IRecurrenceOptions {
     return {
       frequency,

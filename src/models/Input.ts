@@ -92,6 +92,8 @@ const Input = Expression.named("Input").views((self) => {
           return dates[dates.length - 1].diff(dates[0]);
         }
       }
+
+      return null;
     },
 
     get implicitEndAt(): DateTime | null {

@@ -12,10 +12,10 @@ const Month = observer(({ start: monthStart }: { start: DateTime }) => {
   const endOfMonth = monthStart.endOf("month");
   const startOfCalendar = startOfMonth.startOf("week");
   const endOfCalendar = endOfMonth.endOf("week");
-  
+
   const days = [];
   let current = startOfCalendar;
-  
+
   while (current <= endOfCalendar) {
     days.push(current);
     current = current.plus({ days: 1 });
@@ -33,16 +33,19 @@ const Month = observer(({ start: monthStart }: { start: DateTime }) => {
           )}
         </h2>
       </div>
-      
+
       {/* Weekday headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-base-04 py-1">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          <div
+            key={day}
+            className="text-center text-xs font-medium text-base-04 py-1"
+          >
             {day}
           </div>
         ))}
       </div>
-      
+
       <div className="grid grid-cols-7 gap-1">
         {days.map((dayStart) => (
           <div key={dayStart.toMillis()} className="w-full">

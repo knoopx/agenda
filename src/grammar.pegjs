@@ -43,7 +43,7 @@ _ "space"
 	= [ ]+ { }
 
 Subject
-	= Word (_ !(Context / Tag / NaturalTimeExpr) Word)* { return { subject: text() } }
+	= Word (_ !ContextOrTagExpr !NaturalTimeExpr Word)* { return { subject: text() } }
 
 ContextOrTagExpr
 	= head:(Context / TagExpr ) tail:(_ (Context / TagExpr))* { return mergeWithArray(head, ...tail.map(t => t[1])) }
@@ -62,7 +62,7 @@ TagExpr
 Number "number"
 	= [0-9]+ { return Number(text()) }
 
-NumberOneTextual = "one"i { return 1 }
+NumberOneTextual = "one"i { return 1 } / "an"i { return 1 } / "a"i { return 1 }
 NumberTwoTextual = "two"i { return 2 }
 NumberThreeTextual = "three"i { return 3 }
 NumberFourTextual = "four"i { return 4 }
@@ -137,9 +137,13 @@ NaturalTimeExpr
 	// in 2 days
 	/ InExpr
 	// at 5h
-    / at:AtTimeExpr { return Recurrence.onceAt(now.set(at)) }
+     / at:AtTimeExpr { return Recurrence.onceAt(now.set(at)) }
 	// this weekend
 	/ "this"i _ "weekend" { return Recurrence.onceAt(now.set(at)) }
+	// weekend
+	/ RecurringWeekend
+	// from DATE to DATE
+	/ FromToExpr
 	// for 4h
 	/ ForExpr
 
@@ -261,7 +265,7 @@ RecurringDateExpr
 		return mergeWithArray(head, ...tail.map(t => t[3]))
 	}
 
-RecurringWeekend = "weekend"i { return Recurrence.weekly({ byDayOfWeek: ["SA"] }) }
+RecurringWeekend = "weekend"i { return Recurrence.weekly({ byDayOfWeek: ["SA", "SU"] }) }
 RecurringDayOfTheWeekInterval = interval:NumberExpr _ dayName:DayOfTheWeek "s" { return Recurrence.weekly({ interval, byDayOfWeek: [WeekDayNamesShort[WeekDayNames.indexOf(dayName)]] }) }
 RecurringDurationUnit = expr:DurationUnitExpr { return Recurrence.fromDurationLike({ unit: expr }) }
 
@@ -305,6 +309,9 @@ TimeExpr
 ForExpr
 	= "for"i _ expr:DurationExpr { return { duration: expr } }
 
+FromToExpr
+	= "from"i _ start:DateExpr _ "to"i _ end:DateExpr { return { start, end } }
+
 OnExpr "on..."
 	= "on"i _ expr:OnSubExpr { return expr }
 
@@ -342,16 +349,18 @@ NextWeekDayExpr
 
 DateShort
 	// 25/12
-	= day:DayNumber "/" month:MonthNumber { return now.set({ month, day }).startOf("day") }
+	= day:DayNumber "/" month:MonthNumber { return { month, day, dateTime: now.set({ month, day }).startOf("day") } }
 	// december 25
-	/ month:MonthNameAsNumber _ day:DayNumber { return now.set({ month, day }).startOf("day") }
+	/ month:MonthNameAsNumber _ day:DayNumber { return { month, day, dateTime: now.set({ month, day }).startOf("day") } }
 	// 25 december
-	/ day:DayNumber _ month:MonthNameAsNumber { return now.set({ month, day }).startOf("day") }
+	/ day:DayNumber _ month:MonthNameAsNumber { return { month, day, dateTime: now.set({ month, day }).startOf("day") } }
 
 Date
 	// 25/12/2020
 	= day:DayNumber "/" month:MonthExpr "/" year:Number4Digit  { return DateTime.local(year, month, day).startOf("day")  }
 	/ day:DayNumber _ month:MonthExpr _ year:Number4Digit  { return DateTime.local(year, month, day).startOf("day")  }
+	// ISO date format 2024-01-10
+	/ year:Number4Digit "-" month:MonthNumber "-" day:DayNumber { return DateTime.local(year, month, day).startOf("day") }
 
 DateExpr
 	= NextExpr
@@ -360,7 +369,7 @@ DateExpr
 	/ "tomorrow"i { return now.startOf("day").plus({ days: 1 }) }
 	/ "this"i _ "weekend"i { return now.startOf("week").set({ weekday: 6 }) }
 	/ Date
-	/ DateShort
+	/ expr:DateShort { return expr.dateTime }
 
 DateTimeExpr
 	= left:DateExpr _ right:AtTimeExpr { return left.set(right) }

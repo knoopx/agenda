@@ -18,7 +18,7 @@ function toAndExpr(parts: string[]): string {
 }
 
 function toEveryExpr(parts: string | string[]): string[] {
-  parts = [parts].flat()
+  parts = [parts].flat();
   if (!parts) return [];
   return ["every", ...parts];
 }
@@ -29,7 +29,7 @@ function toAtRecurringTimeExpr(
   options: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  } = { relative: false, timeOfTheDay: {} }
+  } = { relative: false, timeOfTheDay: {} },
 ): string[] | null {
   if (!hours || !minutes) return null;
   if (hours.every((x) => x === 0) && minutes.every((x) => x === 0)) return null;
@@ -37,7 +37,7 @@ function toAtRecurringTimeExpr(
   const times = hours
     .filter((hour) => hour !== 0)
     .flatMap((hour) =>
-      minutes.map((minute) => toTimeExpr(hour, minute, options))
+      minutes.map((minute) => toTimeExpr(hour, minute, options)),
     )
     .filter(Boolean);
 
@@ -49,11 +49,11 @@ function toTimeOfTheDay(
   minute: number,
   options: {
     timeOfTheDay?: { [key: string]: number };
-  }
+  },
 ): string | null {
   if (options.timeOfTheDay && minute === 0) {
     const match = Object.keys(options.timeOfTheDay).find(
-      (k) => options.timeOfTheDay![k] === hour
+      (k) => options.timeOfTheDay![k] === hour,
     );
     if (match) return match;
   }
@@ -63,7 +63,7 @@ function toTimeOfTheDay(
 
 export function toEveryDayOfWeekExpr(
   byDayOfWeek?: string[],
-  interval: number = 1
+  interval: number = 1,
 ): string[] | null {
   function toWeekDay(dayOfWeek: string, interval: number) {
     let name =
@@ -75,23 +75,23 @@ export function toEveryDayOfWeekExpr(
   if (!byDayOfWeek) return null;
 
   return toEveryExpr(
-    toAndExpr(byDayOfWeek.map((weekDay) => toWeekDay(weekDay, interval)))
+    toAndExpr(byDayOfWeek.map((weekDay) => toWeekDay(weekDay, interval))),
   );
 }
 
 export function toEveryMonthOfYearExpr(
-  byMonthOfYear?: number[]
+  byMonthOfYear?: number[],
 ): string[] | null {
   if (!byMonthOfYear) return null;
 
   return toEveryExpr(
-    toAndExpr(byMonthOfYear.map((month) => MonthNames[month - 1]))
+    toAndExpr(byMonthOfYear.map((month) => MonthNames[month - 1])),
   );
 }
 
 export function toEveryIntervalExpr(
   interval: number = 1,
-  frequency: string
+  frequency: string,
 ): string[] | null {
   const map: {
     [key: string]: [string, string];
@@ -114,7 +114,7 @@ export function toEveryIntervalExpr(
 
 export function toEveryDateExpr(
   byDayOfMonth?: number[],
-  byMonthDay?: number[]
+  byMonthDay?: number[],
 ): string[] | null {
   if (!byDayOfMonth || !byMonthDay) return null;
   if (byDayOfMonth.length !== 1 && byMonthDay.length !== 1) return null;
@@ -133,7 +133,7 @@ export function toRecurringExpression(
   options: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  }
+  },
 ): string | string[] | null {
   const timeOfTheDay =
     ast.byHourOfDay &&
@@ -154,7 +154,7 @@ export function toRecurringExpression(
     const at = toAtRecurringTimeExpr(
       ast.byHourOfDay,
       ast.byMinuteOfHour,
-      options
+      options,
     );
     if (at) {
       return [...expr, ...at];
@@ -174,7 +174,7 @@ function toTimeExpr(
   options?: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  }
+  },
 ): string {
   if (options?.relative) {
     const timeOfTheDay = toTimeOfTheDay(hour, minute, options);
@@ -192,7 +192,7 @@ function toDateExpr(
   options?: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  }
+  },
 ) {
   if (!date) return null;
 
@@ -212,7 +212,7 @@ function toAtTimeExpr(
   options?: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  }
+  },
 ) {
   if (!start) return null;
 
@@ -227,7 +227,7 @@ export function toExpression(
   options: {
     relative?: boolean;
     timeOfTheDay?: { [key: string]: number };
-  } = { relative: false, timeOfTheDay: {} }
+  } = { relative: false, timeOfTheDay: {} },
 ): string {
   const contexts = ast?.contexts?.map((tag) => `@${tag}`).join(" ");
   const tags = ast?.tags?.map((tag) => `#${tag}`).join(" ");

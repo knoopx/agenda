@@ -7,7 +7,6 @@ import { useStore } from "../hooks";
 import { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
 import { ITimeOfTheDay } from "../models/Store";
 
-
 export const Button = ({
   className,
   ...props
@@ -17,7 +16,7 @@ export const Button = ({
       type="button"
       className={classNames(
         "flex items-center justify-center text-base-04 hover:text-base-05 rounded cursor-pointer",
-        className
+        className,
       )}
       {...props}
     />
@@ -32,7 +31,7 @@ export const Select = ({
     <select
       className={classNames(
         "bg-base-01 rounded px-2 py-1 border-none appearance-none outline-none",
-        className
+        className,
       )}
       {...props}
     />
@@ -53,12 +52,17 @@ const Settings = observer(() => {
             {Object.keys(store.timeOfTheDay).map((key) => (
               <label key={key} className="flex space-x-4">
                 <span className="flex-auto">{key}</span>
-                 <Select
-                   className="text-right"
-                    value={(store.timeOfTheDay as ITimeOfTheDay & Record<string, number>)[key]}
-                   onChange={(e) =>
-                     store.timeOfTheDay.set(key, Number(e.target.value))
-                   }
+                <Select
+                  className="text-right"
+                  value={
+                    (
+                      store.timeOfTheDay as ITimeOfTheDay &
+                        Record<string, number>
+                    )[key]
+                  }
+                  onChange={(e) =>
+                    store.timeOfTheDay.set(key, Number(e.target.value))
+                  }
                 >
                   {range(0, 24).map((hour) => (
                     <option key={hour} value={hour}>
@@ -94,12 +98,12 @@ const Settings = observer(() => {
         </label>
 
         <label className="inline-flex items-center space-x-2 cursor-pointer">
-           <input
-             type="checkbox"
-              className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 hover:border-base-0D/70 appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-xs"
-             checked={store.displayEmoji}
-             onChange={() => store.toggleDisplayEmoji()}
-           />
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-2 border-base-04 bg-base-01 checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 hover:border-base-0D/70 appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-xs"
+            checked={store.displayEmoji}
+            onChange={() => store.toggleDisplayEmoji()}
+          />
           <span className="font-medium">show emoji</span>
         </label>
 

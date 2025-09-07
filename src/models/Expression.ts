@@ -120,7 +120,6 @@ const Expression = t
       if (!this.frequency) return null;
 
       const {
-        subject,
         duration,
         start = this.implicitStart,
         ...rrule
@@ -159,9 +158,9 @@ const Expression = t
       } else if (this.start) {
         // Ensure consistent timezone handling by converting to the same zone as start
         const normalizedStart = this.start.setZone(start.zone);
-        target = new Dates({ 
+        target = new Dates({
           dates: [normalizedStart],
-          timezone: start.zoneName 
+          timezone: start.zoneName,
         });
       } else {
         return [];
@@ -169,7 +168,7 @@ const Expression = t
 
       // Ensure all parameters have consistent timezone
       const normalizedEnd = end?.setZone(start.zone);
-      
+
       return target
         .occurrences({ start, end: normalizedEnd, take })
         .toArray()
@@ -187,7 +186,7 @@ const Expression = t
     },
 
     get implicitStart(): DateTime {
-      return DateTime.now();
+      return this.start ?? DateTime.now();
     },
 
     get simplifiedExpression(): string {
@@ -219,8 +218,8 @@ const Expression = t
     get emojis() {
       return this.tags
         .map((x) => emojiFromWord(x))
-        .filter((x) => x.emoji)
-        .map((x) => x.char);
+        .filter((x) => x !== undefined && x.emoji && x.emoji.char)
+        .map((x) => x!.emoji.char);
     },
   }));
 

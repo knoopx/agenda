@@ -5,7 +5,7 @@ export function useKey(
   inputRef: RefObject<HTMLElement | null>,
   codes: string[] | number[] | number | string,
   callback: EventListener,
-  deps: unknown[] = []
+  deps: unknown[] = [],
 ) {
   const choices = [codes].flat();
   const listener = (e: KeyboardEvent) => {

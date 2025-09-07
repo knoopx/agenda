@@ -14,7 +14,7 @@ export const Label = ({
     <span
       className={classNames(
         "inline-flex items-center space-x-1 whitespace-nowrap",
-        className
+        className,
       )}
     >
       {Icon && position === "left" && <Icon />}

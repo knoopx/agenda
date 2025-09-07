@@ -1,4 +1,4 @@
-declare module 'pegjs-backtrace' {
+declare module "pegjs-backtrace" {
   class Tracer {
     constructor(input: string);
     getBacktraceString(): string;

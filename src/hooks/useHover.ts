@@ -11,7 +11,7 @@ export function useHover(ref: RefObject<HTMLElement>, deps = []) {
     () => {
       setState(true);
     },
-    deps
+    deps,
   );
 
   useEventListener(
@@ -20,7 +20,7 @@ export function useHover(ref: RefObject<HTMLElement>, deps = []) {
     () => {
       setState(false);
     },
-    deps
+    deps,
   );
 
   return state;

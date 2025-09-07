@@ -1,19 +1,17 @@
-/* eslint-disable babel/new-cap */
-
-import Icons from "unplugin-icons/vite"
-import IconsResolver from "unplugin-icons/resolver"
-import AutoImport from "unplugin-auto-import/vite"
-import react from "@vitejs/plugin-react"
-import peggy from "peggy"
-import { defineConfig } from "vite"
-import { viteCommonjs } from "@originjs/vite-plugin-commonjs"
+import Icons from "unplugin-icons/vite";
+import IconsResolver from "unplugin-icons/resolver";
+import AutoImport from "unplugin-auto-import/vite";
+import react from "@vitejs/plugin-react";
+import peggy from "peggy";
+import { defineConfig } from "vite";
+import { viteCommonjs } from "@originjs/vite-plugin-commonjs";
 
 const peggyPlugin = (options = {}) => {
   return {
     name: "vite-peggy",
     enforce: "pre",
     transform(input, id) {
-      if (!id.toLowerCase().includes(".pegjs")) return null
+      if (!id.toLowerCase().includes(".pegjs")) return null;
 
       try {
         const code = peggy.generate(input, {
@@ -23,23 +21,23 @@ const peggyPlugin = (options = {}) => {
           output: "source",
           trace: id.toLowerCase().includes("trace"),
           map: null,
-        })
+        });
 
         return {
           ...viteCommonjs().transform(code, id),
           map: null,
           warnings: null,
-        }
+        };
       } catch (e) {
         if (typeof e.format === "function") {
-          throw new Error(e.format([{ source: id, text: input }]))
+          throw new Error(e.format([{ source: id, text: input }]));
         } else {
-          throw e
+          throw e;
         }
       }
     },
-  }
-}
+  };
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -73,6 +71,7 @@ export default defineConfig({
           "RecurringExpr",
           "EverySubExpr",
           "ForExpr",
+          "FromToExpr",
           "NaturalTimeExpr",
           "NextExpr",
           "NextSubExpr",
@@ -86,8 +85,8 @@ export default defineConfig({
     }),
   ],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./src/test-setup.ts'],
+    setupFiles: ["./src/test-setup.ts"],
   },
-})
+});

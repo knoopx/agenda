@@ -2,12 +2,12 @@ import { RefObject, useEffect } from "react";
 
 export function useEventListener<
   K extends keyof HTMLElementEventMap,
-  T extends HTMLElement
+  T extends HTMLElement,
 >(
   ref: RefObject<T | null>,
   eventName: K,
   listener: (event: HTMLElementEventMap[K]) => void,
-  deps: unknown[] = []
+  deps: unknown[] = [],
 ) {
   return useEffect(() => {
     const node = ref.current;

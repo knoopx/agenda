@@ -18,7 +18,10 @@ test("tasks within groups are sorted by global index for keyboard navigation", (
 
   // Create tasks with different priorities (some completed, some with different dates)
   const task1 = Task.create({ expression: "urgent task today @work" });
-  const task2 = Task.create({ expression: "completed task yesterday", isCompleted: true });
+  const task2 = Task.create({
+    expression: "completed task yesterday",
+    isCompleted: true,
+  });
   const task3 = Task.create({ expression: "normal task tomorrow @home" });
   const task4 = Task.create({ expression: "another task today @work" });
 
@@ -34,8 +37,8 @@ test("tasks within groups are sorted by global index for keyboard navigation", (
   groups.forEach(([, tasks]) => {
     if (tasks.length > 1) {
       // Get the global indices for tasks in this group
-      const groupGlobalIndices = tasks.map(task =>
-        store.filteredTasks.findIndex(t => t.id === task.id)
+      const groupGlobalIndices = tasks.map((task) =>
+        store.filteredTasks.findIndex((t) => t.id === task.id),
       );
 
       // Verify that the tasks are in ascending global index order
@@ -47,7 +50,9 @@ test("tasks within groups are sorted by global index for keyboard navigation", (
   // Verify that the first task in the first group has the lowest global index
   if (groups.length > 0 && groups[0][1].length > 0) {
     const firstTaskInFirstGroup = groups[0][1][0];
-    const firstTaskGlobalIndex = store.filteredTasks.findIndex(t => t.id === firstTaskInFirstGroup.id);
+    const firstTaskGlobalIndex = store.filteredTasks.findIndex(
+      (t) => t.id === firstTaskInFirstGroup.id,
+    );
     expect(firstTaskGlobalIndex).toBe(0); // Should be the first task globally
   }
 });
@@ -72,7 +77,9 @@ test("selected task index matches agenda component order", () => {
   const firstTaskInAgenda = firstGroupTasks[0];
 
   // This should be the first task in filteredTasks (index 0)
-  const firstTaskGlobalIndex = store.filteredTasks.findIndex(t => t.id === firstTaskInAgenda.id);
+  const firstTaskGlobalIndex = store.filteredTasks.findIndex(
+    (t) => t.id === firstTaskInAgenda.id,
+  );
   expect(firstTaskGlobalIndex).toBe(0);
 
   // Verify that when we select the first task, it matches the first task in agenda
@@ -84,7 +91,9 @@ test("selected task index matches agenda component order", () => {
   let currentIndex = 0;
   for (const [, groupTasks] of groups) {
     for (const task of groupTasks) {
-      const taskGlobalIndex = store.filteredTasks.findIndex(t => t.id === task.id);
+      const taskGlobalIndex = store.filteredTasks.findIndex(
+        (t) => t.id === task.id,
+      );
       expect(taskGlobalIndex).toBe(currentIndex);
       currentIndex++;
     }
@@ -113,8 +122,8 @@ test("agenda component order respects chronological group order", () => {
   // Verify tasks within each group are sorted by global index
   for (const [, groupTasks] of groups) {
     if (groupTasks.length > 1) {
-      const globalIndices = groupTasks.map(task =>
-        store.filteredTasks.findIndex(t => t.id === task.id)
+      const globalIndices = groupTasks.map((task) =>
+        store.filteredTasks.findIndex((t) => t.id === task.id),
       );
       // Check that indices are in ascending order
       for (let i = 1; i < globalIndices.length; i++) {
@@ -153,12 +162,19 @@ test("agenda groups are in correct chronological order", () => {
   const groups = store.agenda.groupEntries;
 
   // Verify groups appear in the expected chronological order
-  const expectedGroupOrder = ["due", "today", "tomorrow", "later this week", "next week", "upcoming"];
+  const expectedGroupOrder = [
+    "due",
+    "today",
+    "tomorrow",
+    "later this week",
+    "next week",
+    "upcoming",
+  ];
   const actualGroupOrder = groups.map(([name]) => name);
 
   // Filter expected groups to only include those that have tasks
-  const expectedGroupsWithTasks = expectedGroupOrder.filter(groupName =>
-    actualGroupOrder.includes(groupName)
+  const expectedGroupsWithTasks = expectedGroupOrder.filter((groupName) =>
+    actualGroupOrder.includes(groupName),
   );
 
   expect(actualGroupOrder).toEqual(expectedGroupsWithTasks);

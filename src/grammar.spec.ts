@@ -51,8 +51,12 @@ testRule("Tag", (e) => {
 testRule("TagExpr", (e) => {
   e("#coffee #drinks").toMatchObject({ tags: ["coffee", "drinks"] });
   e("#urgent #important").toMatchObject({ tags: ["urgent", "important"] });
-  e("#meeting #standup #daily").toMatchObject({ tags: ["meeting", "standup", "daily"] });
-  e("#work #project #frontend").toMatchObject({ tags: ["work", "project", "frontend"] });
+  e("#meeting #standup #daily").toMatchObject({
+    tags: ["meeting", "standup", "daily"],
+  });
+  e("#work #project #frontend").toMatchObject({
+    tags: ["work", "project", "frontend"],
+  });
 });
 
 testRule("ContextOrTagExpr", (e) => {
@@ -84,7 +88,6 @@ testRule("ContextOrTagExpr", (e) => {
   });
 });
 
-
 testRule("ForExpr", (e) => {
   e("for 1h").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
   e("for 4 minutes").toEqual({
@@ -105,6 +108,11 @@ testRule("ForExpr", (e) => {
   e("for 6 hours").toEqual({
     duration: Duration.fromObject({ hours: 6 }),
   });
+  // Test "a" and "an" support
+  // Note: These tests may need adjustment based on Duration rule parsing
+  e("for a day").toEqual({ duration: Duration.fromObject({ days: 1 }) });
+  e("for an hour").toEqual({ duration: Duration.fromObject({ hours: 1 }) });
+  e("for a minute").toEqual({ duration: Duration.fromObject({ minutes: 1 }) });
 });
 
 testRule("NextExpr", (e) => {
@@ -113,7 +121,7 @@ testRule("NextExpr", (e) => {
   e("next winter").toEqual(DateTime.local(2021, 9, 1));
   e("next week").toEqual(DateTime.local(2021, 1, 4));
   e("next year").toEqual(DateTime.local(2022, 1, 1));
-  e("next friday").toEqual(DateTime.local(2021, 1, 1));  // Jan 1, 2021 is a Friday
+  e("next friday").toEqual(DateTime.local(2021, 1, 1)); // Jan 1, 2021 is a Friday
   e("next tuesday").toEqual(DateTime.local(2021, 1, 5));
   e("next thursday").toEqual(DateTime.local(2021, 1, 7));
 });
@@ -123,6 +131,9 @@ testRule("DateExpr", (e) => {
   e("25 dec 2020").toEqual(DateTime.local(2020, 12, 25));
   e("25 dec").toEqual(DateTime.local(2021, 12, 25));
   e("dec 25").toEqual(DateTime.local(2021, 12, 25));
+  // ISO date format support
+  e("2024-01-10").toEqual(DateTime.local(2024, 1, 10));
+  e("2023-12-25").toEqual(DateTime.local(2023, 12, 25));
 });
 
 testRule("DateTimeExpr", (e) => {
@@ -497,8 +508,8 @@ testRule("Root", (e) => {
 
   e("@personal buy battery 04/01 at 09:00").toMatchObject({
     contexts: ["personal"],
-    start: DateTime.local(2021, 1, 4, 9),
     subject: "buy battery",
+    start: DateTime.local(2021, 1, 4, 9),
   });
 
   e("@work #call peter ").toMatchObject({
@@ -530,7 +541,9 @@ testRule("Root", (e) => {
   });
 
   // Additional comprehensive test cases
-  e("@work #standup daily meeting every monday at 09:00 for 30 min").toMatchObject({
+  e(
+    "@work #standup daily meeting every monday at 09:00 for 30 min",
+  ).toMatchObject({
     subject: "daily meeting",
     contexts: ["work"],
     tags: ["standup"],
@@ -548,7 +561,9 @@ testRule("Root", (e) => {
     start: DateTime.local(2021, 1, 2, 15, 30),
   });
 
-  e("@home #cleaning vacuum living room every saturday morning for 1h").toMatchObject({
+  e(
+    "@home #cleaning vacuum living room every saturday morning for 1h",
+  ).toMatchObject({
     subject: "vacuum living room",
     contexts: ["home"],
     tags: ["cleaning"],
@@ -591,6 +606,17 @@ testRule("Root", (e) => {
     duration: Duration.fromObject({ hours: 2 }),
   });
 
+  // Test improved weekend parsing (includes both Saturday and Sunday)
+  e("every weekend").toMatchObject({
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["SA", "SU"],
+  });
+
+  e("weekend").toMatchObject({
+    frequency: Frequency.WEEKLY,
+    byDayOfWeek: ["SA", "SU"],
+  });
+
   e("meeting tomorrow at 09:30").toMatchObject({
     subject: "meeting",
     start: DateTime.local(2021, 1, 2, 9, 30),
@@ -602,5 +628,30 @@ testRule("Root", (e) => {
     tags: ["1on1"],
     frequency: Frequency.WEEKLY,
     interval: 2,
+  });
+
+  // Test FromToExpr integration
+  e("@work project from 2024-01-15 to 2024-03-15").toMatchObject({
+    subject: "project",
+    contexts: ["work"],
+    start: DateTime.local(2024, 1, 15),
+    end: DateTime.local(2024, 3, 15),
+  });
+
+  e("#personal vacation from tomorrow to next week").toMatchObject({
+    subject: "vacation",
+    tags: ["personal"],
+    start: DateTime.local(2021, 1, 2),
+    end: DateTime.local(2021, 1, 4),
+  });
+
+  e("task for a day").toMatchObject({
+    subject: "task",
+    duration: Duration.fromObject({ days: 1 }),
+  });
+
+  e("meeting for an hour").toMatchObject({
+    subject: "meeting",
+    duration: Duration.fromObject({ hours: 1 }),
   });
 });

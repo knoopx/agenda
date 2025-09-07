@@ -28,7 +28,7 @@ const Time = observer(() => {
     <div>
       {now().toLocaleString(
         { hour: "2-digit", minute: "2-digit" },
-        { locale: store.locale }
+        { locale: store.locale },
       )}
     </div>
   );

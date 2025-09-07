@@ -51,8 +51,9 @@ const Input = observer(() => {
         className={classNames(
           "flex flex-auto items-center px-4 py-3 space-x-3 bg-base-01/80 dark:bg-base-02/80 rounded-lg border border-base-02/50 dark:border-base-03/50 backdrop-blur-sm",
           {
-            "border-base-08/50 ring-2 ring-base-08/20": !input.isBlank && !input.isValid,
-          }
+            "border-base-08/50 ring-2 ring-base-08/20":
+              !input.isBlank && !input.isValid,
+          },
         )}
       >
         {input.context && (
@@ -63,7 +64,9 @@ const Input = observer(() => {
         )}
 
         {store.displayEmoji &&
-          input.emojis.map((char) => <span key={char}>{char}</span>)}
+          input.emojis.map((char, index) => (
+            <span key={`${char}-${index}`}>{char}</span>
+          ))}
 
         {input.isRecurring && (
           <span className="flex items-center">

@@ -11,7 +11,7 @@ export function useFocus(ref: RefObject<HTMLElement | null>, deps = []) {
     () => {
       setState(true);
     },
-    deps
+    deps,
   );
 
   useEventListener(
@@ -20,7 +20,7 @@ export function useFocus(ref: RefObject<HTMLElement | null>, deps = []) {
     () => {
       setState(false);
     },
-    deps
+    deps,
   );
 
   return state;

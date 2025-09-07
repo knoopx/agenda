@@ -16,7 +16,8 @@ export const Agenda = observer(() => {
           </div>
           <h1 className="text-base-04 text-xl font-medium">No tasks yet</h1>
           <p className="text-base-04/70 text-sm max-w-xs">
-            Add your first task using the input field above to get started with your productivity journey.
+            Add your first task using the input field above to get started with
+            your productivity journey.
           </p>
         </div>
       </div>

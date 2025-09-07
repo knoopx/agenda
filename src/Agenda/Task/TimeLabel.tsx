@@ -12,7 +12,10 @@ export const TimeLabel = observer(
     date,
     className,
     isSelected,
-  }: { date: DateTime; isSelected?: boolean } & HTMLAttributes<HTMLSpanElement>) => {
+  }: {
+    date: DateTime;
+    isSelected?: boolean;
+  } & HTMLAttributes<HTMLSpanElement>) => {
     const { locale } = useStore();
 
     if (date.hour === 0 && date.minute === 0) return null;
@@ -28,5 +31,5 @@ export const TimeLabel = observer(
         {date.toLocaleString({ timeStyle: "short" }, { locale })}
       </Label>
     );
-  }
+  },
 );

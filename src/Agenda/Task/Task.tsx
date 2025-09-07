@@ -31,141 +31,189 @@ export const TaskContent = observer(
       onSubmit?: () => void;
       index?: number;
     }
-  >(({ task, inputRef, isFocused, isSelected, onComplete, onSubmit, index, ...props }, ref) => {
-    const store = useStore();
+  >(
+    (
+      {
+        task,
+        inputRef,
+        isFocused,
+        isSelected,
+        onComplete,
+        onSubmit,
+        index,
+        ...props
+      },
+      ref,
+    ) => {
+      const store = useStore();
 
-    return (
-      <tr
-        {...props}
-        ref={ref}
-        data-task-index={index}
-        className={`h-14 align-middle border-b dark:border-b-base-02/50 last-of-type:border-0 group ${task.isCompleted && !isSelected ? 'opacity-50' : ''} ${isSelected ? 'bg-base-0D/10 dark:bg-base-0D/20' : ''} ${isFocused ? 'bg-base-0D/10 dark:bg-base-0D/20' : ''}`}
-      >
-         <td className={`hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 ${isSelected ? 'text-base-0D' : 'text-base-04'}`}>
-            {task.nextAt && <TimeLabel date={task.nextAt} isSelected={isSelected} className="text-xs" />}
-            {task.duration && <DurationLabel duration={task.duration} isSelected={isSelected} className="text-xs" />}
-         </td>
-
-        <td
-          style={{ borderColor: task.contextColor }}
-          className="w-full align-middle border-l-4 flex flex-auto items-center px-4 h-14 space-x-3"
+      return (
+        <tr
+          {...props}
+          ref={ref}
+          data-task-index={index}
+          className={`h-14 align-middle border-b dark:border-b-base-02/50 last-of-type:border-0 group ${task.isCompleted && !isSelected ? "opacity-50" : ""} ${isSelected ? "bg-base-0D/10 dark:bg-base-0D/20" : ""} ${isFocused ? "bg-base-0D/10 dark:bg-base-0D/20" : ""}`}
         >
-          {store.displayEmoji &&
-            !isFocused &&
-            task.emojis.map((char) => <span key={char}>{char}</span>)}
-
-          {!isFocused && task.isRecurring && (
-            <RecurringIcon title={task.frequency} />
-          )}
-
-           <SubjectInput ref={inputRef} task={task} isFocused={isFocused} isSelected={isSelected} onSubmit={onSubmit} />
-
+          <td
+            className={`hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 ${isSelected ? "text-base-0D" : "text-base-04"}`}
+          >
             {task.nextAt && (
-              <DistanceLabel className="text-xs" date={task.nextAt} isSelected={isSelected} />
+              <TimeLabel
+                date={task.nextAt}
+                isSelected={isSelected}
+                className="text-xs"
+              />
+            )}
+            {task.duration && (
+              <DurationLabel
+                duration={task.duration}
+                isSelected={isSelected}
+                className="text-xs"
+              />
+            )}
+          </td>
+
+          <td
+            style={{ borderColor: task.contextColor }}
+            className="w-full align-middle border-l-4 flex flex-auto items-center px-4 h-14 space-x-3"
+          >
+            {store.displayEmoji &&
+              !isFocused &&
+              task.emojis.map((char) => <span key={char}>{char}</span>)}
+
+            {!isFocused && task.isRecurring && (
+              <RecurringIcon title={task.frequency} />
             )}
 
-           {!isFocused && <TaskActionGroup task={task} isSelected={isSelected} />}
+            <SubjectInput
+              ref={inputRef}
+              task={task}
+              isFocused={isFocused}
+              isSelected={isSelected}
+              onSubmit={onSubmit}
+            />
 
-           {!isFocused && task.isRecurring && (
-             <CompletionCount task={task} isSelected={isSelected} />
-           )}
+            {task.nextAt && (
+              <DistanceLabel
+                className="text-xs"
+                date={task.nextAt}
+                isSelected={isSelected}
+              />
+            )}
+
+            {!isFocused && (
+              <TaskActionGroup task={task} isSelected={isSelected} />
+            )}
+
+            {!isFocused && task.isRecurring && (
+              <CompletionCount task={task} isSelected={isSelected} />
+            )}
 
             <input
               type="checkbox"
-              className={`w-5 h-5 rounded border-2 ${isSelected ? 'border-base-0D bg-base-0D/5' : 'border-base-04 bg-base-01'} checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-sm`}
+              className={`w-5 h-5 rounded border-2 ${isSelected ? "border-base-0D bg-base-0D/5" : "border-base-04 bg-base-01"} checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-sm`}
               checked={task.isCompleted}
               onChange={onComplete}
             />
-        </td>
-      </tr>
-    );
-  })
+          </td>
+        </tr>
+      );
+    },
+  ),
 );
 
-const Task = observer(({ task, index, ...props }: { task: ITask; index?: number }) => {
-  const store = useStore();
-  const ref = useRef<HTMLTableRowElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const isFocused = useFocus(inputRef);
-  const isSelected = index !== undefined && store.selectedTaskIndex === index;
-  let target: ITask;
-  const originalSnapshot = useRef<any>(null);
+const Task = observer(
+  ({ task, index, ...props }: { task: ITask; index?: number }) => {
+    const store = useStore();
+    const ref = useRef<HTMLTableRowElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const isFocused = useFocus(inputRef);
+    const isSelected = index !== undefined && store.selectedTaskIndex === index;
+    let target: ITask;
+    const originalSnapshot = useRef<any>(null);
 
-  // Register/unregister the input ref with the store when index changes
-  useEffect(() => {
-    if (index !== undefined && inputRef.current) {
-      store.setTaskInputRef(index, inputRef.current);
-    }
-    return () => {
-      if (index !== undefined) {
-        store.setTaskInputRef(index, null);
+    // Register/unregister the input ref with the store when index changes
+    useEffect(() => {
+      if (index !== undefined && inputRef.current) {
+        store.setTaskInputRef(index, inputRef.current);
       }
-    };
-  }, [store, index]);
+      return () => {
+        if (index !== undefined) {
+          store.setTaskInputRef(index, null);
+        }
+      };
+    }, [store, index]);
 
-  if (isFocused) {
-    // Only allow editing if no other task is currently being edited
-    if (!store.editingTask) {
-      // Store original snapshot before editing
-      originalSnapshot.current = getSnapshot(task);
-      store.setEditingTask(task);
-    }
-    target = task;
-  } else target = task;
-
-  const onSubmit = useCallback((_e?: Event) => {
-    originalSnapshot.current = null;
-    inputRef.current?.blur();
-    store.clearEditingTask();
-  }, [store]);
-
-  const onCancel = useCallback((_e: Event) => {
-    // Restore original task values if we have a stored snapshot
-    if (originalSnapshot.current) {
-      applySnapshot(task, originalSnapshot.current);
-      originalSnapshot.current = null;
-    }
-    inputRef.current?.blur();
-    store.clearEditingTask();
-  }, [store]);
-
-  const onComplete = () => {
     if (isFocused) {
-      onSubmit();
-    }
-    task.complete();
-  };
+      // Only allow editing if no other task is currently being edited
+      if (!store.editingTask) {
+        // Store original snapshot before editing
+        originalSnapshot.current = getSnapshot(task);
+        store.setEditingTask(task);
+      }
+      target = task;
+    } else target = task;
 
-  useEnterKey(inputRef, onSubmit);
-  useEscapeKey(inputRef, onCancel);
+    const onSubmit = useCallback(
+      (_e?: Event) => {
+        originalSnapshot.current = null;
+        inputRef.current?.blur();
+        store.clearEditingTask();
+      },
+      [store],
+    );
 
-  useEventListener(ref, "mouseover", () => {
-    store.setHoveredTask(task);
-  });
+    const onCancel = useCallback(
+      (_e: Event) => {
+        // Restore original task values if we have a stored snapshot
+        if (originalSnapshot.current) {
+          applySnapshot(task, originalSnapshot.current);
+          originalSnapshot.current = null;
+        }
+        inputRef.current?.blur();
+        store.clearEditingTask();
+      },
+      [store],
+    );
 
-  useEventListener(ref, "mouseout", () => {
-    if (store.hoveredTask === task) store.setHoveredTask(null);
-  });
+    const onComplete = () => {
+      if (isFocused) {
+        onSubmit();
+      }
+      task.complete();
+    };
 
-  useEventListener(inputRef, "focus", () => {
-    if (task.ast && !task.isRecurring && task.ast.start) {
-      task.setExpression(task.simplifiedExpression);
-    }
-  });
+    useEnterKey(inputRef, onSubmit);
+    useEscapeKey(inputRef, onCancel);
 
-  return (
-    <TaskContent
-      ref={ref}
-      isFocused={isFocused}
-      isSelected={isSelected}
-      inputRef={inputRef}
-      task={target}
-      onComplete={onComplete}
-      onSubmit={onSubmit}
-      index={index}
-      {...props}
-    />
-  );
-});
+    useEventListener(ref, "mouseover", () => {
+      store.setHoveredTask(task);
+    });
+
+    useEventListener(ref, "mouseout", () => {
+      if (store.hoveredTask === task) store.setHoveredTask(null);
+    });
+
+    useEventListener(inputRef, "focus", () => {
+      if (task.ast && !task.isRecurring && task.ast.start) {
+        task.setExpression(task.simplifiedExpression);
+      }
+    });
+
+    return (
+      <TaskContent
+        ref={ref}
+        isFocused={isFocused}
+        isSelected={isSelected}
+        inputRef={inputRef}
+        task={target}
+        onComplete={onComplete}
+        onSubmit={onSubmit}
+        index={index}
+        {...props}
+      />
+    );
+  },
+);
 
 export default Task;

@@ -68,7 +68,7 @@ export interface ITimeOfTheDaySnapshotOut
 const Store = t
   .model("Store", {
     tasks: t.array(Task),
-     editingTask: t.maybe(t.reference(Task)),
+    editingTask: t.maybe(t.reference(Task)),
     input: t.optional(Input, () => ({ subject: "", expression: "" })),
     locale: t.optional(t.string, "es-ES"),
     timeZone: t.optional(t.string, "Europe/Madrid"),
@@ -78,14 +78,18 @@ const Store = t
       t.boolean,
       () =>
         typeof window !== "undefined" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        window.matchMedia("(prefers-color-scheme: dark)").matches,
     ),
     displayEmoji: t.optional(t.boolean, true),
   })
   .preProcessSnapshot((snapshot) => {
     // Handle legacy snapshots where editingTask might be a full Task object
     const processed = { ...snapshot };
-    if (processed.editingTask && typeof processed.editingTask === 'object' && processed.editingTask.id) {
+    if (
+      processed.editingTask &&
+      typeof processed.editingTask === "object" &&
+      processed.editingTask.id
+    ) {
       processed.editingTask = processed.editingTask.id;
     }
     return processed;
@@ -93,7 +97,7 @@ const Store = t
   .postProcessSnapshot((snapshot) => {
     // Convert editingTask reference to just the ID for serialization
     const processed = { ...snapshot };
-    if (processed.editingTask && typeof processed.editingTask === 'object') {
+    if (processed.editingTask && typeof processed.editingTask === "object") {
       processed.editingTask = (processed.editingTask as any).id;
     }
     return processed;
@@ -112,9 +116,9 @@ const Store = t
           "isCompleted",
           ({ nextAt }) => nextAt === null, // Tasks with dates first (null dates last)
           "nextAt", // Sort by date for tasks with dates
-          "lastCompletedAt" // Sort by completion date for tasks without dates
+          "lastCompletedAt", // Sort by completion date for tasks without dates
         ],
-        ["asc", "asc", "asc", "desc"]
+        ["asc", "asc", "asc", "desc"],
       );
     },
     get filteredTasks() {
@@ -194,8 +198,8 @@ const Store = t
               day,
               _.uniqBy(
                 [...existing, new Occurrence(occurrence, task)],
-                "task.id"
-              )
+                "task.id",
+              ),
             );
           }
         });
@@ -243,7 +247,9 @@ const Store = t
           if (groups.length > 0 && groups[0][1].length > 0) {
             // Find the global index of the first task in the first group
             const firstTaskInFirstGroup = groups[0][1][0];
-            const firstTaskIndex = self.filteredTasks.findIndex(task => task.id === firstTaskInFirstGroup.id);
+            const firstTaskIndex = self.filteredTasks.findIndex(
+              (task) => task.id === firstTaskInFirstGroup.id,
+            );
 
             if (firstTaskIndex !== -1) {
               this.setSelectedTaskIndex(firstTaskIndex);
@@ -285,7 +291,10 @@ const Store = t
       }
     },
     setSelectedTaskIndex(index: number) {
-      self.selectedTaskIndex = Math.max(-1, Math.min(index, self.filteredTasks.length - 1));
+      self.selectedTaskIndex = Math.max(
+        -1,
+        Math.min(index, self.filteredTasks.length - 1),
+      );
     },
     navigateUp() {
       if (self.filteredTasks.length === 0) return;
@@ -313,18 +322,24 @@ const Store = t
       this.setSelectedTaskIndex(-1);
     },
     completeSelectedTask() {
-      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+      if (
+        self.selectedTaskIndex >= 0 &&
+        self.selectedTaskIndex < self.filteredTasks.length
+      ) {
         const task = self.filteredTasks[self.selectedTaskIndex];
         task.complete();
         // Update selectedTaskIndex to the new position of the completed task
-        const newIndex = self.filteredTasks.findIndex(t => t.id === task.id);
+        const newIndex = self.filteredTasks.findIndex((t) => t.id === task.id);
         if (newIndex !== -1) {
           this.setSelectedTaskIndex(newIndex);
         }
       }
     },
     editSelectedTask() {
-      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+      if (
+        self.selectedTaskIndex >= 0 &&
+        self.selectedTaskIndex < self.filteredTasks.length
+      ) {
         // Clear any existing editing task to ensure only one task can be edited at a time
         this.clearEditingTask();
 
@@ -336,9 +351,12 @@ const Store = t
       }
     },
     toggleEditSelectedTask() {
-      if (self.selectedTaskIndex >= 0 && self.selectedTaskIndex < self.filteredTasks.length) {
+      if (
+        self.selectedTaskIndex >= 0 &&
+        self.selectedTaskIndex < self.filteredTasks.length
+      ) {
         const selectedTask = self.filteredTasks[self.selectedTaskIndex];
-        
+
         // If the selected task is currently being edited, exit edit mode
         if (self.editingTask === selectedTask) {
           const inputRef = self.taskInputRefs.get(self.selectedTaskIndex);

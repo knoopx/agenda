@@ -12,7 +12,10 @@ export const DistanceLabel = observer(
     className,
     date,
     isSelected,
-  }: { date: DateTime; isSelected?: boolean } & HTMLAttributes<HTMLSpanElement>) => {
+  }: {
+    date: DateTime;
+    isSelected?: boolean;
+  } & HTMLAttributes<HTMLSpanElement>) => {
     const isDue = date.toMillis() - DateTime.now().toMillis() < 0;
 
     return (
@@ -25,5 +28,5 @@ export const DistanceLabel = observer(
         {toDistanceExpr(now(5 * 1000), date)}
       </Label>
     );
-  }
+  },
 );

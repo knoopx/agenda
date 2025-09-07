@@ -27,18 +27,18 @@ export const SubjectInput = observer(
             "text-base-08": !task.isValid,
             "text-base-0D": isSelected,
             "line-through": task.isCompleted,
-          }
+          },
         )}
-         onChange={(e) => {
-           task.update({ expression: e.target.value });
-         }}
-         onBlur={() => {
-           // Call onSubmit when input loses focus
-           if (isFocused && onSubmit) {
-             onSubmit();
-           }
-         }}
+        onChange={(e) => {
+          task.update({ expression: e.target.value });
+        }}
+        onBlur={() => {
+          // Call onSubmit when input loses focus
+          if (isFocused && onSubmit) {
+            onSubmit();
+          }
+        }}
       />
     );
-  })
+  }),
 );
