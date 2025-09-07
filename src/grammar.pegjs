@@ -42,8 +42,25 @@ Expr
 _ "space"
 	= [ ]+ { }
 
+URL
+	= "http"i "s"? "://" (!_) . (!(_ / ContextOrTagExpr / NaturalTimeExpr) .)* { return text() }
+
 Subject
-	= Word (_ !ContextOrTagExpr !NaturalTimeExpr Word)* { return { subject: text() } }
+	= head:Word tail:(_ !ContextOrTagExpr !NaturalTimeExpr (Word / URL))* {
+		const parts = [head, ...tail.map(t => t[3] || t[1])];
+		const subjectParts = [];
+		const urls = [];
+		for (const part of parts) {
+			if (typeof part === 'string') {
+				if (part.match(/^https?:\/\//i)) {
+					urls.push(part);
+				} else {
+					subjectParts.push(part);
+				}
+			}
+		}
+		return { subject: subjectParts.join(' ').trim() || text(), urls };
+	}
 
 ContextOrTagExpr
 	= head:(Context / TagExpr ) tail:(_ (Context / TagExpr))* { return mergeWithArray(head, ...tail.map(t => t[1])) }

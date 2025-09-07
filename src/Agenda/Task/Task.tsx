@@ -43,7 +43,7 @@ export const TaskContent = observer(
         index,
         ...props
       },
-      ref,
+      ref
     ) => {
       const store = useStore();
 
@@ -52,10 +52,16 @@ export const TaskContent = observer(
           {...props}
           ref={ref}
           data-task-index={index}
-          className={`h-14 align-middle border-b dark:border-b-base-02/50 last-of-type:border-0 group ${task.isCompleted && !isSelected ? "opacity-50" : ""} ${isSelected ? "bg-base-0D/10 dark:bg-base-0D/20" : ""} ${isFocused ? "bg-base-0D/10 dark:bg-base-0D/20" : ""}`}
+          className={`h-14 align-middle border-b dark:border-b-base-02/50 last-of-type:border-0 group ${
+            task.isCompleted && !isSelected ? "opacity-50" : ""
+          } ${isSelected ? "bg-base-0D/10 dark:bg-base-0D/20" : ""} ${
+            isFocused ? "bg-base-0D/10 dark:bg-base-0D/20" : ""
+          }`}
         >
           <td
-            className={`hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 ${isSelected ? "text-base-0D" : "text-base-04"}`}
+            className={`hidden md:table-cell px-4 text-right text-xs align-middle w-20 h-14 ${
+              isSelected ? "text-base-0D" : "text-base-04"
+            }`}
           >
             {task.nextAt && (
               <TimeLabel
@@ -93,6 +99,23 @@ export const TaskContent = observer(
               onSubmit={onSubmit}
             />
 
+            {!isFocused &&
+              task.parsedUrls.map(({ url, domain }, index) =>
+                domain ? (
+                  <a
+                    key={index}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-1 text-xs text-base-04 hover:text-base-0D ml-1"
+                    title={url}
+                  >
+                    <IconMdiLink />
+                    <span>{domain}</span>
+                  </a>
+                ) : null
+              )}
+
             {task.nextAt && (
               <DistanceLabel
                 className="text-xs"
@@ -111,15 +134,19 @@ export const TaskContent = observer(
 
             <input
               type="checkbox"
-              className={`w-5 h-5 rounded border-2 ${isSelected ? "border-base-0D bg-base-0D/5" : "border-base-04 bg-base-01"} checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-sm`}
+              className={`w-5 h-5 rounded border-2 ${
+                isSelected
+                  ? "border-base-0D bg-base-0D/5"
+                  : "border-base-04 bg-base-01"
+              } checked:bg-base-0D checked:border-base-0D focus:ring-2 focus:ring-base-0D/50 focus:ring-offset-0 cursor-pointer appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-white checked:after:font-bold checked:after:text-sm`}
               checked={task.isCompleted}
               onChange={onComplete}
             />
           </td>
         </tr>
       );
-    },
-  ),
+    }
+  )
 );
 
 const Task = observer(
@@ -160,7 +187,7 @@ const Task = observer(
         inputRef.current?.blur();
         store.clearEditingTask();
       },
-      [store],
+      [store]
     );
 
     const onCancel = useCallback(
@@ -173,7 +200,7 @@ const Task = observer(
         inputRef.current?.blur();
         store.clearEditingTask();
       },
-      [store],
+      [store]
     );
 
     const onComplete = () => {
@@ -213,7 +240,7 @@ const Task = observer(
         {...props}
       />
     );
-  },
+  }
 );
 
 export default Task;

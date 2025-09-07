@@ -114,6 +114,19 @@ const Task = Expression.named("Task")
           total: self.completionCount,
         };
       },
+
+      get parsedUrls() {
+        return self.urls.map(url => {
+          try {
+            const parsed = new URL(url);
+            const parts = parsed.hostname.split('.');
+            const domain = parts.length >= 2 ? parts.slice(-2).join('.') : parsed.hostname;
+            return { url, domain };
+          } catch {
+            return { url, domain: null };
+          }
+        });
+      },
     };
   });
 

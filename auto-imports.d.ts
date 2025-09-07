@@ -6,24 +6,25 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-  const IconMdiAlertCircle: (typeof import("~icons/mdi/alert-circle.jsx"))["default"];
-  const IconMdiCalendarBlank: (typeof import("~icons/mdi/calendar-blank.jsx"))["default"];
-  const IconMdiCheckCircle: (typeof import("~icons/mdi/check-circle.jsx"))["default"];
-  const IconMdiClockOutline: (typeof import("~icons/mdi/clock-outline.jsx"))["default"];
-  const IconMdiClose: (typeof import("~icons/mdi/close.jsx"))["default"];
-  const IconMdiCloudAlert: (typeof import("~icons/mdi/cloud-alert.jsx"))["default"];
-  const IconMdiCloudCheck: (typeof import("~icons/mdi/cloud-check.jsx"))["default"];
-  const IconMdiCloudDownload: (typeof import("~icons/mdi/cloud-download.jsx"))["default"];
-  const IconMdiCloudUpload: (typeof import("~icons/mdi/cloud-upload.jsx"))["default"];
-  const IconMdiCog: (typeof import("~icons/mdi/cog.jsx"))["default"];
-  const IconMdiContentCopy: (typeof import("~icons/mdi/content-copy.jsx"))["default"];
-  const IconMdiContentPaste: (typeof import("~icons/mdi/content-paste.jsx"))["default"];
-  const IconMdiPlaylistPlus: (typeof import("~icons/mdi/playlist-plus.jsx"))["default"];
-  const IconMdiSync: (typeof import("~icons/mdi/sync.jsx"))["default"];
-  const IconMdiTimerOutline: (typeof import("~icons/mdi/timer-outline.jsx"))["default"];
-  const IconMdiTrashCan: (typeof import("~icons/mdi/trash-can.jsx"))["default"];
-  const IconMdiTrashCanOutline: (typeof import("~icons/mdi/trash-can-outline.jsx"))["default"];
-  const IconMdiUpdate: (typeof import("~icons/mdi/update.jsx"))["default"];
-  const IconMdiWeatherNight: (typeof import("~icons/mdi/weather-night.jsx"))["default"];
-  const IconMdiWeatherSunny: (typeof import("~icons/mdi/weather-sunny.jsx"))["default"];
+  const IconMdiAlertCircle: typeof import('~icons/mdi/alert-circle.jsx')['default']
+  const IconMdiCalendarBlank: typeof import('~icons/mdi/calendar-blank.jsx')['default']
+  const IconMdiCheckCircle: typeof import('~icons/mdi/check-circle.jsx')['default']
+  const IconMdiClockOutline: typeof import('~icons/mdi/clock-outline.jsx')['default']
+  const IconMdiClose: typeof import('~icons/mdi/close.jsx')['default']
+  const IconMdiCloudAlert: typeof import('~icons/mdi/cloud-alert.jsx')['default']
+  const IconMdiCloudCheck: typeof import('~icons/mdi/cloud-check.jsx')['default']
+  const IconMdiCloudDownload: typeof import('~icons/mdi/cloud-download.jsx')['default']
+  const IconMdiCloudUpload: typeof import('~icons/mdi/cloud-upload.jsx')['default']
+  const IconMdiCog: typeof import('~icons/mdi/cog.jsx')['default']
+  const IconMdiContentCopy: typeof import('~icons/mdi/content-copy.jsx')['default']
+  const IconMdiContentPaste: typeof import('~icons/mdi/content-paste.jsx')['default']
+  const IconMdiLink: typeof import('~icons/mdi/link.jsx')['default']
+  const IconMdiPlaylistPlus: typeof import('~icons/mdi/playlist-plus.jsx')['default']
+  const IconMdiSync: typeof import('~icons/mdi/sync.jsx')['default']
+  const IconMdiTimerOutline: typeof import('~icons/mdi/timer-outline.jsx')['default']
+  const IconMdiTrashCan: typeof import('~icons/mdi/trash-can.jsx')['default']
+  const IconMdiTrashCanOutline: typeof import('~icons/mdi/trash-can-outline.jsx')['default']
+  const IconMdiUpdate: typeof import('~icons/mdi/update.jsx')['default']
+  const IconMdiWeatherNight: typeof import('~icons/mdi/weather-night.jsx')['default']
+  const IconMdiWeatherSunny: typeof import('~icons/mdi/weather-sunny.jsx')['default']
 }

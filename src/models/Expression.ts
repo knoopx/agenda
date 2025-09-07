@@ -17,6 +17,7 @@ export type IExpressionAST = {
   end?: DateTime;
   duration?: Duration;
   subject?: string;
+  urls?: string[];
   contexts?: string[];
   tags?: string[];
   interval?: number;
@@ -85,6 +86,10 @@ const Expression = t
 
     get subject() {
       return this.ast?.subject ?? "";
+    },
+
+    get urls() {
+      return this.ast?.urls ?? [];
     },
 
     get isRecurring() {

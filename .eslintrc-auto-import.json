@@ -1,21 +1,3 @@
 {
-  "globals": {
-    "IconMdiAlertCircle": true,
-    "IconMdiCalendarBlank": true,
-    "IconMdiCheckCircle": true,
-    "IconMdiClockOutline": true,
-    "IconMdiClose": true,
-    "IconMdiCloudCheck": true,
-    "IconMdiCloudUpload": true,
-    "IconMdiCog": true,
-    "IconMdiContentCopy": true,
-    "IconMdiContentPaste": true,
-    "IconMdiSync": true,
-    "IconMdiTimerOutline": true,
-    "IconMdiTrashCan": true,
-    "IconMdiTrashCanOutline": true,
-    "IconMdiUpdate": true,
-    "IconMdiWeatherNight": true,
-    "IconMdiWeatherSunny": true
-  }
+  "globals": {}
 }
