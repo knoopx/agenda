@@ -33,4 +33,16 @@ describe("formatDuration", () => {
     const duration = Duration.fromMillis(22 * 60 * 60 * 1000 + 30 * 60 * 1000 + 26.103 * 1000);
     expect(formatDuration(duration)).toBe("22h 30m");
   });
+
+  it("returns '0s' for zero duration", () => {
+    const duration = Duration.fromObject({ hours: 0, minutes: 0, seconds: 0 });
+    expect(formatDuration(duration)).toBe("0s");
+  });
+
+  it("returns '0s' for empty duration", () => {
+    const duration = Duration.fromObject({});
+    expect(formatDuration(duration)).toBe("0s");
+  });
+
+
 });
